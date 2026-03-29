@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP System - Cadastro de Cliente</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        /* Navbar Consistente (Seu padrão) */
+        .navbar-custom {
+            background-color: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 0.75rem 2rem;
+        }
+
+        .right-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #64748b;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* Botões e Cards conforme seu CSS */
+        .btn-primary-custom {
+            background-color: #2563eb;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            color: white;
+            transition: 0.3s;
+        }
+
+        .btn-primary-custom:hover {
+            background-color: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .card-custom {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            background: #fff;
+        }
+
+        /* Estilo de Labels e Inputs */
+        .form-label {
+            font-weight: 600;
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            padding: 0.6rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand text-primary fw-bold" href="home.html">
+                <i class="bi bi-bar-chart-line-fill"></i> ERP System
+            </a>
+
+            <div class="collapse navbar-collapse justify-content-center">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="vendas.html"><i class="bi bi-cart3"></i> Vendas</a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="pedido.html">Pedido de Venda</a></li>
+                    <li class="nav-item"><a class="nav-link" href="produtos.html"><i class="bi bi-box-seam"></i>
+                            Produtos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="recebimentos.html"><i
+                                class="bi bi-currency-dollar"></i> Recebimentos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="pagamentos.html"><i class="bi bi-credit-card"></i>
+                            Pagamentos</a></li>
+                    <li class="nav-item"><a class="nav-link active fw-bold text-dark" href="cliente.html"><i
+                                class="bi bi-people"></i> Clientes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="usuario.html"><i class="bi bi-person"></i>
+                            Usuários</a></li>
+                </ul>
+            </div>
+
+            <div class="right-actions">
+                <div class="user-profile">
+                    <i class="bi bi-person-circle fs-5"></i>
+                    <span>Admin</span>
+                </div>
+                <button class="btn btn-danger btn-sm">
+                    <i class="bi bi-box-arrow-right"></i> Sair
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <div class="d-flex align-items-center mb-4">
+            <a href="cliente.html" class="btn btn-light border me-3"><i class="bi bi-arrow-left"></i></a>
+            <div>
+                <h4 class="fw-bold m-0">Cadastrar Cliente</h4>
+                <p class="text-muted small m-0">Adicione um novo cliente ou contato ao sistema.</p>
+            </div>
+        </div>
+
+        <div class="card card-custom p-4">
+            <form class="row g-4">
+                <div class="col-md-8">
+                    <label class="form-label">Nome Completo / Razão Social</label>
+                    <input type="text" class="form-control" placeholder="Digite o nome completo">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">CPF / CNPJ</label>
+                    <input type="text" class="form-control" placeholder="000.000.000-00">
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">E-mail</label>
+                    <input type="email" class="form-control" placeholder="exemplo@email.com">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Telefone / WhatsApp</label>
+                    <input type="text" class="form-control" placeholder="(00) 00000-0000">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Tipo de Pessoa</label>
+                    <select class="form-select">
+                        <option value="PF">Pessoa Física</option>
+                        <option value="PJ">Pessoa Jurídica</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">CEP</label>
+                    <input type="text" class="form-control" placeholder="00000-000">
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label">Endereço</label>
+                    <input type="text" class="form-control" placeholder="Rua, Av, Logradouro...">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Número</label>
+                    <input type="text" class="form-control" placeholder="123">
+                </div>
+
+                <div class="col-md-5">
+                    <label class="form-label">Cidade</label>
+                    <input type="text" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Bairro</label>
+                    <input type="text" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">UF</label>
+                    <select class="form-select">
+                        <option>Selecione...</option>
+                        <option>SP</option>
+                        <option>RJ</option>
+                        <option>MG</option>
+                    </select>
+                </div>
+
+                <div class="col-12 d-flex justify-content-end gap-2 mt-4">
+                    <button type="button" class="btn btn-light border px-4"
+                        onclick="location.href='cliente.html'">Cancelar</button>
+                    <button type="submit" class="btn btn-primary-custom px-5">Salvar Cliente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

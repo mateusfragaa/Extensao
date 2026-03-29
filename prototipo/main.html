@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP System - Home</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+            color: #0f172a;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* Navbar Customizada */
+        .navbar-custom {
+            background-color: #ffffff;
+            border-bottom: 1px solid #f1f5f9;
+            padding: 0.75rem 2rem;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-link {
+            color: #64748b !important;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0.5rem 1rem !important;
+            transition: 0.2s;
+        }
+
+        .nav-link:hover {
+            color: #2563eb !important;
+        }
+
+        /* Ícones e Botões da Direita */
+        .right-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #64748b;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* Conteúdo Centralizado */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding-bottom: 5rem;
+        }
+
+        .hero-logo {
+            width: 120px;
+            margin-bottom: 2rem;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            color: #0f172a;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: #64748b;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        /* Ícone de Ajuda flutuante (canto inferior direito) */
+        .help-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background-color: #334155;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container-fluid">
+            <a class="navbar-brand text-primary fw-bold" href="https://mateusfragaa.github.io/Extensao/prototipo/">
+                <i class="bi bi-bar-chart-line-fill text-primary"></i> ERP System
+            </a>
+    
+            <div class="collapse navbar-collapse justify-content-center">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="vendas.html"><i class="bi bi-cart3"></i> Vendas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="produtos.html"><i class="bi bi-box-seam"></i> Produtos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="recebimentos.html"><i class="bi bi-currency-dollar"></i> Recebimentos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="pagamentos.html"><i class="bi bi-credit-card"></i> Pagamentos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="tipo_documento.html"><i class="bi bi-file-earmark"></i> Tipo Documento</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="cliente.html"><i class="bi bi-people"></i> Clientes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="usuario.html"><i class="bi bi-person"></i> Usuários</a>
+                    </li>
+                </ul>
+            </div>
+    
+            <div class="right-actions">
+                <div class="user-profile">
+                    <i class="bi bi-person-circle fs-5"></i>
+                    <span>Nome</span>
+                </div>
+                <button class="btn btn-danger" onclick="location.href='index.html'">
+                    <i class="bi bi-box-arrow-right"></i> Sair
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="hero-logo text-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M3 3v18h18"></path>
+                <path d="M7 16V10"></path>
+                <path d="M11 16V6"></path>
+                <path d="M15 16V10"></path>
+                <path d="M19 16V6"></path>
+            </svg>
+        </div>
+
+        <h1 class="hero-title">ERP System</h1>
+        <p class="hero-subtitle">
+            Transformando dados em decisões, simplificando a gestão do seu negócio.
+        </p>
+    </main>
+
+    <a href="#" class="help-button">
+        <i class="bi bi-question"></i>
+    </a>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

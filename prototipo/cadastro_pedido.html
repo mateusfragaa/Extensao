@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP System - Pedido de Venda</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .navbar-custom {
+            background-color: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 0.75rem 1rem;
+        }
+
+        .btn-primary-custom {
+            background-color: #2563eb;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            color: white;
+        }
+
+        .card-custom {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            background: #fff;
+        }
+
+        .scroll-div {
+            height: 350px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand text-primary fw-bold" href="main.html"><i class="bi bi-bar-chart-line-fill"></i> ERP
+                System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuERP">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-center" id="menuERP">
+                <ul class="navbar-nav gap-2">
+                    <li class="nav-item"><a class="nav-link active" href="vendas.html">Vendas</a></li>
+                    <li class="nav-item"><a class="nav-link" href="produtos.html">Produtos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="recebimentos.html">Recebimentos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="pagamentos.html">Pagamentos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="cliente.html">Pessoas</a></li>
+                    <li class="nav-item"><a class="nav-link" href="usuario.html">Usuários</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold m-0">Novo Pedido de Venda</h4>
+            <button class="btn btn-outline-secondary btn-sm" onclick="location.href='vendas.html'"><i
+                    class="bi bi-arrow-left"></i> Voltar</button>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <div class="card card-custom p-4">
+                    <form class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Cliente</label>
+                            <select class="form-select bg-light border-0">
+                                <option>Selecione o Cliente</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Data Venda</label>
+                            <input type="date" class="form-control bg-light border-0">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Status</label>
+                            <select class="form-select bg-light border-0">
+                                <option>Aberto</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Acréscimo</label>
+                            <input type="number" class="form-control bg-light border-0" placeholder="0,00">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Desconto</label>
+                            <input type="number" class="form-control bg-light border-0" placeholder="0,00">
+                        </div>
+                        <div class="col-12 mt-4 p-3 bg-light rounded text-end">
+                            <div class="small text-muted">Subtotal: R$ 0,00</div>
+                            <div class="fw-bold fs-4 text-primary">Total: R$ 0,00</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary-custom w-100 py-2 mt-3">Salvar Pedido</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="card card-custom p-4">
+                    <h6 class="fw-bold mb-3">Produtos do Pedido</h6>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control border-light" placeholder="Buscar Produto...">
+                        <input type="number" class="form-control border-light" style="max-width: 80px;" value="1">
+                        <button class="btn btn-dark">Incluir</button>
+                    </div>
+
+                    <div class="scroll-div">
+                        <table class="table align-middle m-0">
+                            <thead class="sticky-top bg-white border-bottom">
+                                <tr class="small text-muted">
+                                    <th>Produto</th>
+                                    <th>Qtd</th>
+                                    <th class="text-end">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
