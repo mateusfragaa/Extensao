@@ -1,4 +1,4 @@
-# Projeto de Extensão - ADS (ERP de Pequeno Porte) 🚀
+# Projeto de Extensão - ADS (ERP de Pequeno Porte) 🚀🚀
 
 Este projeto consiste no desenvolvimento de um **ERP online de pequeno porte** focado em microempreendedores, varejistas e autônomos.  
 O objetivo é **otimizar processos gerenciais** e substituir o uso de planilhas por uma ferramenta tecnológica eficiente.  
