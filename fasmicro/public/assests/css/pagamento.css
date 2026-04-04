@@ -1,0 +1,86 @@
+.container {
+min-height: 100vh;
+display: flex;
+flex-direction: column;
+padding-bottom: 2rem;
+/* Garante respiro no final da página */
+flex: 1 0 auto;
+/* Faz o container ocupar o espaço necessário */
+}
+.right-actions {
+display: flex;
+align-items: center;
+gap: 20px;
+}
+
+/* Estilos de Pagamentos */
+.btn-primary-custom {
+background-color: #2563eb;
+border: none;
+padding: 0.6rem 1.5rem;
+border-radius: 8px;
+font-weight: 500;
+color: white;
+} 
+
+.btn-primary-custom:hover {
+background-color: #1d4ed8;
+color: white;
+}
+
+.card-custom {
+border: none;
+border-radius: 12px;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+background: #fff;
+
+}
+
+.card-ajuste-footer{
+padding: 23px  !important;
+}
+
+.stat-card {
+border-left: 4px solid #64748b;
+}
+
+.stat-card.vence-hoje {
+border-left-color: #f59e0b;
+}
+
+.stat-card.atrasado {
+border-left-color: #ef4444;
+}
+
+.table-custom th {
+font-weight: 600;
+color: #64748b;
+text-transform: uppercase;
+font-size: 0.75rem;
+padding: 1rem;
+background-color: #f8fafc;
+}
+
+/* Limita a altura da tabela para não quebrar o layout */ */
+.table-responsive {
+max-height: 400px;
+/*Ajuste conforme a necessidade */
+overflow-y: auto; 
+}
+
+.badge-pgto {
+padding: 0.4em 0.8em;
+border-radius: 6px;
+font-weight: 600;
+font-size: 0.8rem;
+}
+
+.status-pendente {
+background-color: #fef3c7;
+color: #92400e;
+}
+
+.status-urgente {
+background-color: #fee2e2;
+color: #991b1b;
+}

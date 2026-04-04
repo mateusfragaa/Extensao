@@ -1,0 +1,72 @@
+body {
+font-family: 'Inter', sans-serif;
+background-color: #f8f9fa;
+color: #333;
+}
+
+/* Navbar Corrigida */
+.navbar-custom {
+background-color: #fff;
+border-bottom: 1px solid #e0e0e0;
+padding: 0.75rem 2rem;
+}
+
+.right-actions {
+display: flex;
+align-items: center;
+gap: 20px;
+}
+
+.user-profile {
+display: flex;
+align-items: center;
+gap: 8px;
+color: #64748b;
+font-size: 0.9rem;
+font-weight: 500;
+}
+
+/* Estilos de Tabela e Cards */
+/* Estilos de Pagamentos */
+.btn-primary-custom {
+background-color: #2563eb;
+border: none;
+padding: 0.6rem 1.5rem;
+border-radius: 8px;
+font-weight: 500;
+color: white;
+}
+
+.btn-primary-custom:hover {
+background-color: #1d4ed8;
+color: white;
+}
+
+.card-custom {
+border: none;
+border-radius: 12px;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+background: #fff;
+}
+
+.table-custom th {
+font-weight: 600;
+color: #64748b;
+text-transform: uppercase;
+font-size: 0.75rem;
+padding: 1rem;
+background-color: #f8fafc;
+}
+
+.avatar-placeholder {
+width: 35px;
+height: 35px;
+background-color: #e2e8f0;
+color: #64748b;
+display: flex;
+align-items: center;
+justify-content: center;
+border-radius: 50%;
+font-weight: 600;
+font-size: 0.8rem;
+}

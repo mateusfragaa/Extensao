@@ -1,0 +1,16 @@
+{
+    "name": "aldec/fasmicro",
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Core\\": "core/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Aldecir Fonseca",
+            "email": "aldecirfonseca@hotmail.com"
+        }
+    ],
+    "require": {}
+}

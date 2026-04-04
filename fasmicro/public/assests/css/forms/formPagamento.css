@@ -1,0 +1,64 @@
+body {
+font-family: 'Inter', sans-serif;
+background-color: #f8f9fa;
+color: #333;
+}
+
+/* Navbar Consistente (Seu padrão) */
+.navbar-custom {
+background-color: #fff;
+border-bottom: 1px solid #e0e0e0;
+padding: 0.75rem 2rem;
+}
+
+.right-actions {
+display: flex;
+align-items: center;
+gap: 20px;
+}
+
+.user-profile {
+display: flex;
+align-items: center;
+gap: 8px;
+color: #64748b;
+font-size: 0.9rem;
+font-weight: 500;
+}
+
+/* Botões e Cards conforme seu CSS */
+.btn-primary-custom {
+background-color: #2563eb;
+border: none;
+padding: 0.6rem 1.5rem;
+border-radius: 8px;
+font-weight: 500;
+color: white;
+transition: 0.3s;
+}
+
+.btn-primary-custom:hover {
+background-color: #1d4ed8;
+transform: translateY(-1px);
+}
+
+.card-custom {
+border: none;
+border-radius: 12px;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+background: #fff;
+}
+
+/* Estilo de Labels e Inputs */
+.form-label {
+font-weight: 600;
+color: #64748b;
+font-size: 0.85rem;
+}
+
+.form-control,
+.form-select {
+border-radius: 8px;
+border: 1px solid #e2e8f0;
+padding: 0.6rem;
+}

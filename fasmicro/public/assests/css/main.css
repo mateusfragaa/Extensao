@@ -1,0 +1,105 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #ffffff;
+    color: #0f172a;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    overflow: hidden;
+}
+
+/* Navbar Customizada */
+.navbar-custom {
+    background-color: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 0.75rem 2rem;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.nav-link {
+    color: #64748b !important;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.5rem 1rem !important;
+    transition: 0.2s;
+}
+
+.nav-link:hover {
+    color: #2563eb !important;
+}
+
+/* Ícones e Botões da Direita */
+.right-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #64748b;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* Conteúdo Centralizado */
+.main-content {
+    height: 100vh;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding-bottom: 5rem;
+}
+
+.hero-logo {
+    width: 120px;
+    margin-bottom: 2rem;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    color: #0f172a;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    color: #64748b;
+    max-width: 600px;
+    line-height: 1.6;
+}
+
+/* Ícone de Ajuda flutuante (canto inferior direito) */
+.help-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background-color: #334155;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
