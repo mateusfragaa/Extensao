@@ -64,12 +64,12 @@ class ProdutoModel extends ModelMain
     public function filtroListagem(array $post)
     {   
         extract($post);
-        $sql = "select * from {$this->table} where 1=1 ";
+        $sql = "select * from {$this->table}";
         $sqlparte = [];
         $params = [];
         if (!empty(trim($filtroNomeProduto))) {
            array_push($sqlparte,"prd_descricao like :nomeProduto");
-           $params['nomeProduto'] = '%'.$filtroNomeProduto. '%';
+           $params['nomeProduto'] = "%{$filtroNomeProduto}%";
         }
         if (!empty(trim($filtroCategoriaProduto))) {
             array_push($sqlparte, "prd_categoria = :categoriaProduto");
@@ -78,20 +78,21 @@ class ProdutoModel extends ModelMain
         if (!empty(trim($filtroEstoqueProduto))) {
             
             if ($filtroEstoqueProduto == 'sem') {
-                array_push($sqlparte,"prd_estoque = 0");
+                array_push($sqlparte," prd_estoque = 0");
             }
             if ($filtroEstoqueProduto == 'disp') {
-                array_push($sqlparte,"prd_estoque > prd_estoque_min");
+                array_push($sqlparte," prd_estoque > prd_estoque_min");
             }
             if ($filtroEstoqueProduto == 'min') {
-                array_push($sqlparte,"prd_estoque <= prd_estoque_min and prd_estoque > 0");
+                array_push($sqlparte," prd_estoque <= prd_estoque_min and prd_estoque > 0");
             }
         }
-
-        $sql .= implode(' and ',$sqlparte);
+    
+        $sql .= (count($sqlparte) > 0) ? ' where ' .implode(' and ', $sqlparte) : '';
+        var_dump($sql,$params);
         $pdo = $this->db->dbSelect($sql,$params);
-        // die($pdo);
-        return  $this->db->dbBuscaDadosAll($pdo);
+        return $this->db->dbBuscaArrayAll($pdo);
+        die();
     }
 
     public function valida_produto(array $dados)
