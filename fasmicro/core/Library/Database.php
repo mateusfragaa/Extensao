@@ -141,6 +141,7 @@ class Database
         }
         
         $query = $this->connect()->prepare( $sql , array( PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL ) );
+        // die($query);
         $query->execute( $params );
         $rs = $query;
         
@@ -616,7 +617,6 @@ class Database
     public function prepareSelect($tipoRetorno = "all")
     {
         $cSql = "SELECT {$this->select} FROM {$this->table} {$this->join} {$this->where} {$this->groupBy} {$this->orderBy}";
-        die($cSql);
         $query = $this->connect()->prepare($cSql, [PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL]);
         $rscDados = $query->execute($this->params);
 
