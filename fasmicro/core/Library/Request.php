@@ -32,4 +32,9 @@ class Request
     {
         return $this->param['action'];
     }
+
+    public function getRequestId()
+    {
+        return $this->param['id'];
+    }
 }

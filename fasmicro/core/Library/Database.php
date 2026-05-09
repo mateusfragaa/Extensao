@@ -315,7 +315,7 @@ class Database
     {
         $rowResX = $this->dbBuscaArray( $rscRes );
         
-        return $rowResX[ $CampoRetorno ];
+        return $rowResX[$CampoRetorno];
     }
 
     /**

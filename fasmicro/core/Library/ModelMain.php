@@ -2,12 +2,14 @@
 
 namespace Core\Library;
 
+use Core\Library\Request;
+
 class ModelMain
 {
     public $db;
     public $validationRules = [];
     protected $table;
-    protected $primaryKey = "id";
+    protected $primaryKey = "";
 
     public function __construct()
     {
@@ -22,6 +24,7 @@ class ModelMain
 
         // Setando a tabela do model
         $this->db->table($this->table);
+
     }
 
     /**
@@ -48,7 +51,7 @@ class ModelMain
         if ($id == 0) {
             return [];
         } else {
-            return $this->db->where("id", $id)->first();
+            return $this->db->where($this->primaryKey, $id)->first();
         }
     }
 
@@ -65,8 +68,9 @@ class ModelMain
         } else {
             unset($dados[$this->primaryKey]);        // excluir a key id do array
 
-            if ($this->db->insert($dados) > 0) {
-                return true;
+            $idGerado = $this->db->insert($dados);
+            if ($idGerado > 0) {
+                return $idGerado;
             } else {
                 return false;
             }

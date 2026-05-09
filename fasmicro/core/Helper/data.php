@@ -16,7 +16,6 @@ if (!function_exists('_viewData')) {
 if (!function_exists('setValue')) {
     function setValue(string $key, mixed $default = ''): mixed
     {
-        // $source = _viewData()[$data] ?? [];
         $source = _viewData() ?? [];
 
         foreach (explode(".", $key) as $segment) {

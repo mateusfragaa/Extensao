@@ -16,6 +16,7 @@
         <?= $content ?>
     </main>
     <script src="/assests/bootstrap/js/bootstrap.bundle.min.js"></script>
+    
 </body>
 
 </html>

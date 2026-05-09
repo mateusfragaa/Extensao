@@ -3,17 +3,26 @@
 namespace App\Controller;
 
 use Core\Library\ControllerMain;
+use Core\Library\Redirect;
 use Core\Library\Session;
+
+
 
 class Produto extends ControllerMain
 {
+    public function __construct()
+    {   
+        $this->loadHelper('formHelper');
+        return parent::__construct();
+    }
+
     public function index(bool $temFiltro)
     {
         if (!$temFiltro) {
             $this->view(
                 'admin/listaProduto',
                 [
-                    "produtos" => $this->model->find()
+                    "produtos" => $this->model->lista('prd_descricao')
                 ],
                 'sistema'
             );
@@ -33,82 +42,63 @@ class Produto extends ControllerMain
         $this->index(true);
     }
 
+    /*
+    * Prepara o formulário para as ações e faz o require do mesmo
+    */
     public function formProduto($acao,$id)
     {
+        $data = [];
         switch ($acao) {
-            case 'criar':
-                $this->view(
-                    'admin/form/formProduto',
-                    [
-                        "action_form" => "/produto/cadastro"
-                    ],
-                    'sistema'
-                );
+            case 'insert':
+                $data["action_form"] = "insert";
                 break;
-            case 'visualizar':
-                $this->view(
-                    'admin/form/formProduto',
-                    [
-                        "produto" => $this->model->find($id),
-                        "action_form" => "#"
-                    ],
-                    'sistema'
-                );
+            case 'update':
+                $data["action_form"] = "update";
                 break;
-            case 'editar':
-                Session::set('idProduto',$id);
-                $this->view(
-                    'admin/form/formProduto',
-                    [
-                        "produto" => $this->model->find($id),
-                        "action_form" => "/produto/editar"
-                    ],
-                    'sistema'
-                );
+            case 'delete':
+                $data["action_form"] = "delete";
                 break;
-            case 'deletar':
-                Session::set('idProduto', $id);
-                $this->view(
-                    'admin/form/formProduto',
-                    [
-                        "produto" => $this->model->find($id),
-                        "action_form" => "/produto/deletar"
-                    ],
-                    'sistema'
-                );
+            default:
+                $data["action_form"] = "view";
                 break;
         }
+
+        if ($acao != 'cadastro') $data["produto"] = $this->model->getById($id);
+
+        $this->view(
+            'admin/form/formProduto',
+            [
+                "data" => $data
+            ],
+            'sistema'
+        );
     }
 
     public function editar()
     {
-        if ($this->model->update($_POST, Session::getDestroy('idProduto'))) {
-            var_dump("Deu certo");
+        if ($this->model->update($_POST)) {
+            Redirect::page("produto/", ['msgSucesso' => 'Sucesso ao atualizar o registro']);
         } else {
-            var_dump(Session::getDestroy('msgErrorForm'));
-            var_dump(Session::getDestroy('msgError'));
+            Redirect::page("produto/", ['msgError' => 'Erro ao atualizar registro, verifique se os dados estão corretos!']);
         }
     }
 
     public function deletar()
-    {
-        
-        if ($this->model->delete(Session::getDestroy('idProduto'))) {
-            var_dump("Deu certo");
+    {    
+        if ($this->model->delete($_POST)) {
+            Redirect::page("produto/" , ['msgSucesso' => 'Sucesso ao apagar o registro']);
         } else {
-            var_dump(Session::getDestroy('msgErrorForm'));
-            var_dump(Session::getDestroy('msgError'));
+            Redirect::page("produto/", ['msgError' => 'Erro ao apagar registro, verifique se os dados estão corretos!']);
         }
     }
     
-
     public function cadastro()
     {
-        if ($this->model->insert($_POST)) {
-            var_dump("Deu certo");
+        $idGerado = $this->model->insert($_POST);
+        if ($idGerado) {
+            Redirect::page('produto/',['msgSucesso' => 'Sucesso ao inserir registro, novo produto : ' .$idGerado]);
         }else {
-            var_dump(Session::getDestroy('msgErrorForm'));
-            var_dump(Session::getDestroy('msgError'));
+            Redirect::page('produto/', ['msgError' => 'Erro ao inserir registro, verifique se os dados estão corretos!']);
         }
     }
 }

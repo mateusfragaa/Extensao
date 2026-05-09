@@ -2,11 +2,13 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="fw-bold m-0">Catálogo de Produtos</h4>
         <div class="d-flex gap-2">
-            <a class="btn btn-primary-custom shadow-sm" href="/produto/formProduto/criar">
+            <a class="btn btn-primary-custom shadow-sm" href="/produto/formProduto/insert">
                 <i class="bi bi-plus-lg me-2"></i> Novo Produto
             </a>
         </div>
     </div>
+
+    <?= exibeAlerta() ?>
 
     <div class="card card-custom mb-4">
         <div class="card-body p-4">
@@ -93,15 +95,15 @@
 
                             <td class="text-end">
                                 <a class="btn btn-sm btn-light border" title="Visualizar"
-                                    href="/produto/formProduto/visualizar/<?= $produto['PRD_ID'] ?>">
+                                    href="/produto/formProduto/view/<?= $produto['PRD_ID'] ?>">
                                     <i class="bi bi-eye text-primary"></i>
                                 </a>
                                 <a class="btn btn-sm btn-light border me-1" title="Editar"
-                                    href="/produto/formProduto/editar/<?= $produto['PRD_ID'] ?>">
+                                    href="/produto/formProduto/update/<?= $produto['PRD_ID'] ?>">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 <a class="btn btn-sm btn-light border text-danger" title="Remover"
-                                    href="/produto/formProduto/deletar/<?= $produto['PRD_ID'] ?>">
+                                    href="/produto/formProduto/delete/<?= $produto['PRD_ID'] ?>">
                                     <i class="bi bi-trash"></i>
                                 </a>
                             </td>
