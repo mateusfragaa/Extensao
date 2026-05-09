@@ -44,6 +44,7 @@ class Produto extends ControllerMain
                     ],
                     'sistema'
                 );
+                break;
             case 'visualizar':
                 $this->view(
                     'admin/form/formProduto',
@@ -53,6 +54,7 @@ class Produto extends ControllerMain
                     ],
                     'sistema'
                 );
+                break;
             case 'editar':
                 Session::set('idProduto',$id);
                 $this->view(
@@ -63,6 +65,7 @@ class Produto extends ControllerMain
                     ],
                     'sistema'
                 );
+                break;
             case 'deletar':
                 Session::set('idProduto', $id);
                 $this->view(
@@ -73,6 +76,7 @@ class Produto extends ControllerMain
                     ],
                     'sistema'
                 );
+                break;
         }
     }
 
