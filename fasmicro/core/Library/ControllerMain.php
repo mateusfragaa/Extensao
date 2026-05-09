@@ -29,6 +29,7 @@ class ControllerMain
         $this->model        = $this->loadModel($this->controller);
 
         // Carregamento de helpers
+        $this->loadHelper(['url', 'data']);
         // Verificação de permissão dos controllers autorizados sem login
     }
 
@@ -60,5 +61,32 @@ class ControllerMain
     public function view(string $view, array $data = [], ?string $layout = null)
     {
         $this->template->render($view, $data, $layout);
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @param string|array $nomeHelper
+     * @return void
+     */
+    public function loadHelper($nomeHelper)
+    {
+        if (gettype($nomeHelper) == "string") {
+            $nomeHelper = [$nomeHelper];
+        }
+
+        foreach ($nomeHelper as $value) {
+            $pathHelpCore = PATHAPP . "core" . DIRECTORY_SEPARATOR . "Helper" . DIRECTORY_SEPARATOR . "{$value}.php";
+
+            if (file_exists($pathHelpCore)) {
+                require_once $pathHelpCore;
+            } else {
+                $pathHelpApp = PATHAPP . "app" . DIRECTORY_SEPARATOR . "Helper" . DIRECTORY_SEPARATOR . "{$value}.php";
+
+                if (file_exists($pathHelpApp)) {
+                    require_once $pathHelpApp;
+                }
+            }
+        }
     }
 }
