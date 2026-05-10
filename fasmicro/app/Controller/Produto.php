@@ -81,19 +81,19 @@ class Produto extends ControllerMain
     }
 
     public function delete()
-    {   
+    {
         if ($this->model->delete($_POST)) {
-            Redirect::page("produto/" , ['msgSucesso' => 'Sucesso ao apagar o registro']);
+            Redirect::page("produto/", ['msgSucesso' => 'Sucesso ao apagar o registro']);
         } else {
             Redirect::page("produto/", ['msgError' => 'Erro ao apagar registro, verifique se os dados estão corretos!']);
         }
     }
-    
+
     public function insert()
     {
         $idGerado = $this->model->insert($_POST);
         if ($idGerado) {
-            Redirect::page('produto/',['msgSucesso' => 'Sucesso ao inserir registro, novo produto : ' .$idGerado]);
+            Redirect::page('produto/',['msgSucesso' => 'Sucesso ao inserir registro, novo produto : ' . $idGerado]);
         }else {
             Redirect::page('produto/', ['msgError' => 'Erro ao inserir registro, verifique se os dados estão corretos!']);
         }

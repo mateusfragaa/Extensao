@@ -53,7 +53,8 @@
         </div>
     </div>
 
-    <div class="card card-custom overflow-hidden">
+    <!-- <div class="card card-custom overflow-hidden"> -->
+    <div class="card card-custom ">
         <div class="table-responsive">
             <table class="table table-custom m-0">
                 <thead>

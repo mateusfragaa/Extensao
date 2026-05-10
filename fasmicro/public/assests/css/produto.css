@@ -17,23 +17,6 @@ align-items: center;
 gap: 20px;
 }
 
-.notification-bell {
-position: relative;
-color: #64748b;
-cursor: pointer;
-}
-
-.notification-dot {
-position: absolute;
-top: 2px;
-right: 0;
-width: 8px;
-height: 8px;
-background-color: #ef4444;
-border-radius: 50%;
-border: 2px solid white;
-}
-
 .user-profile {
 display: flex;
 align-items: center;

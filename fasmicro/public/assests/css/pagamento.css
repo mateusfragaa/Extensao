@@ -5,8 +5,8 @@ flex-direction: column;
 padding-bottom: 2rem;
 /* Garante respiro no final da página */
 flex: 1 0 auto;
-/* Faz o container ocupar o espaço necessário */
 }
+
 .right-actions {
 display: flex;
 align-items: center;
