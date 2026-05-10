@@ -8,6 +8,17 @@ class ProdutoModel extends ModelMain
     protected $table = 'tb_produto';
     protected $primaryKey = "PRD_ID";
 
+    public $validationRules = [
+        "prd_descricao" => [
+            "label" => "Descrição",
+            "rules" => "required|min:3|max:45"
+        ],
+        "prd_status" => [
+            "label" => "Status",
+            "rules" => "required"
+        ]
+    ];
+
     public function filtroListagem(array $post)
     {
         extract($post);
