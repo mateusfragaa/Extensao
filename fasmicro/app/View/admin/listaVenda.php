@@ -30,9 +30,7 @@
                     <input type="date" class="form-control">
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
-                    <button class="btn btn-light border w-100 fw-medium">
-                        <i class="bi bi-filter me-1"></i> Limpar
-                    </button>
+                    <button class="btn btn-outline-primary w-100 fw-bold" type="submit">Filtrar</a>
                 </div>
             </div>
         </div>

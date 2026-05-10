@@ -4,9 +4,6 @@ namespace App\Controller;
 
 use Core\Library\ControllerMain;
 use Core\Library\Redirect;
-use Core\Library\Session;
-
-
 
 class Produto extends ControllerMain
 {
@@ -74,7 +71,7 @@ class Produto extends ControllerMain
         );
     }
 
-    public function editar()
+    public function update()
     {
         if ($this->model->update($_POST)) {
             Redirect::page("produto/", ['msgSucesso' => 'Sucesso ao atualizar o registro']);
@@ -83,8 +80,8 @@ class Produto extends ControllerMain
         }
     }
 
-    public function deletar()
-    {    
+    public function delete()
+    {   
         if ($this->model->delete($_POST)) {
             Redirect::page("produto/" , ['msgSucesso' => 'Sucesso ao apagar o registro']);
         } else {
@@ -92,7 +89,7 @@ class Produto extends ControllerMain
         }
     }
     
-    public function cadastro()
+    public function insert()
     {
         $idGerado = $this->model->insert($_POST);
         if ($idGerado) {
