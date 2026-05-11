@@ -1,3 +1,7 @@
+<?php
+
+    var_dump($vendas, $teste);
+?>
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="fw-bold m-0">Gestão de Vendas</h4>
