@@ -120,3 +120,14 @@ body {
     font-size: 0.8rem;
 }
 
+.tabela-scroll {
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.tabela-scroll thead th {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
+}

@@ -58,7 +58,7 @@
 
     <!-- <div class="card card-custom overflow-hidden"> -->
     <div class="card card-custom ">
-        <div class="table-responsive">
+        <div class="table-responsive tabela-scroll">
             <table class="table table-custom m-0">
                 <thead>
                     <tr>
