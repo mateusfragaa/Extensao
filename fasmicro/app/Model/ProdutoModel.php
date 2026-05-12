@@ -42,7 +42,7 @@ class ProdutoModel extends ModelMain
                 array_push($sqlparte, " prd_estoque > prd_estoque_min");
             }
             if ($filtroEstoqueProduto == 'min') {
-                array_push($sqlparte, " prd_estoque <= prd_estoque_min and prd_estoque > 0");
+                array_push($sqlparte, " prd_estoque <= prd_estoque_min or prd_estoque = 0");
             }
         }
 

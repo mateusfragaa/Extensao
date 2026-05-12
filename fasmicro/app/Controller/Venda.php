@@ -21,7 +21,6 @@ class Venda extends ControllerMain
                 'admin/listaVenda',
                 [
                     "vendas" => $this->model->lista('pev_status'),
-                    "teste" => 'teste'
                 ],
                 'sistema'
             );
@@ -36,7 +35,7 @@ class Venda extends ControllerMain
         }
     }
 
-    public function filtroListagemProduto()
+    public function filtroListagemVenda()
     {
         $this->index(true);
     }
@@ -99,6 +98,11 @@ class Venda extends ControllerMain
         }else {
             Redirect::page('venda/', ['msgError' => 'Erro ao inserir registro, verifique se os dados estão corretos!']);
         }
+    }
+
+    public function pesquisa()
+    {
+        var_dump($_POST);
     }
 }
 

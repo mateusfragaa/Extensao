@@ -1,6 +1,5 @@
 <?php
-
-    var_dump($vendas, $teste);
+// var_dump($vendas);
 ?>
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -15,42 +14,45 @@
 
     <div class="card card-custom mb-4">
         <div class="card-body p-3">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label small fw-bold text-muted">Buscar Venda</label>
-                    <div class="input-group search-group">
-                        <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control" placeholder="Cliente ou Nº do pedido...">
+            <form action="/venda/filtroListagemVenda" method="post">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-muted">Buscar Venda</label>
+                        <div class="input-group search-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" name="id_nome_cliente" placeholder="Cliente ou Nº do pedido...">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-bold text-muted">Status</label>
+                        <select class="form-select" name="status_venda">
+                            <option value="">Todos os Status</option>
+                            <option value="A">Aberta</option>
+                            <option value="F">Faturada</option>
+                            <option value="C">Cancelada</option>
+                            <option value="O">Orçamento</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex">
+                        <div class="me-3">
+                            <label class="form-label small fw-bold text-muted">Período inicial</label>
+                            <input type="date" class="form-control" name="data_inicio">
+                        </div>
+                        <div>
+                            <label class="form-label small fw-bold text-muted">Período final</label>
+                            <input type="date" class="form-control" name="data_fim">
+                        </div>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button class="btn btn-outline-primary w-100 fw-bold" type="submit">Filtrar</a>
                     </div>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label small fw-bold text-muted">Status</label>
-                    <select class="form-select">
-                        <option selected>Todos os Status</option>
-                        <option>Concluída</option>
-                        <option>Pendente</option>
-                        <option>Cancelada</option>
-                    </select>
-                </div>
-                <div class="col-md-4 d-flex">
-                    <div class="me-3">
-                        <label class="form-label small fw-bold text-muted">Período inicial</label>
-                        <input type="date" class="form-control">
-                    </div>
-                    <div>
-                        <label class="form-label small fw-bold text-muted">Período final</label>
-                        <input type="date" class="form-control">
-                    </div>
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button class="btn btn-outline-primary w-100 fw-bold" type="submit">Filtrar</a>
-                </div>
-            </div>
+            </form>
         </div>
     </div>
 
     <div class="card card-custom overflow-hidden">
-        <div class="table-responsive">
+        <div class="table-responsive tabela-scroll">
             <table class="table table-custom m-0">
                 <thead>
                     <tr>
@@ -63,25 +65,27 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td class="fw-bold text-primary">#1025</td>
-                        <td class="fw-medium">Ana Beatriz Rocha</td>
-                        <td class="text-muted">28/03/2026</td>
-                        <td class="fw-bold">R$ 1.540,00</td>
-                        <td><span class="badge-status status-concluida">Concluída</span></td>
-                        <td class="text-end">
-                            <button class="btn btn-sm btn-light border" title="Editar"><i class="bi bi-eye text-primary"></i></button>
-                            <button class="btn btn-sm btn-light border me-1" title="Visualizar"><i
-                                    class="bi bi-pencil "></i></button>
-                            <button class="btn btn-sm btn-light border" title="Imprimir"><i
-                                    class="bi bi-trash text-danger"></i></button>
-                        </td>
-                    </tr>
+                    <?php foreach ($vendas as $key => $venda) : ?>
+                        <tr>
+                            <td class="fw-bold text-primary">#<?= $venda['PEV_ID'] ?></td>
+                            <td class="fw-medium"><?= $venda['PEV_CLIENTE_ID'] ?></td>
+                            <td class="text-muted"><?= $venda['PEV_DATA_VENDA'] ?></td>
+                            <td class="fw-bold">R$ <?= number_format($venda['PEV_TOTAL'], 2, ',', '.') ?></td>
+                            <td><span class="badge-status status-concluida"><?= $venda['PEV_STATUS'] ?></span></td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-light border" title="Editar"><i class="bi bi-eye text-primary"></i></button>
+                                <button class="btn btn-sm btn-light border me-1" title="Visualizar"><i
+                                        class="bi bi-pencil "></i></button>
+                                <button class="btn btn-sm btn-light border" title="Imprimir"><i
+                                        class="bi bi-trash text-danger"></i></button>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
         <div class="card-footer bg-white border-0 p-3 text-center border-top">
-            <small class="text-muted">Total de 3 registros encontrados</small>
+            <small class="text-muted">Total de <?= count($vendas) ?> vendas encontradas</small>
         </div>
     </div>
 </div>

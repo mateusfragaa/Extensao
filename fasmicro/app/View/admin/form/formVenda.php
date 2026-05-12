@@ -1,3 +1,34 @@
+<?php
+// $data['data']['itens_pedido'] = 'teste';
+$produtos = [
+    [
+        'PRD_ID' =>  49,
+        'PRD_DESCRICAO' =>  'Microfone Condensador',
+        'PRD_ESTOQUE' =>  '12.000',
+        'PRD_STATUS' =>  1,
+        'PRD_PRECO_VENDA' =>  '340.00',
+        'PRD_PRECO_CUSTO' =>  '240.00',
+        'PRD_UNIDADE' =>  'UN',
+        'PRD_CREATED_AT' =>  '2026-05-10 11:11:32',
+        'PRD_CATEGORIA' =>  'Áudio',
+        'PRD_OBSERVACAO' =>  'USB Streaming',
+        'PRD_ESTOQUE_MIN' =>  '2.000'
+    ],
+    [
+        'PRD_ID' =>  50,
+        'PRD_DESCRICAO' =>  'Microfone Condensador',
+        'PRD_ESTOQUE' =>  '12.000',
+        'PRD_STATUS' =>  1,
+        'PRD_PRECO_VENDA' =>  '340.00',
+        'PRD_PRECO_CUSTO' =>  '240.00',
+        'PRD_UNIDADE' =>  'UN',
+        'PRD_CREATED_AT' =>  '2026-05-10 11:11:32',
+        'PRD_CATEGORIA' =>  'Áudio',
+        'PRD_OBSERVACAO' =>  'USB Streaming',
+        'PRD_ESTOQUE_MIN' =>  '2.000'
+    ]
+];
+?>
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="fw-bold m-0">Novo Pedido de Venda</h4>
@@ -12,33 +43,44 @@
                 <form class="row g-3">
                     <div class="col-12">
                         <label class="form-label small fw-bold">Cliente</label>
-                        <select class="form-select bg-light border-0">
+                        <select class="form-select bg-light border-0" name="cliente_venda">
                             <option>Selecione o Cliente</option>
+                            <option value="1">Mateus Gabriel</option>
                         </select>
                     </div>
                     <div class="col-6">
                         <label class="form-label small fw-bold">Data Venda</label>
-                        <input type="date" class="form-control bg-light border-0">
+                        <input type="date" class="form-control bg-light border-0" value="<?= date("Y-m-d") ?>" name="data_venda">
                     </div>
                     <div class="col-6">
                         <label class="form-label small fw-bold">Status</label>
-                        <select class="form-select bg-light border-0">
-                            <option>Aberto</option>
+                        <select class="form-select bg-light border-0" name="status_venda">
+                            <option value="A">Aberta</option>
+                            <option value="F">Faturada</option>
+                            <option value="C">Cancelada</option>
+                            <option value="O">Orçamento</option>
                         </select>
                     </div>
                     <div class="col-6">
                         <label class="form-label small fw-bold">Acréscimo</label>
-                        <input type="number" class="form-control bg-light border-0" placeholder="0,00">
+                        <input type="number" class="form-control bg-light border-0" placeholder="0,00" min="0" name="acrescimo_venda">
                     </div>
                     <div class="col-6">
                         <label class="form-label small fw-bold">Desconto</label>
-                        <input type="number" class="form-control bg-light border-0" placeholder="0,00">
+                        <input type="number" class="form-control bg-light border-0" placeholder="0,00" min="0" name="desconto_venda">
                     </div>
                     <div class="col-12 mt-4 p-3 bg-light rounded text-end">
                         <div class="small text-muted">Subtotal: R$ 0,00</div>
-                        <div class="fw-bold fs-4 text-primary">Total: R$ 0,00</div>
+                        <div class="fw-bold fs-4 text-primary">
+                            Total: R$ 0,00
+                            <input type="hidden" name="venda_total" value="">
+                        </div>
                     </div>
-                    <button type="submit" class="btn btn-primary-custom w-100 py-2 mt-3">Salvar Pedido</button>
+                    <?php if (isset($data['data']['itens_pedido'])) : ?>
+                        <button type="submit" class="btn btn-primary-custom w-100 py-2 mt-3">Salvar Pedido</button>
+                    <?php else: ?>
+                        <p class="text-center text-muted">Acrescente algum item para iniciar o pedido.</p>
+                    <?php endif; ?>
                 </form>
             </div>
         </div>
@@ -49,7 +91,9 @@
                 <div class="input-group mb-3">
                     <input type="text" class="form-control border-light" placeholder="Buscar Produto...">
                     <input type="number" class="form-control border-light" style="max-width: 80px;" value="1">
-                    <button class="btn btn-dark">Incluir</button>
+                    <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                        Incluir
+                    </button>
                 </div>
 
                 <div class="scroll-div">
@@ -69,3 +113,69 @@
         </div>
     </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Pesquisa de produtos</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive tabela-scroll">
+                    <table class="table table-custom m-0">
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Categoria</th>
+                                <th>Preço Venda</th>
+                                <th>Estoque</th>
+                                <th>Status</th>
+                                <th class="text-end">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <form action="/venda/pesquisa/produto" method="post">
+                                <?php foreach ($produtos as $key => $produto) : ?>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div
+                                                    class="img-produto d-flex align-items-center justify-content-center me-3 shadow-sm">
+                                                    <i class="bi bi-laptop"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-bold text-dark"><?= $produto['PRD_DESCRICAO'] ?></div>
+                                                    <small class="text-muted">COD: <?= $produto['PRD_ID'] ?></small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><span class="text-secondary"><?= $produto['PRD_CATEGORIA'] ?></span></td>
+                                        <td class="fw-bold">R$ <?= number_format($produto['PRD_PRECO_VENDA'], 2, ',', '.') ?></td>
+                                        <td><?= $produto['PRD_ESTOQUE'] ?></td>
+
+                                        <?php if ($produto['PRD_ESTOQUE'] == 0) : ?>
+                                            <td><span class="badge text-bg-danger">Sem Estoque</span></td>
+                                        <?php elseif ($produto['PRD_ESTOQUE'] <= $produto['PRD_ESTOQUE_MIN']): ?>
+                                            <td><span class="badge text-bg-warning">Reabastecer</span></td>
+                                        <?php else : ?>
+                                            <td><span class="badge text-bg-success">Disponível</span></td>
+                                        <?php endif; ?>
+
+                                        <td class="text-center">
+                                            <input type="checkbox" name="produto_escolhido[]" id="produto_escolhido" value="<?= $produto['PRD_ID'] ?>" class="form-check-input fs-5">
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-basket2"></i> Escolher</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
