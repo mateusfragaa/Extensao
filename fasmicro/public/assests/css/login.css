@@ -1,7 +1,4 @@
-body {
-    font-family: 'Inter', sans-serif;
-    background-color: #f1f5f9;
-    /* Tom de cinza leve das suas telas */
+.container-login {
     height: 100vh;
     display: flex;
     align-items: center;

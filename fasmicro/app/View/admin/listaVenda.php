@@ -4,14 +4,17 @@
 ?>
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold m-0">Gestão de Vendas</h4>
+        <div>
+            <h4 class="fw-bold m-0">Gestão de Vendas</h4>
+            <p class="text-muted small m-0">Mais agilidade para o seu processo de vendas.</p>
+        </div>
         <a class="btn btn-primary-custom text-white shadow-sm" href="/Venda/formVenda">
             <i class="bi bi-plus-lg me-2"></i> Nova Venda
         </a>
     </div>
 
     <div class="card card-custom mb-4">
-        <div class="card-body p-4">
+        <div class="card-body p-3">
             <div class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label small fw-bold text-muted">Buscar Venda</label>
@@ -20,7 +23,7 @@
                         <input type="text" class="form-control" placeholder="Cliente ou Nº do pedido...">
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label small fw-bold text-muted">Status</label>
                     <select class="form-select">
                         <option selected>Todos os Status</option>
@@ -29,9 +32,15 @@
                         <option>Cancelada</option>
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label small fw-bold text-muted">Período</label>
-                    <input type="date" class="form-control">
+                <div class="col-md-4 d-flex">
+                    <div class="me-3">
+                        <label class="form-label small fw-bold text-muted">Período inicial</label>
+                        <input type="date" class="form-control">
+                    </div>
+                    <div>
+                        <label class="form-label small fw-bold text-muted">Período final</label>
+                        <input type="date" class="form-control">
+                    </div>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
                     <button class="btn btn-outline-primary w-100 fw-bold" type="submit">Filtrar</a>

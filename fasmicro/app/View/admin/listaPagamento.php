@@ -1,6 +1,9 @@
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold m-0">Contas a Pagar</h4>
+        <div>
+            <h4 class="fw-bold m-0">Contas a Pagar</h4>
+            <p class="text-muted small m-0">Mais controle sobre despesas e compromissos financeiros.</p>
+        </div>
         <a class="btn btn-primary-custom shadow-sm" href="/pagamento/formPagamento">
             <i class="bi bi-plus-lg me-2"></i> Novo Pagamento
         </a>
@@ -51,7 +54,7 @@
                     </select>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-outline-secondary w-100">Filtrar</button>
+                    <button type="submit" class="btn btn-outline-primary w-100 fw-bold">Filtrar</button>
                 </div>
             </form>
         </div>

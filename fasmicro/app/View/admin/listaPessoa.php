@@ -21,7 +21,7 @@
                     </div>
                 </div>
                 <div class="col-md-2">
-                    <button type="submit" class="btn btn-outline-secondary w-100">Pesquisar</button>
+                    <button type="submit" class="btn btn-outline-primary w-100 fw-bold">Filtrar</button>
                 </div>
             </form>
         </div>

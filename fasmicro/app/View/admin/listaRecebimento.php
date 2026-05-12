@@ -1,6 +1,9 @@
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold m-0">Contas a Receber</h4>
+        <div>
+            <h4 class="fw-bold m-0">Contas a Receber</h4>
+            <p class="text-muted small m-0">Gerencie contas recebidas com facilidade.</p>
+        </div>
         <a class="btn btn-primary-custom shadow-sm" href="/recebimento/formRecebimento">
             <i class="bi bi-plus-lg me-2"></i> Novo Recebimento
         </a>

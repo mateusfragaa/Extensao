@@ -2,7 +2,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="fw-bold m-0">Usuários do Sistema</h4>
-            <p class="text-muted small m-0">Gerencie quem tem acesso e quais as permissões de cada um.</p>
+            <p class="text-muted small m-0">Mais segurança e organização para o sistema</p>
         </div>
         <a class="btn btn-primary-custom shadow-sm" href="/usuario/formUsuario">
             <i class="bi bi-person-plus-fill me-2"></i> Novo Usuário
@@ -21,7 +21,7 @@
                     </div>
                 </div>
                 <div class="col-md-2">
-                    <button type="submit" class="btn btn-outline-secondary w-100">Pesquisar</button>
+                    <button type="submit" class="btn btn-outline-primary w-100 fw-bold">Filtrar</button>
                 </div>
             </form>
         </div>

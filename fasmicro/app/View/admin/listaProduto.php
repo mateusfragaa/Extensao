@@ -1,6 +1,9 @@
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold m-0">Catálogo de Produtos</h4>
+        <div>
+            <h4 class="fw-bold m-0">Catálogo de Produtos</h4>
+            <p class="text-muted small m-0">Cadastro simples para um controle mais eficiente.</p>
+        </div>
         <div class="d-flex gap-2">
             <a class="btn btn-primary-custom shadow-sm" href="/produto/formProduto/insert">
                 <i class="bi bi-plus-lg me-2"></i> Novo Produto
@@ -55,7 +58,7 @@
 
     <!-- <div class="card card-custom overflow-hidden"> -->
     <div class="card card-custom ">
-        <div class="table-responsive">
+        <div class="table-responsive tabela-scroll">
             <table class="table table-custom m-0">
                 <thead>
                     <tr>
