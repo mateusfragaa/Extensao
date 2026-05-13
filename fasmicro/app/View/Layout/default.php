@@ -14,9 +14,9 @@
 
 <body>
 
-    <nav class="navbar navbar-expand-lg fixed-top">
-        <div class="container">
-            <a class="navbar-brand text-primary" href="#home"><i class="bi bi bi-bar-chart-line-fill me-2 text-primary"></i>ERP System</a>
+    <nav class="navbar navbar-expand-lg fixed-top p-2 navbar-custom">
+        <div class="container d-flex flex-row">
+            <a class="navbar-brand text-primary fs-3" href="#home"><i class="bi bi bi-bar-chart-line-fill me-2 text-primary"></i>ERP System</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -26,7 +26,7 @@
                     <li class="nav-item"><a class="nav-link me-3" href="#funcionalidades">Funcionalidades</a></li>
                     <li class="nav-item"><a class="nav-link me-3" href="#contato">Contato</a></li>
                     <li class="nav-item"><a class="nav-link me-2" href="#sobre">Saiba Mais</a></li>
-                    <li class="nav-item"><a class="btn btn-outline-primary btn-lg" href="auth/formLogin">Entrar</a></li>
+                    <li class="nav-item"><a class="btn btn-outline-primary btn-md" href="auth/formLogin">Entrar</a></li>
                 </ul>
             </div>
         </div>

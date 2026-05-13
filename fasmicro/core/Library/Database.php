@@ -119,13 +119,37 @@ class Database
     }
 
     /**
-     * disconnect
+     * Métodos para ter acesso as funcionalidades de transação
      *
      * @return void
      */
     private function disconnect() 
     {
         $this->conexao = null;
+    }
+
+    /**
+     * Métodos para ter acesso as funcionalidades de transação
+    */
+    public function beginTransaction()
+    {
+        $this->connect();
+        return $this->conexao->beginTransaction();
+        self::__destruct();
+    }
+
+    public function commit()
+    {
+        $this->connect();
+        return $this->conexao->commit();
+        self::__destruct();
+    }
+
+    public function rollBack()
+    {
+        $this->connect();
+        return $this->conexao->rollBack();
+        self::__destruct();
     }
 
     /**
@@ -141,7 +165,6 @@ class Database
         }
         
         $query = $this->connect()->prepare( $sql , array( PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL ) );
-        // die($query);
         $query->execute( $params );
         $rs = $query;
         
@@ -364,7 +387,7 @@ class Database
      * @param string $operadorLogico 
      * @return object
      */
-    public function     whereHaving($condition, $params = "", $operadorLogico = 'AND')
+    public function  whereHaving($condition, $params = "", $operadorLogico = 'AND')
     {
         $operadores = ["=", ">=", "<=", ">", "<", "<>"];
 
@@ -387,7 +410,6 @@ class Database
             } else {
                 $this->where .= $condition . " = ? ";
             }
-
             $this->params = array_merge($this->params, [$params]);
 
         } else {

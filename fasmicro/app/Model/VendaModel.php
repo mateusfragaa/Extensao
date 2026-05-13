@@ -47,4 +47,15 @@ class VendaModel extends ModelMain
         $pdo = $this->db->dbSelect($sql, $params);
         return $this->db->dbBuscaArrayAll($pdo);
     }
+
+    public function criarPedido()
+    {
+        $id =  $this->db->dbInsert('insert into tb_pedido_venda(pev_cliente_id)values(:cliente)',['cliente' => 1]);
+        $pdo = $this->db->dbSelect("select * from tb_pedido_venda where pev_id = :id", [':id' => $id]);
+        return $this->db->dbBuscaArray($pdo);
+    }
 }
+
+
+// $pdo = $this->db->dbSelect("CALL sp_buscar_produtos(:ids)", ['ids' => $ids]);
+// return $this->db->dbBuscaArrayAll($pdo); 

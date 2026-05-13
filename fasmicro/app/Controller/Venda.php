@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use Core\Library\ControllerMain;
 use Core\Library\Redirect;
-use Core\Library\Request;
+use App\Model\ProdutoModel;
 
 class Venda extends ControllerMain
 {
@@ -62,6 +62,10 @@ class Venda extends ControllerMain
         }
 
         if ($acao != 'cadastro') $data["vendas"] = $this->model->getById($id);
+            
+        // Carrega os produtos para a pesquisa de itens para a venda
+        $produtoModel = new ProdutoModel();
+        $data['produtos'] = $produtoModel->lista('prd_descricao');
 
         $this->view(
             'admin/form/formVenda',
@@ -102,7 +106,35 @@ class Venda extends ControllerMain
 
     public function pesquisa()
     {
-        var_dump($_POST);
+        $produtoModel = new ProdutoModel();
+        $data['produtos'] = $produtoModel->filtroListagem($_POST);
+        $this->view(
+            'admin/form/formVenda',
+            [
+                "data" => $data
+            ],
+            'sistema'
+        );
     }
+
+    public function inicioVenda()
+    {
+        if (isset($_POST['produto_escolhido'])) {
+            $pedido_id = $this->model->criarPedido();
+            var_dump($pedido_id);
+            die();
+        }
+    }
+    // public function addItem()
+    // {
+    //     // Recebe o ids dos produto que irão ser adicionados no pedido item
+    //     // $ids = implode(',',$_POST['produto_escolhido']);
+    //     $ids = array_map('intval', $_POST['produto_escolhido']);
+
+    //     $idsString = implode(',', $ids);
+    //     $pedido = $this->model->criarPedido($idsString);
+    //     var_dump($pedido);
+    //     die('estou aqui');
+    // }
 }
 

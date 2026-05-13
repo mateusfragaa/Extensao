@@ -88,7 +88,8 @@
     <main>
         <?= $content ?>
     </main>
-
+    
+    <script src="/assests/bootstrap/js/teste.js"></script>
     <script src="/assests/bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>
 

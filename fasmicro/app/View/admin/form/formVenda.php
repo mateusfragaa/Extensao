@@ -1,33 +1,14 @@
 <?php
-// $data['data']['itens_pedido'] = 'teste';
-$produtos = [
-    [
-        'PRD_ID' =>  49,
-        'PRD_DESCRICAO' =>  'Microfone Condensador',
-        'PRD_ESTOQUE' =>  '12.000',
-        'PRD_STATUS' =>  1,
-        'PRD_PRECO_VENDA' =>  '340.00',
-        'PRD_PRECO_CUSTO' =>  '240.00',
-        'PRD_UNIDADE' =>  'UN',
-        'PRD_CREATED_AT' =>  '2026-05-10 11:11:32',
-        'PRD_CATEGORIA' =>  'Áudio',
-        'PRD_OBSERVACAO' =>  'USB Streaming',
-        'PRD_ESTOQUE_MIN' =>  '2.000'
-    ],
-    [
-        'PRD_ID' =>  50,
-        'PRD_DESCRICAO' =>  'Microfone Condensador',
-        'PRD_ESTOQUE' =>  '12.000',
-        'PRD_STATUS' =>  1,
-        'PRD_PRECO_VENDA' =>  '340.00',
-        'PRD_PRECO_CUSTO' =>  '240.00',
-        'PRD_UNIDADE' =>  'UN',
-        'PRD_CREATED_AT' =>  '2026-05-10 11:11:32',
-        'PRD_CATEGORIA' =>  'Áudio',
-        'PRD_OBSERVACAO' =>  'USB Streaming',
-        'PRD_ESTOQUE_MIN' =>  '2.000'
-    ]
-];
+//$data['data']['itens_pedido'] = 'teste';
+// var_dump($data['data']['produtos']);
+use Core\Library\Session;
+
+$produtos = null;
+if (isset($data['data']['produtos_pesquisa'])) {
+    $produtos = $data['data']['produtos'];
+}else {
+    $produtos = $data['data']['produtos'];
+}
 ?>
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -123,6 +104,46 @@ $produtos = [
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <!-- Formulário pesquisa de produto -->
+                <div class="row mb-4">
+                    <form action="/venda/pesquisa" method="post" class="d-flex gap-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold text-muted">Pesquisar Produto</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i
+                                        class="bi bi-search text-muted"></i></span>
+                                <input type="text" list="produtos_lista" class="form-control border-start-0 rounded" placeholder="Descrição do Produto" name="filtroNomeProduto">
+                                <datalist id="produtos_lista">
+                                    <?php foreach ($produtos as $key => $produto) : ?>
+                                        <option value="<?= $produto['PRD_DESCRICAO'] ?>">
+                                        <?php endforeach; ?>
+                                </datalist>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold text-muted">Categoria</label>
+                            <select class="form-select" name="filtroCategoriaProduto">
+                                <option value=" ">Todas as Categorias</option>
+                                <?php foreach ($produtos as $key => $produto) : ?>
+                                    <option value="<?= $produto['PRD_CATEGORIA'] ?>"><?= $produto['PRD_CATEGORIA'] ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold text-muted">Estoque</label>
+                            <select class="form-select" name="filtroEstoqueProduto">
+                                <option value=" ">Todos</option>
+                                <option value="sem">Sem Estoque</option>
+                                <option value="min">Abaixo do Mínimo</option>
+                                <option value="disp">Em Estoque</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button class="btn btn-outline-primary w-100 fw-bold" type="submit">Filtrar</a>
+                        </div>
+                    </form>
+                </div>
+
                 <div class="table-responsive tabela-scroll">
                     <table class="table table-custom m-0">
                         <thead>
@@ -136,7 +157,7 @@ $produtos = [
                             </tr>
                         </thead>
                         <tbody>
-                            <form action="/venda/pesquisa/produto" method="post">
+                            <form action="/venda/inicioVenda/criar" method="post">
                                 <?php foreach ($produtos as $key => $produto) : ?>
                                     <tr>
                                         <td>
@@ -168,12 +189,12 @@ $produtos = [
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                        <button type="submit" class="btn btn-primary"><i class="bi bi-basket2"></i> Escolher</button>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="submit" class="btn btn-primary" onclick="teste()"><i class="bi bi-basket2"></i> Escolher</button>
                     </form>
                 </div>
             </div>
