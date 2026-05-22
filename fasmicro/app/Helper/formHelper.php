@@ -11,10 +11,13 @@ if (!function_exists('formDadosInput')) {
     */
     function formDadosInput($data, $key)
     {
-        // var_dump($data);
-        isset($data['data'][$key]) ? _viewData($data['data'][$key]) : [];
-        return  $data['data']['action_form'];
+// ver se essa mudança vai poder ser permanente.
+    if (isset($data['data'][$key])) {
+        _viewData($data['data'][$key]);
     }
+    return $data['data']['action_form'] ?? null;
+}
+//.
 }
 
 if (!function_exists('formSubTitulo')) {

@@ -41,6 +41,12 @@ class PessoaModel extends ModelMain
         }
 
         $sql .= (count($sqlparte) > 0) ? ' where ' . implode(' and ', $sqlparte) : '';
+
+        // Adiciona ordenação
+        $ordemPermitida = ['PES_NOME', 'CIDADE', 'UF'];
+        $ordem = (isset($ordemPessoa) && in_array($ordemPessoa, $ordemPermitida)) ? $ordemPessoa : 'PES_NOME';
+        $sql .= " order by {$ordem} asc";
+
         $pdo = $this->db->dbSelect($sql, $params);
         return $this->db->dbBuscaArrayAll($pdo);
     }
