@@ -3,6 +3,7 @@
 namespace App\Model;
 
 use Core\Library\ModelMain;
+use Exception;
 
 class VendaModel extends ModelMain
 {
@@ -51,8 +52,11 @@ class VendaModel extends ModelMain
     public function criarPedido()
     {
         $id =  $this->db->dbInsert('insert into tb_pedido_venda(pev_cliente_id)values(:cliente)',['cliente' => 1]);
-        $pdo = $this->db->dbSelect("select * from tb_pedido_venda where pev_id = :id", [':id' => $id]);
-        return $this->db->dbBuscaArray($pdo);
+        return $id;
+    }
+
+    public function select_produto_venda($id_pedido){
+        // $this->
     }
 }
 

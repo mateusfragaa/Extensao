@@ -23,11 +23,11 @@ class Request
         return $this->param['controller'];
     }
 
-    /**
-     * Undocumented function
-     *
-     * @return string
-     */
+    public function getPost(): array
+    {
+        return array_map('trim', $this->param['post']);
+    }
+
     public function getAction()
     {
         return $this->param['action'];

@@ -1,14 +1,7 @@
 <?php
-//$data['data']['itens_pedido'] = 'teste';
-// var_dump($data['data']['produtos']);
-use Core\Library\Session;
+$produtos = (isset($data['data']['produtos'])) ? $data['data']['produtos'] : [];
+$data['data']['itens_pedido'] = 'teste';
 
-$produtos = null;
-if (isset($data['data']['produtos_pesquisa'])) {
-    $produtos = $data['data']['produtos'];
-}else {
-    $produtos = $data['data']['produtos'];
-}
 ?>
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -81,12 +74,23 @@ if (isset($data['data']['produtos_pesquisa'])) {
                     <table class="table align-middle m-0">
                         <thead class="sticky-top bg-white border-bottom">
                             <tr class="small text-muted">
-                                <th>Produto</th>
+                                <th>Cód</th>
+                                <th>Descrição</th>
                                 <th>Qtd</th>
-                                <th class="text-end">Ação</th>
+                                <th>Valor</th>
+                                <th>Total</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="produtos_incluidos_venda">
+                                <td>4</td>
+                                <td>Sabao em pó 2,2 KG leve mais pague</td>
+                                <td>8,3</td>
+                                <td>5</td>
+                                <td>45</td>
+                                <td>
+                                    <input type="checkbox" value="" name="prd_item_selecionado" id="prd_item_selecionado" class="form-check-input fs-5">
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -104,26 +108,22 @@ if (isset($data['data']['produtos_pesquisa'])) {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+
                 <!-- Formulário pesquisa de produto -->
                 <div class="row mb-4">
-                    <form action="/venda/pesquisa" method="post" class="d-flex gap-3">
+                    <form class="d-flex gap-3" id="form_filtro_modal_venda">
                         <div class="col-md-4">
                             <label class="form-label small fw-bold text-muted">Pesquisar Produto</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-white border-end-0"><i
                                         class="bi bi-search text-muted"></i></span>
-                                <input type="text" list="produtos_lista" class="form-control border-start-0 rounded" placeholder="Descrição do Produto" name="filtroNomeProduto">
-                                <datalist id="produtos_lista">
-                                    <?php foreach ($produtos as $key => $produto) : ?>
-                                        <option value="<?= $produto['PRD_DESCRICAO'] ?>">
-                                        <?php endforeach; ?>
-                                </datalist>
+                                <input type="text" class="form-control border-start-0 rounded" placeholder="Descrição do Produto" name="filtroNomeProduto" id="prd_filtro_descricao_venda">
                             </div>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label small fw-bold text-muted">Categoria</label>
-                            <select class="form-select" name="filtroCategoriaProduto">
-                                <option value=" ">Todas as Categorias</option>
+                            <select class="form-select" name="filtroCategoriaProduto" id="prd_filtro_categoria_venda">
+                                <option value="">Todas as Categorias</option>
                                 <?php foreach ($produtos as $key => $produto) : ?>
                                     <option value="<?= $produto['PRD_CATEGORIA'] ?>"><?= $produto['PRD_CATEGORIA'] ?></option>
                                 <?php endforeach; ?>
@@ -131,8 +131,8 @@ if (isset($data['data']['produtos_pesquisa'])) {
                         </div>
                         <div class="col-md-2">
                             <label class="form-label small fw-bold text-muted">Estoque</label>
-                            <select class="form-select" name="filtroEstoqueProduto">
-                                <option value=" ">Todos</option>
+                            <select class="form-select" name="filtroEstoqueProduto" id="prd_filtro_estoque_venda">
+                                <option value="">Todos</option>
                                 <option value="sem">Sem Estoque</option>
                                 <option value="min">Abaixo do Mínimo</option>
                                 <option value="disp">Em Estoque</option>
@@ -144,22 +144,26 @@ if (isset($data['data']['produtos_pesquisa'])) {
                     </form>
                 </div>
 
-                <div class="table-responsive tabela-scroll">
-                    <table class="table table-custom m-0">
-                        <thead>
-                            <tr>
-                                <th>Produto</th>
-                                <th>Categoria</th>
-                                <th>Preço Venda</th>
-                                <th>Estoque</th>
-                                <th>Status</th>
-                                <th class="text-end">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <form action="/venda/inicioVenda/criar" method="post">
+                <form action="/venda/inicioVenda/criar" method="post" id="form_escolha_prd_modal_venda">
+                    <div class="table-responsive tabela-scroll">
+                        <table class="table table-custom m-0">
+                            <thead>
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>Categoria</th>
+                                    <th>Preço Venda</th>
+                                    <th>Estoque</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela_produtos_modal">
                                 <?php foreach ($produtos as $key => $produto) : ?>
-                                    <tr>
+                                    <tr
+                                        data-descricao="<?= mb_strtolower($produto['PRD_DESCRICAO'], 'UTF-8') ?>"
+                                        data-categoria="<?= mb_strtolower($produto['PRD_CATEGORIA'], 'UTF-8') ?>"
+                                        data-estoque="<?= $produto['PRD_ESTOQUE'] ?>"
+                                        data-minimo="<?= $produto['PRD_ESTOQUE_MIN'] ?>">
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <div
@@ -185,18 +189,34 @@ if (isset($data['data']['produtos_pesquisa'])) {
                                         <?php endif; ?>
 
                                         <td class="text-center">
-                                            <input type="checkbox" name="produto_escolhido[]" id="produto_escolhido" value="<?= $produto['PRD_ID'] ?>" class="form-check-input fs-5">
+                                            <div class="d-flex justify-content-center align-items-center gap-3">
+
+                                                <input
+                                                    type="number"
+                                                    name="produto[<?= $produto['PRD_ID'] ?>][qtd]"
+                                                    class="form-control w-25 fs-5"
+                                                    value="1"
+                                                    min="1">
+
+                                                <input
+                                                    type="checkbox"
+                                                    name="produto[<?= $produto['PRD_ID'] ?>][selecionado]"
+                                                    value="1"
+                                                    class="form-check-input fs-5 m-0">
+
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                    <button type="submit" class="btn btn-primary" onclick="teste()"><i class="bi bi-basket2"></i> Escolher</button>
-                    </form>
-                </div>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-basket2"></i> Escolher</button>
+                    </div>
+                </form>
             </div>
         </div>
+        <?= jsFormHandler(json_encode($produtos)) ?>
     </div>

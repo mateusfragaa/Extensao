@@ -24,6 +24,7 @@ class ControllerMain
         $this->method       = $aParametros['method'];
         $this->action       = $aParametros['action'];
         $this->template     = new Template();
+        $this->request      = new Request();
 
         // Carregamento de model default do controller
         $this->model        = $this->loadModel($this->controller);

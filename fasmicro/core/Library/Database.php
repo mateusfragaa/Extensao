@@ -133,23 +133,17 @@ class Database
     */
     public function beginTransaction()
     {
-        $this->connect();
         return $this->conexao->beginTransaction();
-        self::__destruct();
     }
 
     public function commit()
     {
-        $this->connect();
-        return $this->conexao->commit();
-        self::__destruct();
+        $this->conexao->commit();
     }
 
     public function rollBack()
     {
-        $this->connect();
-        return $this->conexao->rollBack();
-        self::__destruct();
+        $this->conexao->rollBack();
     }
 
     /**
@@ -528,7 +522,7 @@ class Database
      * whereLike
      *
      * @param mixed $field 
-     * @param strung $value 
+     * @param string $value 
      * @param string $operadorLogico 
      * @return object
      */
@@ -652,7 +646,7 @@ class Database
             return $this->dbNumeroLinhas($rscDados);
         }
     }
-
+    // ============================================================================================
     /**
      * dbClear
      *
@@ -721,7 +715,7 @@ class Database
             self::dbClear();
 
         } catch (\Exception $err) {
-            Session::set("msgError", "Erro ao inserir dados na base de dados: " . $err->getMessage());
+            Session::set("msgError","Erro ao inserir dados na base de dados: " . $err->getMessage());
             $rs = 0;
         }
 
