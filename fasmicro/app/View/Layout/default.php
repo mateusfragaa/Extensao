@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/assests/bootstrap/css/bootstrap.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/assests/css/geral.css">
     <link rel="stylesheet" href="/assests/css/home.css">
 </head>
 
@@ -15,7 +16,7 @@
 
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="#home"><i class="bi bi bi-bar-chart-line-fill me-2"></i>ERP System</a>
+            <a class="navbar-brand text-primary" href="#home"><i class="bi bi bi-bar-chart-line-fill me-2 text-primary"></i>ERP System</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>

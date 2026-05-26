@@ -1,80 +1,287 @@
+<?php
+$action_form = formDadosInput($data, 'pessoa');
+$errors = Core\Library\Session::get('formErrors');
+?>
 <div class="container py-5">
     <div class="d-flex align-items-center mb-4">
         <a href="/pessoa/" class="btn btn-light border me-3">
             <i class="bi bi-arrow-left"></i>
         </a>
         <div>
-            <h4 class="fw-bold m-0">Cadastrar Cliente</h4>
+            <h4 class="fw-bold m-0">Cadastrar Cliente <?= formSubTitulo($action_form) ?></h4>
             <p class="text-muted small m-0">Adicione um novo cliente ou contato ao sistema.</p>
         </div>
     </div>
 
     <div class="card card-custom p-4">
-        <form class="row g-4">
+        <?php echo exibeAlerta(); ?>
+
+        <form class="row g-4" action="/pessoa/<?= $action_form ?>" method="POST">
+
+            <?php if ($action_form !== 'insert'): ?>
+                <input type="hidden" name="PES_ID" value="<?= setValue('PES_ID') ?>">
+            <?php endif; ?>
+
             <div class="col-md-8">
                 <label class="form-label">Nome Completo / Razão Social</label>
-                <input type="text" class="form-control" placeholder="Digite o nome completo">
+                <input type="text" name="PES_NOME" class="form-control <?= isset($errors['PES_NOME']) ? 'is-invalid' : '' ?>"
+                    placeholder="Digite o nome completo" value="<?= setValue('PES_NOME') ?>"
+                    <?= $action_form == 'view' ? 'disabled' : '' ?>>
+                <?php if (isset($errors['PES_NOME'])): ?>
+                    <div class="invalid-feedback"><?= $errors['PES_NOME'] ?></div>
+                <?php endif; ?>
             </div>
+
             <div class="col-md-4">
-                <label class="form-label">CPF / CNPJ</label>
-                <input type="text" class="form-control" placeholder="000.000.000-00">
+                <label class="form-label" id="label_cpf_cnpj">CPF / CNPJ</label>
+                <input type="text" name="CPF_CNPJ" id="cpf_cnpj"
+                    class="form-control <?= isset($errors['CPF_CNPJ']) ? 'is-invalid' : '' ?>"
+                    placeholder="000.000.000-00"
+                    value="<?= setValue('CPF_CNPJ') ?>"
+                    <?= $action_form == 'view' ? 'disabled' : '' ?>>
+                <?php if (isset($errors['CPF_CNPJ'])): ?>
+                    <div class="invalid-feedback"><?= $errors['CPF_CNPJ'] ?></div>
+                <?php endif; ?>
             </div>
 
             <div class="col-md-4">
                 <label class="form-label">E-mail</label>
-                <input type="email" class="form-control" placeholder="exemplo@email.com">
+                <input type="email" name="EMAIL" class="form-control <?= isset($errors['EMAIL']) ? 'is-invalid' : '' ?>"
+                    placeholder="exemplo@email.com" value="<?= setValue('EMAIL') ?>"
+                    <?= $action_form == 'view' ? 'disabled' : '' ?>>
             </div>
+
             <div class="col-md-4">
                 <label class="form-label">Telefone / WhatsApp</label>
-                <input type="text" class="form-control" placeholder="(00) 00000-0000">
+                <input type="text" name="TELEFONE" class="form-control"
+                    placeholder="(00) 00000-0000" value="<?= setValue('TELEFONE') ?>"
+                    <?= $action_form == 'view' ? 'disabled' : '' ?>>
             </div>
+
             <div class="col-md-4">
                 <label class="form-label">Tipo de Pessoa</label>
-                <select class="form-select">
-                    <option value="PF">Pessoa Física</option>
-                    <option value="PJ">Pessoa Jurídica</option>
+                <select name="TIPO_PESSOA" id="tipo_pessoa" class="form-select" <?= $action_form == 'view' ? 'disabled' : '' ?>>
+                    <option value="F" <?= (setValue('TIPO_PESSOA') == 'F') ? 'selected' : '' ?>>Pessoa Física</option>
+                    <option value="J" <?= (setValue('TIPO_PESSOA') == 'J') ? 'selected' : '' ?>>Pessoa Jurídica</option>
                 </select>
             </div>
 
+            <!-- CEP -->
             <div class="col-md-2">
                 <label class="form-label">CEP</label>
-                <input type="text" class="form-control" placeholder="00000-000">
+                <input type="text" name="CEP" id="cep" class="form-control" placeholder="00000-000"
+                    value="<?= setValue('CEP') ?>" <?= $action_form == 'view' ? 'disabled' : '' ?> maxlength="9">
+                <small id="cep_status" class="text-muted small"></small>
             </div>
+
             <div class="col-md-8">
                 <label class="form-label">Endereço</label>
-                <input type="text" class="form-control" placeholder="Rua, Av, Logradouro...">
+                <input type="text" name="ENDERECO" id="endereco" class="form-control" placeholder="Rua, Av, Logradouro..."
+                    value="<?= setValue('ENDERECO') ?>" <?= $action_form == 'view' ? 'disabled' : '' ?>>
             </div>
             <div class="col-md-2">
                 <label class="form-label">Número</label>
-                <input type="text" class="form-control" placeholder="123">
+                <div class="input-group">
+                    <input type="text" name="NUMERO" id="numero_casa" class="form-control" placeholder="123"
+                        value="<?= setValue('NUMERO') ?>" <?= $action_form == 'view' ? 'disabled' : '' ?>>
+                </div>
+                <div class="form-check mt-1">
+                    <input class="form-check-input" type="checkbox" id="sem_numero" <?= (setValue('NUMERO') == 'S/N') ? 'checked' : '' ?> <?= $action_form == 'view' ? 'disabled' : '' ?>>
+                    <label class="form-check-label small" for="sem_numero">
+                        Sem número
+                    </label>
+                </div>
             </div>
 
             <div class="col-md-5">
                 <label class="form-label">Cidade</label>
-                <input type="text" class="form-control">
+                <input type="text" name="CIDADE" id="cidade" class="form-control" value="<?= setValue('CIDADE') ?>"
+                    <?= $action_form == 'view' ? 'disabled' : '' ?>>
             </div>
             <div class="col-md-4">
                 <label class="form-label">Bairro</label>
-                <input type="text" class="form-control">
+                <input type="text" name="BAIRRO" id="bairro" class="form-control" value="<?= setValue('BAIRRO') ?>"
+                    <?= $action_form == 'view' ? 'disabled' : '' ?>>
             </div>
             <div class="col-md-3">
                 <label class="form-label">UF</label>
-                <select class="form-select">
-                    <option>Selecione...</option>
-                    <option>SP</option>
-                    <option>RJ</option>
-                    <option>MG</option>
+                <select name="UF" id="uf" class="form-select" <?= $action_form == 'view' ? 'disabled' : '' ?>>
+                    <option value="">Selecione...</option>
+                    <?php
+                    $ufs = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
+                    foreach ($ufs as $uf): ?>
+                        <option value="<?= $uf ?>" <?= (setValue('UF') == $uf) ? 'selected' : '' ?>><?= $uf ?></option>
+                    <?php endforeach; ?>
                 </select>
             </div>
 
             <div class="col-12 d-flex justify-content-end gap-2 mt-4">
-                <a type="button" class="btn btn-light border px-4" href="#">
-                    Cancelar
-                </a>
-                <button type="submit" class="btn btn-primary-custom px-5">
-                    Salvar Cliente
-                </button>
+                <a type="button" class="btn btn-light border px-4" href="/pessoa/">Cancelar</a>
+                <?php if ($action_form != 'view'): ?>
+                    <button type="submit" class="btn btn-primary-custom px-5">
+                        <?= $action_form == 'delete' ? 'Confirmar Exclusão' : 'Salvar Cliente' ?>
+                    </button>
+                <?php endif; ?>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+    // Função para inicializar todos os comportamentos do formulário
+    // Definida de forma que possa ser chamada novamente após atualização AJAX
+    if (typeof initFormPessoa !== 'function') {
+        window.initFormPessoa = function() {
+            console.log('Inicializando comportamentos do formulário de pessoa...');
+
+            // CPF / CNPJ Dinâmico
+            const selectTipo = document.getElementById('tipo_pessoa');
+            const inputCPFCNPJ = document.getElementById('cpf_cnpj');
+            const labelCPFCNPJ = document.getElementById('label_cpf_cnpj');
+
+            function atualizarCPFCNPJ(tipo) {
+                if (!labelCPFCNPJ || !inputCPFCNPJ) return;
+                if (tipo === 'F') {
+                    labelCPFCNPJ.textContent = 'CPF';
+                    inputCPFCNPJ.placeholder = '000.000.000-00';
+                    inputCPFCNPJ.maxLength = 14;
+                } else if (tipo === 'J') {
+                    labelCPFCNPJ.textContent = 'CNPJ';
+                    inputCPFCNPJ.placeholder = '00.000.000/0000-00';
+                    inputCPFCNPJ.maxLength = 18;
+                }
+            }
+
+            if (selectTipo && inputCPFCNPJ) {
+                atualizarCPFCNPJ(selectTipo.value);
+                selectTipo.removeEventListener('change', handleTipoChange); // Evita duplicados
+                selectTipo.addEventListener('change', handleTipoChange);
+            }
+
+            function handleTipoChange() {
+                atualizarCPFCNPJ(this.value);
+            }
+
+            const inputNumero = document.getElementById('numero_casa');
+            const checkSemNumero = document.getElementById('sem_numero');
+
+            if (inputNumero && checkSemNumero) {
+                checkSemNumero.removeEventListener('change', handleSemNumeroChange);
+                checkSemNumero.addEventListener('change', handleSemNumeroChange);
+
+                if (checkSemNumero.checked) {
+                    inputNumero.readOnly = true;
+                }
+            }
+
+            function handleSemNumeroChange() {
+                if (this.checked) {
+                    inputNumero.value = 'S/N';
+                    inputNumero.readOnly = true;
+                } else {
+                    if (inputNumero.value === 'S/N') inputNumero.value = '';
+                    inputNumero.readOnly = false;
+                }
+            }
+
+            // CEP
+            const inputCEP = document.getElementById('cep');
+            const cepStatus = document.getElementById('cep_status');
+
+            if (inputCEP) {
+                inputCEP.removeEventListener('input', handleCEPInput);
+                inputCEP.addEventListener('input', handleCEPInput);
+            }
+
+            function handleCEPInput() {
+                let v = this.value.replace(/\D/g, '').substring(0, 8);
+                this.value = v.length > 5 ? v.substring(0, 5) + '-' + v.substring(5) : v;
+                if (v.length === 8) buscarCEP(v);
+            }
+
+            function buscarCEP(cep) {
+                if (!cepStatus) return;
+                cepStatus.textContent = 'Buscando...';
+                cepStatus.className = 'text-primary small';
+
+                fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.erro) {
+                            cepStatus.innerHTML = 'CEP não encontrado. <a href="#" id="link_busca_cidade">Buscar por Cidade + UF</a>';
+                            return;
+                        }
+                        preencherEndereco(data);
+                        cepStatus.textContent = '✅ Endereço preenchido!';
+                        cepStatus.className = 'text-success small';
+                    })
+                    .catch(() => {
+                        if (cepStatus) cepStatus.textContent = 'Erro ao buscar CEP.';
+                    });
+            }
+
+            function preencherEndereco(data) {
+                const fields = {
+                    'endereco': data.logradouro,
+                    'bairro': data.bairro,
+                    'cidade': data.localidade,
+                    'uf': data.uf
+                };
+                for (let id in fields) {
+                    const el = document.getElementById(id);
+                    if (el) el.value = fields[id] || '';
+                }
+            }
+
+            // Delegação de evento para o link de busca por cidade (que é dinâmico)
+            document.removeEventListener('click', handleCidadeUFClick);
+            document.addEventListener('click', handleCidadeUFClick);
+
+            function handleCidadeUFClick(e) {
+                if (e.target.id === 'link_busca_cidade') {
+                    e.preventDefault();
+                    buscarPorCidadeUF();
+                }
+            }
+
+            function buscarPorCidadeUF() {
+                const uf = prompt("Digite a UF (ex: SP, RJ, MG):")?.toUpperCase().trim();
+                const cidade = prompt("Digite o nome da cidade:")?.trim();
+
+                if (!uf || !cidade) return alert("UF e Cidade são obrigatórios!");
+
+                if (cepStatus) {
+                    cepStatus.textContent = 'Buscando...';
+                    cepStatus.className = 'text-primary small';
+                }
+
+                fetch(`https://viacep.com.br/ws/${uf}/${encodeURIComponent(cidade)}/json/`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (Array.isArray(data) && data.length > 0) {
+                            preencherEndereco(data[0]);
+                            if (cepStatus) {
+                                cepStatus.textContent = `✅ ${data.length} endereço(s) encontrado(s)`;
+                                cepStatus.className = 'text-success small';
+                            }
+                        } else {
+                            if (cepStatus) {
+                                cepStatus.textContent = 'Nenhum endereço encontrado.';
+                                cepStatus.className = 'text-danger small';
+                            }
+                        }
+                    })
+                    .catch(() => {
+                        if (cepStatus) cepStatus.textContent = 'Erro na busca.';
+                    });
+            }
+        };
+    }
+
+    // inicialização
+    initFormPessoa();
+</script>
+
+<?php
+Core\Library\Session::destroy('formErrors');
+?>

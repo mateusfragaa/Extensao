@@ -141,6 +141,7 @@ class Database
         }
         
         $query = $this->connect()->prepare( $sql , array( PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL ) );
+        // die($query);
         $query->execute( $params );
         $rs = $query;
         
@@ -307,14 +308,14 @@ class Database
      * dbResultado
      * Retorna somente um campo dos resultados da consulta, campo esse passado como parâmetro dos que existem na consulta retornada
      * @param object $rscRes 
-     * @param array $CampoRetorno 
-     * @return void
+     * @param string $CampoRetorno 
+     * @return mixed
      */
-    public function dbResultado($rscRes, $CampoRetorno)
+    public function dbResultado($rscRes, string $CampoRetorno): mixed
     {
         $rowResX = $this->dbBuscaArray( $rscRes );
         
-        return $rowResX[ $CampoRetorno ];
+        return $rowResX[$CampoRetorno];
     }
 
     /**

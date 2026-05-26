@@ -13,13 +13,4 @@ class CategoriaModel extends ModelMain
         2 => "Inativo"
     ];
 
-    public function lista()
-    {
-        // $rs = $this->db->dbSelect("SELECT * FROM {$this->table} WHERE statusRegistro = 1");
-        // return $this->db->dbBuscaArrayAll($rs);
-
-        return $this->db
-            ->orderBy("descricao")
-            ->findAll();
-    }
 }
