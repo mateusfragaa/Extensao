@@ -22,10 +22,16 @@ $errors = Core\Library\Session::get('formErrors');
                 <input type="hidden" name="PES_ID" value="<?= setValue('PES_ID') ?>">
             <?php endif; ?>
 
+
+
             <div class="col-md-8">
-                <label class="form-label">Nome Completo / Razão Social</label>
-                <input type="text" name="PES_NOME" class="form-control <?= isset($errors['PES_NOME']) ? 'is-invalid' : '' ?>"
-                    placeholder="Digite o nome completo" value="<?= setValue('PES_NOME') ?>"
+                <label class="form-label" id="label_nome_pfpj">Nome Completo / Razão Social</label>
+                <input type="text"
+                    name="PES_NOME"
+                    id="nome_pfpj"
+                    class="form-control <?= isset($errors['PES_NOME']) ? 'is-invalid' : '' ?>"
+                    placeholder="Digite o nome completo"
+                    value="<?= setValue('PES_NOME') ?>"
                     <?= $action_form == 'view' ? 'disabled' : '' ?>>
                 <?php if (isset($errors['PES_NOME'])): ?>
                     <div class="invalid-feedback"><?= $errors['PES_NOME'] ?></div>
@@ -128,8 +134,7 @@ $errors = Core\Library\Session::get('formErrors');
 </div>
 
 <script>
-    // Função para inicializar todos os comportamentos do formulário
-    // Definida de forma que possa ser chamada novamente após atualização AJAX
+
     if (typeof initFormPessoa !== 'function') {
         window.initFormPessoa = function() {
             console.log('Inicializando comportamentos do formulário de pessoa...');
@@ -150,6 +155,29 @@ $errors = Core\Library\Session::get('formErrors');
                     inputCPFCNPJ.placeholder = '00.000.000/0000-00';
                     inputCPFCNPJ.maxLength = 18;
                 }
+            }
+
+             // Nome Completo / Razão Social Dinâmico
+            const labelNome = document.getElementById('label_nome_pfpj');
+            const inputNome = document.getElementById('nome_pfpj');
+
+            function atualizarNomePFPJ(tipo) {
+                if (!labelNome || !inputNome) return;
+
+                if (tipo === 'F') {
+                    labelNome.textContent = 'Nome Completo';
+                    inputNome.placeholder = 'Digite o nome completo';
+                } else if (tipo === 'J') {
+                    labelNome.textContent = 'Razão Social';
+                    inputNome.placeholder = 'Digite a razão social';
+                }
+            }
+
+            if (selectTipo && inputNome) {
+                atualizarNomePFPJ(selectTipo.value);
+                selectTipo.addEventListener('change', function() {
+                    atualizarNomePFPJ(this.value);
+                });
             }
 
             if (selectTipo && inputCPFCNPJ) {
