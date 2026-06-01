@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS `tb_pessoa` (
   `UF` varchar(2) DEFAULT NULL,
   PRIMARY KEY (`PES_ID`),
   UNIQUE KEY `CLI_ID_UNIQUE` (`PES_ID`),
-  UNIQUE KEY `CLI_NOME_UNIQUE` (`PES_NOME`)
+  UNIQUE KEY `CPF_CNPJ` (`CPF_CNPJ`)
 );
 
 -- Exportação de dados foi desmarcado.

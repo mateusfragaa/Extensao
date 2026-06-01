@@ -15,4 +15,3 @@ if (!function_exists('teste')) {
         return $html;
     }
 }
-
