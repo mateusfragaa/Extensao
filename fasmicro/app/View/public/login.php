@@ -9,12 +9,13 @@
             <p class="text-muted small">Insira suas credenciais para acessar</p>
         </div>
 
-        <form>
+        <?php echo exibeAlerta(); ?>
+        <form action="/auth/login" method="POST">
             <div class="mb-3">
                 <label for="email" class="form-label">E-mail ou Usuário</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-person"></i></span>
-                    <input type="email" class="form-control border-start-0" id="email" placeholder="nome@exemplo.com"
+                    <input type="text" name="USU_LOGIN" class="form-control border-start-0" id="email" placeholder="nome@exemplo.com"
                         required>
                 </div>
             </div>
@@ -26,7 +27,7 @@
                 </div>
                 <div class="input-group">
                     <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-lock"></i></span>
-                    <input type="password" class="form-control border-start-0" id="password" placeholder="••••••••"
+                    <input type="password" name="USU_SENHA" class="form-control border-start-0" id="password" placeholder="••••••••"
                         required>
                 </div>
             </div>
@@ -36,8 +37,7 @@
                 <label class="form-check-label small text-muted" for="remember">Lembrar de mim</label>
             </div>
 
-            <!-- <button type="submit" class="btn btn-login">Entrar no Sistema</button> -->
-            <a href="/homeSistema/" class="btn btn-login">Entrar no Sistema</a>
+            <button type="submit" class="btn btn-login">Entrar no Sistema</button> 
             <a href="/" class="btn btn-login">Voltar à página inicial</a>
         </form>
 
