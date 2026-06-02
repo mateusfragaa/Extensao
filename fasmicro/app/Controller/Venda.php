@@ -5,7 +5,6 @@ namespace App\Controller;
 use Core\Library\ControllerMain;
 use Core\Library\Redirect;
 use App\Model\ProdutoModel;
-use App\Model\VendaItemModel;
 
 class Venda extends ControllerMain
 {
@@ -57,9 +56,15 @@ class Venda extends ControllerMain
             case 'delete':
                 $data["action_form"] = "delete";
                 break;
-            default:
+            case 'view':
                 $data["action_form"] = "view";
                 break;
+            case 'editando_venda':
+                // Quando o pedido estiver iniciado caira aqui
+                $data["action_form"] = "editandoVenda";
+                $this->
+                return;
+
         }
 
         if ($acao != 'cadastro') $data["vendas"] = $this->model->getById($id);
@@ -129,15 +134,18 @@ class Venda extends ControllerMain
         $id_pedido = $this->model->criarPedido();
         $venda_item = $this->loadModel('VendaItem');
         $venda_item->addProdutoPedido($id_pedido, $resultado);
-        var_dump($venda_item->select_produto_venda($id_pedido));
-        Redirect::page('admin/listaVenda');
+        // $venda_item->select_produto_venda($id_pedido);
+        // Redirect::pageSobrecarga('Venda/formVenda/editando_venda', 'produto_venda',$venda_item->select_produto_venda($id_pedido)[0]);
+        $this->editandoVenda($id_pedido);
     }
 
-    public function editandoVenda($idVenda)
+    public function editandoVenda($id_pedido)
     {
         // preciso do id do pedido
         // colocar os dados dos produtos no pedido
         // atualiazar a tela com js
+        $venda_item = $this->loadModel('VendaItem');
+        Redirect::pageSobrecarga('Venda/formVenda/editando_venda', 'produto_venda', $venda_item->select_produto_venda($id_pedido)[0]);
     }
 
     

@@ -91,8 +91,18 @@ document
 
         });
     });
-
 </script>
 JS;
+    }
+}
+
+if (!function_exists('carrega_itens_venda')) {
+
+    function carrega_itens_venda( ) {
+        return <<<'JS'
+            <script>
+                alert('teste');
+            </script>
+        JS;
     }
 }

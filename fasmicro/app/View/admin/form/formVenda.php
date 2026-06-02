@@ -1,7 +1,9 @@
 <?php
 $produtos = (isset($data['data']['produtos'])) ? $data['data']['produtos'] : [];
-$data['data']['itens_pedido'] = 'teste';
-
+// $data['data']['itens_pedido'] = 'teste';
+// var_dump($data["action_form"]);
+// var_dump($_SESSION);
+// die("entrou aqui");
 ?>
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -14,7 +16,7 @@ $data['data']['itens_pedido'] = 'teste';
     <div class="row g-4">
         <div class="col-lg-5">
             <div class="card card-custom p-4">
-                <form class="row g-3">
+                <form class="row g-3" method="post" action="">
                     <div class="col-12">
                         <label class="form-label small fw-bold">Cliente</label>
                         <select class="form-select bg-light border-0" name="cliente_venda">
@@ -219,4 +221,5 @@ $data['data']['itens_pedido'] = 'teste';
             </div>
         </div>
         <?= jsFormHandler(json_encode($produtos)) ?>
+        <?= carrega_itens_venda(json_encode([1,2,3])) ?>
     </div>
