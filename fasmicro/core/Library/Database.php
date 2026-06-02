@@ -635,6 +635,8 @@ class Database
         $cSql = "SELECT {$this->select} FROM {$this->table} {$this->join} {$this->where} {$this->groupBy} {$this->orderBy}";
         $query = $this->connect()->prepare($cSql, [PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL]);
         $rscDados = $query->execute($this->params);
+        // var_dump($query);
+        // die();
 
         self::dbClear();
 

@@ -54,10 +54,6 @@ class VendaModel extends ModelMain
         $id =  $this->db->dbInsert('insert into tb_pedido_venda(pev_cliente_id)values(:cliente)',['cliente' => 1]);
         return $id;
     }
-
-    public function select_produto_venda($id_pedido){
-        // $this->
-    }
 }
 
 

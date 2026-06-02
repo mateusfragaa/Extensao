@@ -129,8 +129,15 @@ class Venda extends ControllerMain
         $id_pedido = $this->model->criarPedido();
         $venda_item = $this->loadModel('VendaItem');
         $venda_item->addProdutoPedido($id_pedido, $resultado);
-        var_dump($this->model->select_produto_venda($id_pedido));
-        // var_dump($resultado);
+        var_dump($venda_item->select_produto_venda($id_pedido));
+        Redirect::page('admin/listaVenda');
+    }
+
+    public function editandoVenda($idVenda)
+    {
+        // preciso do id do pedido
+        // colocar os dados dos produtos no pedido
+        // atualiazar a tela com js
     }
 
     

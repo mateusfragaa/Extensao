@@ -82,14 +82,14 @@ $data['data']['itens_pedido'] = 'teste';
                             </tr>
                         </thead>
                         <tbody id="produtos_incluidos_venda">
-                                <td>4</td>
+                                <!-- <td>4</td>
                                 <td>Sabao em pó 2,2 KG leve mais pague</td>
                                 <td>8,3</td>
                                 <td>5</td>
                                 <td>45</td>
                                 <td>
                                     <input type="checkbox" value="" name="prd_item_selecionado" id="prd_item_selecionado" class="form-check-input fs-5">
-                                </td>
+                                </td> -->
                             </tr>
                         </tbody>
                     </table>

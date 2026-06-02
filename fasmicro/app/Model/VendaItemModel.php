@@ -38,14 +38,16 @@ class VendaItemModel extends ModelMain
         }
     }
 
-"select
-   p.prd_id,
-   p.prd_descricao,
-   vi.pevi_preco_unitario,
-   vi.pevi_subtotal
-from tb_pedido_venda_item vi
-inner join tb_produto p
-    on p.prd_id = vi.pevi_prd_id
-where 
-    vi.pevi_venda_id = :id_pedido"
+    public function select_produto_venda($id_pedido)
+    {
+        return $this->db
+            ->select(
+                "p.prd_id,
+                    p.prd_descricao,
+                    pevi_preco_unitario,
+                    pevi_subtotal"
+            )->join("tb_produto p", "p.prd_id = PEVI_PRD_ID", "inner")
+            ->where("pevi_venda_id", $id_pedido)
+            ->findAll();
+    }
 }
