@@ -172,10 +172,7 @@ class Database
             return $rs;
 
         } catch (Exception $e) {
-            var_dump($sql);
-            print_r($query->debugDumpParams());
-            var_dump($params);
-            echo 'Exceção capturada: '.  $e->getMessage(); exit;
+            throw $e;
         }     
     }
 
@@ -198,7 +195,7 @@ class Database
             return $rs;
 
         } catch (Exception $e) {
-            echo 'Exceção capturada: '.  $e->getMessage(); exit;
+            throw $e;
         }  
     }
 

@@ -27,12 +27,15 @@ class Pessoa extends ControllerMain
 
     public function filtroListagemPessoa($action = null, $id = null)
     {
+        $isAjax = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest');
+        $layout = $isAjax ? null : 'sistema';
+
         $this->view(
             'admin/listaPessoa',
             [
                 "pessoas" => $this->model->filtroListagem($_POST)
             ],
-            'sistema'
+            $layout
         );
     }
 
@@ -55,14 +58,12 @@ class Pessoa extends ControllerMain
             $data["pessoa"] = $formInputs ?: $this->model->getById($id);
         }
 
-        $layout = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest') ? null : 'sistema';
-
         $this->view(
             'admin/form/formPessoa',
             [
                 "data" => $data
             ],
-            $layout
+            'sistema'
         );
     }
 
@@ -71,7 +72,6 @@ class Pessoa extends ControllerMain
         if ($this->model->update($_POST)) {
             Redirect::page("pessoa/", ['msgSucesso' => 'Sucesso ao atualizar o registro']);
         } else {
-            //erro de validação  ou erro de banco.
             $msgError = Session::get('msgError') ?: 'Erro ao atualizar registro, verifique os dados!';
             Redirect::page("pessoa/formPessoa/update/" . $_POST['PES_ID'], ['msgError' => $msgError]);
         }
