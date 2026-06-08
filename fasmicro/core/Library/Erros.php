@@ -5,22 +5,28 @@ namespace Core\Library;
 class Erros
 {
     /**
-     * controllerNotFound
+     * controllerNotFound - Responde com 404 ao tentar acessar controller inexistente.
      *
+     * @param string $nomeController
      * @return void
      */
-    public static function controllerNotFound($nomeController = DEFAULT_CONTROLLER)
+    public static function controllerNotFound(string $nomeController = DEFAULT_CONTROLLER): void
     {
-        echo "Controller ({$nomeController}) não localizado na estrutura do projeto.";
+        ErrorHandler::handleException(
+            new \RuntimeException("Controller «{$nomeController}» não localizado.", 404)
+        );
     }
 
     /**
-     * methodNotFound
+     * methodNotFound - Responde com 404 ao tentar acessar método inexistente.
      *
+     * @param string $nomeMethod
      * @return void
      */
-    public static function methodNotFound($nomeMethod = DEFAULT_METHOD)
+    public static function methodNotFound(string $nomeMethod = DEFAULT_METHOD): void
     {
-        echo "Método ({$nomeMethod}) não localizado no controller.";
+        ErrorHandler::handleException(
+            new \RuntimeException("Método «{$nomeMethod}» não localizado no controller.", 404)
+        );
     }
 }

@@ -12,5 +12,7 @@
             "email": "aldecirfonseca@hotmail.com"
         }
     ],
-    "require": {}
+    "require": {
+        "phpmailer/phpmailer": "^7.0.0"
+    }
 }

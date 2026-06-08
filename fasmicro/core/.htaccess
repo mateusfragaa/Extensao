@@ -1,0 +1,8 @@
+# bloqueia acesso direto a arquivos na pasta e sub pastas via navegador
+
+<IfModule authz_core_module>
+    require all denied
+</IfModule>
+<IfModule !authz_core_module>
+    Deny from all
+</IfModule>

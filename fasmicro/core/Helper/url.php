@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Undocumented function
  *

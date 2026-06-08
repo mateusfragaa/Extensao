@@ -12,8 +12,7 @@ class Template
     public function __construct()
     {
         $this->viewPath = PATHAPP . 'app' . DIRECTORY_SEPARATOR . 'View' . DIRECTORY_SEPARATOR;
-        $this->layoutPath = $this->viewPath . 'layout' . DIRECTORY_SEPARATOR;
-        // '..\app\View\layout\'
+        $this->layoutPath = $this->viewPath . 'Layout' . DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -90,6 +89,10 @@ class Template
 
         if (!file_exists($viewFile)) {
             throw new \RuntimeException("View não encontrada: {$viewFile}");
+        }
+
+        if (function_exists('_viewData')) {
+            _viewData($data);
         }
 
         extract($data, EXTR_SKIP);

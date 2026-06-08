@@ -2,14 +2,15 @@
 
 namespace Core\Library;
 
-use Core\Library\Request;
-
 class ModelMain
 {
     public $db;
     public $validationRules = [];
+    public $primaryKey = "id";
+    public $titulo = '';
+    public $listaStatus = [];
+    
     protected $table;
-    protected $primaryKey = "";
 
     public function __construct()
     {
@@ -24,7 +25,6 @@ class ModelMain
 
         // Setando a tabela do model
         $this->db->table($this->table);
-
     }
 
     /**
@@ -51,7 +51,7 @@ class ModelMain
         if ($id == 0) {
             return [];
         } else {
-            return $this->db->where($this->primaryKey, $id)->first();
+            return $this->db->where("id", $id)->first();
         }
     }
 
@@ -68,13 +68,26 @@ class ModelMain
         } else {
             unset($dados[$this->primaryKey]);        // excluir a key id do array
 
-            $idGerado = $this->db->insert($dados);
-            if ($idGerado > 0) {
-                return $idGerado;
+            if ($this->db->insert($dados) > 0) {
+                return true;
             } else {
                 return false;
             }
         }
+    }
+
+    /**
+     * Valida, insere e retorna o ID do novo registro.
+     * Retorna 0 em caso de falha de validação ou erro de banco.
+     */
+    public function insertGetId(array $dados): int
+    {
+        if (Validator::make($dados, $this->validationRules)) {
+            return 0;
+        }
+
+        unset($dados[$this->primaryKey]);
+        return (int) $this->db->insert($dados);
     }
 
     /**
@@ -88,10 +101,9 @@ class ModelMain
         if (Validator::make($dados, $this->validationRules)) {
             return false;
         } else {
-            if (
-                $this->db
+            if ($this->db
                 ->where($this->primaryKey, $dados[$this->primaryKey])
-                ->update($dados) > 0
+                ->update($dados) >= 0
             ) {
                 return true;
             } else {
@@ -107,10 +119,9 @@ class ModelMain
      * @param array $dados
      * @return bool
      */
-    public function delete($dados)
+    public function delete($dados) 
     {
-        if (
-            $this->db
+        if ($this->db
             ->where($this->primaryKey, $dados[$this->primaryKey])
             ->delete() > 0
         ) {

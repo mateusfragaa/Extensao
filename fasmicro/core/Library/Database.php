@@ -21,9 +21,13 @@ class Database
     private $join = "";
     private $where = "";
     private $groupBy = "";
+    private $having = "";
     private $orderBy = "";
-    private $limit = "";  
+    private $limit = "";
+    private $offset = null;
     private $params = [];
+    private $unions = [];
+    private bool $inTransaction = false;
 
     /**
      * construct
@@ -64,6 +68,9 @@ class Database
      * destruct - Método que destroi a conexão com banco de dados e remove da memória todas as variáveis setadas
      */
     public function __destruct() {
+        if ($this->inTransaction) {
+            return;
+        }
         $this->disconnect();
         foreach ($this as $key => $value) {
             unset($this->$key);
@@ -85,24 +92,27 @@ class Database
      * @return object
      */
     public function connect()
-    { 
+    {
+        // Reutiliza a conexão aberta enquanto uma transação estiver ativa
+        if ($this->inTransaction && $this->conexao !== null) {
+            return $this->conexao;
+        }
+
         try {
             if ( $this->getDBDrive() == 'mysql' ) {            // MySQL
 
                 $this->conexao = new PDO(
-                                            $this->getDBDrive().":host=".$this->getHost().";port=".$this->getPort().";dbname=".$this->getDB(), 
-                                            $this->getUser(), 
-                                            $this->getPassword(), 
-                                            [PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"]
+                                            $this->getDBDrive().":host=".$this->getHost().";port=".$this->getPort().";dbname=".$this->getDB().";charset=utf8mb4",
+                                            $this->getUser(),
+                                            $this->getPassword()
                                         );
 
             } else if ( $this->getDBDrive() == 'sqlsrv' ) {    // SQL Server
 
                 $this->conexao = new PDO(
-                                            $this->getDBDrive().":Server=".$this->getHost().",".$this->getPort().";DataBase=".$this->getDB(), 
-                                            $this->getUser(), 
-                                            $this->getPassword(), 
-                                            [PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"]
+                                            $this->getDBDrive().":Server=".$this->getHost().",".$this->getPort().";DataBase=".$this->getDB(),
+                                            $this->getUser(),
+                                            $this->getPassword()
                                         );
 
             }
@@ -110,12 +120,11 @@ class Database
             $this->conexao->setAttribute(PDO::ATTR_ERRMODE, $this->conexao::ERRMODE_EXCEPTION);
 
         } catch (PDOException $i) {
-            //se houver exceçao, exibe
-            die("Erro: <code>" . $i->getMessage() . "</code>");
+            throw new \RuntimeException("Falha na conexão com o banco de dados: " . $i->getMessage(), 500, $i);
         }
 
         return ($this->conexao);
-        
+
     }
 
     /**
@@ -123,9 +132,54 @@ class Database
      *
      * @return void
      */
-    private function disconnect() 
+    private function disconnect()
     {
-        $this->conexao = null;
+        if (!$this->inTransaction) {
+            $this->conexao = null;
+        }
+    }
+
+    /**
+     * beginTransaction - Inicia uma transação no banco de dados
+     *
+     * @return void
+     * @throws \Exception se já houver uma transação ativa
+     */
+    public function beginTransaction(): void
+    {
+        if ($this->inTransaction) {
+            throw new \Exception("Já existe uma transação ativa.");
+        }
+        $this->connect()->beginTransaction();
+        $this->inTransaction = true;
+    }
+
+    /**
+     * commit - Confirma a transação ativa
+     *
+     * @return void
+     */
+    public function commit(): void
+    {
+        if ($this->inTransaction && $this->conexao !== null) {
+            $this->conexao->commit();
+            $this->inTransaction = false;
+            $this->conexao = null;
+        }
+    }
+
+    /**
+     * rollback - Desfaz a transação ativa
+     *
+     * @return void
+     */
+    public function rollback(): void
+    {
+        if ($this->inTransaction && $this->conexao !== null) {
+            $this->conexao->rollBack();
+            $this->inTransaction = false;
+            $this->conexao = null;
+        }
     }
 
     /**
@@ -141,7 +195,6 @@ class Database
         }
         
         $query = $this->connect()->prepare( $sql , array( PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL ) );
-        // die($query);
         $query->execute( $params );
         $rs = $query;
         
@@ -172,11 +225,8 @@ class Database
             return $rs;
 
         } catch (Exception $e) {
-            var_dump($sql);
-            print_r($query->debugDumpParams());
-            var_dump($params);
-            echo 'Exceção capturada: '.  $e->getMessage(); exit;
-        }     
+            throw $e;
+        }
     }
 
     /**
@@ -198,8 +248,8 @@ class Database
             return $rs;
 
         } catch (Exception $e) {
-            echo 'Exceção capturada: '.  $e->getMessage(); exit;
-        }  
+            throw $e;
+        }
     }
 
     /**
@@ -219,7 +269,7 @@ class Database
             $rs = $query->rowCount(); 
             
         } catch (Exception $exc) {
-            echo "Erro ao Excluir Registro, favor entrar em contato com Suporte Técnico" . $exc->getTraceAsString();
+            throw $exc;
         }
 
         self::__destruct();
@@ -252,10 +302,10 @@ class Database
     {
         return $rscPdo->fetchAll(PDO::FETCH_OBJ);
     }
-
+    
     /**
      * dbBuscaArray - Método que retornar a posição atual do registro (array)
-     * Retorna os dados da consulta em formato de array associativo
+     *
      * @param object $rscPdo 
      * @return array
      */
@@ -272,7 +322,7 @@ class Database
 
     /**
      * dbBuscaArrayAll - Método que retornar a posição atual do registro (array)
-     * Retorna os dados da consulta em formato de array associativo
+     *
      * @param object $rscPdo 
      * @return array
      */
@@ -283,7 +333,6 @@ class Database
     
     /**
      * dbNumeroLinhas - Método que retornar o Numero de linhas Selecionadas
-     *  Retornar o número de linha afetadas
      *
      * @param object $rscPdo 
      * @return int
@@ -306,16 +355,16 @@ class Database
     
     /**
      * dbResultado
-     * Retorna somente um campo dos resultados da consulta, campo esse passado como parâmetro dos que existem na consulta retornada
+     *
      * @param object $rscRes 
-     * @param array $CampoRetorno 
+     * @param array|string|int $CampoRetorno 
      * @return void
      */
     public function dbResultado($rscRes, $CampoRetorno)
     {
         $rowResX = $this->dbBuscaArray( $rscRes );
         
-        return $rowResX[$CampoRetorno];
+        return $rowResX[ $CampoRetorno ];
     }
 
     /**
@@ -343,11 +392,37 @@ class Database
     }
 
     /**
+     * union
+     *
+     * @param string $sql
+     * @param array $params
+     * @return object
+     */
+    public function union(string $sql, array $params = [])
+    {
+        $this->unions[] = ['type' => 'UNION', 'sql' => $sql, 'params' => $params];
+        return $this;
+    }
+
+    /**
+     * unionAll
+     *
+     * @param string $sql
+     * @param array $params
+     * @return object
+     */
+    public function unionAll(string $sql, array $params = [])
+    {
+        $this->unions[] = ['type' => 'UNION ALL', 'sql' => $sql, 'params' => $params];
+        return $this;
+    }
+
+    /**
      * join
      *
-     * @param string $table 
-     * @param string $condition 
-     * @param string $tipoJoin 
+     * @param string $table
+     * @param string $condition
+     * @param string $tipoJoin
      * @return object
      */
     public function join($table, $condition, $tipoJoin = "INNER")
@@ -357,35 +432,33 @@ class Database
     }
 
     /**
-     * whereHaving
+     * buildCondition - base privada compartilhada por where/orWhere e having/orHaving
      *
-     * @param string|array $condition 
-     * @param string $params 
-     * @param string $operadorLogico 
+     * @param string $target       referência à propriedade alvo ($where ou $having)
+     * @param string $keyword      palavra-chave SQL (WHERE ou HAVING)
+     * @param string|array $condition
+     * @param string $params
+     * @param string $operadorLogico
      * @return object
      */
-    public function     whereHaving($condition, $params = "", $operadorLogico = 'AND')
+    private function buildCondition(&$target, $keyword, $condition, $params, $operadorLogico)
     {
         $operadores = ["=", ">=", "<=", ">", "<", "<>"];
 
-        if ($this->where == "") {
-            $this->where = " WHERE ";
+        if ($target == "") {
+            $target = " {$keyword} ";
         } else {
-            $this->where .= " {$operadorLogico} ";
+            $target .= " {$operadorLogico} ";
         }
 
-        if (gettype($condition) == "string") {
+        if (is_string($condition)) {
 
             $aKey = explode(" ", $condition);
 
-            if (count($aKey) > 1) {
-                if (in_array(explode(" ", $condition)[1], $operadores)) {
-                    $this->where .= $condition . " ? ";
-                } else {
-                    $this->where .= $condition . " = ? ";
-                }
+            if (count($aKey) > 1 && in_array(end($aKey), $operadores)) {
+                $target .= $condition . " ? ";
             } else {
-                $this->where .= $condition . " = ? ";
+                $target .= $condition . " = ? ";
             }
 
             $this->params = array_merge($this->params, [$params]);
@@ -397,76 +470,42 @@ class Database
             foreach ($condition as $key => $value) {
 
                 if ($lAnd) {
-                    $this->where .= " {$operadorLogico} ";
+                    $target .= " {$operadorLogico} ";
                 } else {
                     $lAnd = true;
                 }
 
                 $aKey = explode(" ", $key);
 
-                if (count($aKey) > 1) {
-                    if (in_array(explode(" ", $key)[1], $operadores)) {
-                        $this->where .= $key . " ? ";
-                    } else {
-                        $this->where .= $key . " = ? ";
-                    }
+                if (count($aKey) > 1 && in_array(end($aKey), $operadores)) {
+                    $target .= $key . " ? ";
                 } else {
-                    $this->where .= $key . " = ? ";
+                    $target .= $key . " = ? ";
                 }
             }
 
-            $this->params = array_values($condition);
+            $this->params = array_merge($this->params, array_values($condition));
         }
 
         return $this;
     }
 
     /**
-     * where
+     * buildWhereIn - base privada compartilhada por whereIn e whereNotIn
      *
-     * @param string|array $condition 
-     * @param string $params 
+     * @param string $field
+     * @param array $params
+     * @param string $operadorLogico
+     * @param bool $notIn
      * @return object
      */
-    public function where($condition, $params = "")
+    private function buildWhereIn($field, $params, $operadorLogico, $notIn)
     {
-        return $this->whereHaving($condition, $params);
-    }
+        $placeholders = array_fill(0, count($params), "?");
+        $this->params = array_merge($this->params, $params);
 
-    /**
-     * where
-     *
-     * @param string|array $condition 
-     * @param string $params 
-     * @return object
-     */
-    public function orWhere($condition, $params = "")
-    {
-        return $this->whereHaving($condition, $params, "OR");
-    }
+        $clause = "{$field} " . ($notIn ? "NOT " : "") . "IN (" . implode(', ', $placeholders) . ")";
 
-    /**
-     * whereIn
-     *
-     * @param string $field 
-     * @param array $params 
-     * @param string $operadorLogico 
-     * @param bool $notIn 
-     * @return object
-     */
-    public function whereInHaving($field, $params, $operadorLogico = 'AND', $notIn = false)
-    {
-        $placeholders = [];
-
-        foreach ($params as $i => $value) {
-            $placeholders[] = "?";
-            $this->params[] = $value;
-        }
-
-        // Monta cláusula IN
-        $clause = "{$field} " . ($notIn ? "NOT" : "" ) . " IN (" . implode(', ', $placeholders) . ")";
-
-        // Adiciona a cláusula WHERE
         if (empty($this->where)) {
             $this->where = " WHERE {$clause}";
         } else {
@@ -477,29 +516,53 @@ class Database
     }
 
     /**
-     * whereIn
+     * where
      *
-     * @param string $field 
-     * @param array $params 
-     * @param string $operadorLogico 
+     * @param string|array $condition
+     * @param string $params
      * @return object
      */
-    public function whereIn($field, $params, $operadorLogico = 'AND')
+    public function where($condition, $params = "")
     {
-        return $this->whereInHaving($field, $params, $operadorLogico);
+        return $this->buildCondition($this->where, 'WHERE', $condition, $params, 'AND');
+    }
+
+    /**
+     * orWhere
+     *
+     * @param string|array $condition
+     * @param string $params
+     * @return object
+     */
+    public function orWhere($condition, $params = "")
+    {
+        return $this->buildCondition($this->where, 'WHERE', $condition, $params, 'OR');
     }
 
     /**
      * whereIn
      *
-     * @param string $field 
-     * @param array $params 
-     * @param string $operadorLogico 
+     * @param string $field
+     * @param array $params
+     * @param string $operadorLogico
+     * @return object
+     */
+    public function whereIn($field, $params, $operadorLogico = 'AND')
+    {
+        return $this->buildWhereIn($field, $params, $operadorLogico, false);
+    }
+
+    /**
+     * whereNotIn
+     *
+     * @param string $field
+     * @param array $params
+     * @param string $operadorLogico
      * @return object
      */
     public function whereNotIn($field, $params, $operadorLogico = 'AND')
     {
-        return $this->whereInHaving($field, $params, $operadorLogico, true);
+        return $this->buildWhereIn($field, $params, $operadorLogico, true);
     }
 
     /**
@@ -592,33 +655,99 @@ class Database
     }
 
     /**
+     * having
+     *
+     * @param string|array $condition
+     * @param string $params
+     * @return object
+     */
+    public function having($condition, $params = "")
+    {
+        return $this->buildCondition($this->having, 'HAVING', $condition, $params, 'AND');
+    }
+
+    /**
+     * orHaving
+     *
+     * @param string|array $condition
+     * @param string $params
+     * @return object
+     */
+    public function orHaving($condition, $params = "")
+    {
+        return $this->buildCondition($this->having, 'HAVING', $condition, $params, 'OR');
+    }
+
+    /**
      * orderBy
      *
-     * @param string $column 
-     * @param string $direction 
+     * @param string $column
+     * @param string $direction
      * @return object
      */
     public function orderBy($column, $direction = "ASC")
     {
-        if (empty($this->orderBy)) {
-            $this->orderBy = " ORDER BY " . $column . " " . $direction;
-        }else {
-            $this->orderBy .= ", $column $direction";
-        }
+        $this->orderBy = " ORDER BY " . $column . " " . $direction;
+        return $this;
+    }
+
+    /**
+     * limit
+     *
+     * @param int $limit
+     * @param int|null $offset
+     * @return object
+     */
+    public function limit($limit, $offset = null)
+    {
+        $this->limit  = (int) $limit;
+        $this->offset = $offset !== null ? (int) $offset : null;
         return $this;
     }
 
     /**
      * prepareSelect
      *
-     * @param string $tipoRetorno 
+     * @param string $tipoRetorno
      * @return array|int
      */
     public function prepareSelect($tipoRetorno = "all")
     {
-        $cSql = "SELECT {$this->select} FROM {$this->table} {$this->join} {$this->where} {$this->groupBy} {$this->orderBy}";
+        // Query base sem ORDER BY e LIMIT (necessário para posicionar UNIONs antes deles)
+        $baseQuery = "SELECT {$this->select} FROM {$this->table} {$this->join} {$this->where} {$this->groupBy} {$this->having}";
+
+        // Acumula parâmetros de cada cláusula UNION
+        $allParams = $this->params;
+        foreach ($this->unions as $union) {
+            $baseQuery .= " {$union['type']} {$union['sql']}";
+            $allParams  = array_merge($allParams, $union['params']);
+        }
+
+        if ($this->limit !== "") {
+            if (self::$dbdrive === 'sqlsrv') {
+                if ($this->offset !== null) {
+                    $orderBy = $this->orderBy ?: " ORDER BY (SELECT NULL)";
+                    $cSql = $baseQuery . $orderBy . " OFFSET {$this->offset} ROWS FETCH NEXT {$this->limit} ROWS ONLY";
+                } else {
+                    // TOP não pode ser usado diretamente com UNION — envolve em subquery
+                    $inner = empty($this->unions) ? $baseQuery : "({$baseQuery}) AS __union_result";
+                    $cSql  = empty($this->unions)
+                        ? "SELECT TOP {$this->limit} {$this->select} FROM {$this->table} {$this->join} {$this->where} {$this->groupBy} {$this->having} {$this->orderBy}"
+                        : "SELECT TOP {$this->limit} * FROM ({$baseQuery}) AS __union_result {$this->orderBy}";
+                }
+            } else {
+                $limitSql = " LIMIT {$this->limit}";
+                if ($this->offset !== null) {
+                    $limitSql .= " OFFSET {$this->offset}";
+                }
+                $cSql = $baseQuery . $this->orderBy . $limitSql;
+            }
+        } else {
+            $cSql = $baseQuery . $this->orderBy;
+        }
+
         $query = $this->connect()->prepare($cSql, [PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL]);
-        $rscDados = $query->execute($this->params);
+        $query->execute($allParams);
 
         self::dbClear();
 
@@ -627,7 +756,7 @@ class Database
         } elseif ($tipoRetorno == "first") {
             return $this->dbBuscaArray($query);
         } elseif ($tipoRetorno == "count") {
-            return $this->dbNumeroLinhas($rscDados);
+            return $this->dbNumeroLinhas($query);
         }
     }
 
@@ -642,9 +771,12 @@ class Database
         $this->join = "";
         $this->where = "";
         $this->groupBy = "";
+        $this->having = "";
         $this->orderBy = "";
-        $this->limit = "";  
+        $this->limit  = "";
+        $this->offset = null;
         $this->params = [];
+        $this->unions = [];
     }
 
     /**
@@ -709,14 +841,24 @@ class Database
     /**
      * update
      *
-     * @param array $data 
+     * @param array $data
      * @return int
      */
     public function update(array $data)
     {
         try {
             $fields = implode(" = ?, ", array_keys($data)) . " = ?";
-            $sql    = "UPDATE {$this->table} SET {$fields} {$this->where}";
+
+            if ($this->join !== "") {
+                if (self::$dbdrive === 'sqlsrv') {
+                    $sql = "UPDATE {$this->table} SET {$fields} FROM {$this->table} {$this->join} {$this->where}";
+                } else {
+                    $sql = "UPDATE {$this->table} {$this->join} SET {$fields} {$this->where}";
+                }
+            } else {
+                $sql = "UPDATE {$this->table} SET {$fields} {$this->where}";
+            }
+
             $updData = array_merge(array_values($data), $this->params);
 
             $query  = $this->connect()->prepare($sql);
@@ -728,7 +870,7 @@ class Database
 
         } catch (\Exception $err) {
             Session::set("msgError", "Erro ao Atualizar dados na base de dados: " . $err->getMessage());
-            $rs = 0;
+            $rs = -1;
         }
 
         return $rs;
@@ -742,7 +884,11 @@ class Database
     public function delete()
     {
         try {
-            $sql    = "DELETE FROM {$this->table} {$this->where};";
+            if ($this->join !== "") {
+                $sql = "DELETE {$this->table} FROM {$this->table} {$this->join} {$this->where}";
+            } else {
+                $sql = "DELETE FROM {$this->table} {$this->where}";
+            }
 
             $query  = $this->connect()->prepare($sql);
             $query->execute($this->params);
