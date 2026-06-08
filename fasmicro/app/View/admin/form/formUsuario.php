@@ -32,7 +32,7 @@ $isEdit = isset($usuario['USU_ID']) && $usuario['USU_ID'] > 0;
                 <label class="form-label">E-mail Corporativo</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                    <input type="email" name="USU_EMAIL" class="form-control" placeholder="joao@empresa.com" value="<?= $data['usuario']['USU_EMAIL'] ?? '' ?>">
+                    <input type="email" name="USU_EMAIL" class="form-control" placeholder="joao@empresa.com" value="<?= $data['usuario']['USU_EMAIL'] ?? '' ?>" >
                 </div>
             </div>
 
@@ -47,7 +47,7 @@ $isEdit = isset($usuario['USU_ID']) && $usuario['USU_ID'] > 0;
                     <option selected disabled>Selecione uma permissão...</option>
                     <option value="admin" <?= ($data['usuario']['USU_NIVEL'] ?? '') == 'admin' ? 'selected' : '' ?>>Administrador</option>
                     <option value="vendedor" <?= ($data['usuario']['USU_NIVEL'] ?? '') == 'vendedor' ? 'selected' : '' ?>>Vendedor</option>
-                    <option value="financeiro" <?= ($data['usuario']['USU_NIVEL'] ?? '') == 'financeiro' ? 'selected' : '' ?>>Financeiro</option>
+                    <!-- <option value="financeiro" <?=($data['usuario']['USU_NIVEL'] ?? '') == 'financeiro' ? 'selected' : ''?>>Financeiro</option> -->
                 </select>
             </div>
 

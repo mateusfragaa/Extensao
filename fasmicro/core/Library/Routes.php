@@ -13,6 +13,7 @@ class Routes
      */
     public static function rota()
     {
+    
         // Caminho incompleto do controller, falta o nome
         $pathContr      = "App\Controller\\";
         // Possui todos os dados da requisição
@@ -20,6 +21,7 @@ class Routes
         // Caminho completo do controller
         $controller     = $pathContr . $aParametros['controller'];
         
+
         if (!class_exists($controller)) {
             Erros::controllerNotFound($aParametros['controller']);
         } else {

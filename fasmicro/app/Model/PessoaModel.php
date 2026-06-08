@@ -16,7 +16,7 @@ class PessoaModel extends ModelMain
         ],
         "CPF_CNPJ" => [
             "label" => "CPF / CNPJ",
-            "rules" => "required|max:14"
+            "rules" => "required|cpf_cnpj"
         ],
         "EMAIL" => [
             "label" => "E-mail",

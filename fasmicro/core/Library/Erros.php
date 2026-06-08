@@ -11,7 +11,13 @@ class Erros
      */
     public static function controllerNotFound($nomeController = DEFAULT_CONTROLLER)
     {
-        echo "Controller ({$nomeController}) não localizado na estrutura do projeto.";
+         die(
+        '<pre>' .
+        $nomeController .
+        "\n\n" .
+        print_r(debug_backtrace(), true) .
+        '</pre>'
+    );
     }
 
     /**

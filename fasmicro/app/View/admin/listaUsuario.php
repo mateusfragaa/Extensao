@@ -79,7 +79,7 @@
             </table>
         </div>
         <div class="card-footer bg-white border-0 p-3 text-center border-top">
-            <small class="text-muted">Total de 0 usuários encontrados</small>
+            <small class="text-muted">Total de <?= $data['total'] ?> usuários encontrados</small>
         </div>
     </div>
 </div>

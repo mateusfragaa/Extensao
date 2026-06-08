@@ -30,7 +30,8 @@ class Auth extends ControllerMain
 
         // Buscamos no banco onde o login ou o email seja igual ao digitado
         $usuario = $userModel->db
-            ->where(" (USU_LOGIN = ? OR USU_EMAIL = ?) ", [$login, $login])
+            ->where("USU_LOGIN", $login)
+            ->orWhere("USU_EMAIL", $login)
             ->first();
 
         // Validações
@@ -41,7 +42,7 @@ class Auth extends ControllerMain
         }
 
         if ($usuario['USU_STATUS'] == 0) {
-            \Core\Library\Session::set('msgError', 'Esta conta está inativa!');
+            \Core\Library\Session::set('msgError', 'Esta conta está inativa. Entre em contato com um administrador.');
             header("Location: /auth/formLogin");
             return;
         }
@@ -57,5 +58,15 @@ class Auth extends ControllerMain
             \Core\Library\Session::set('msgError', 'Senha incorreta!');
             header("Location: /auth/formLogin");
         }
+    }
+
+    public function logout()
+    {
+        \Core\Library\Session::destroy('usuario_logado');
+        \Core\Library\Session::destroy('msgSucesso');
+        \Core\Library\Session::destroy('msgError');
+
+        header("Location: /auth/formLogin");
+        exit;
     }
 }

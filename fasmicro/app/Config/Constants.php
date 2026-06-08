@@ -12,7 +12,8 @@ defined("DEFAULT_METHOD") || define("DEFAULT_METHOD", "index");
 // Controllers autorizados a executar sem autenticação
 defined("CONTROLLER_AUTH") || define("CONTROLLER_AUTH", [
     "Home",
-    "Login"
+    "Login",
+    "Auth"
 ]);
 
 // Tamanho máximo para upload de arquivos (5 mega bytes)
@@ -49,3 +50,11 @@ defined('FILE_ALLOWEDTYPES') || define('FILE_ALLOWEDTYPES', [
     'application/json',
     'application/xml'
 ]);
+
+// Definição de permissões por nível
+defined("PERMISSOES") || define("PERMISSOES", [
+    "admin"      => ["Usuario", "Pessoa", "Produto", "Venda", "Pagamento", "Recebimento", "HomeSistema"],
+    "vendedor"   => ["Pessoa", "Produto", "Recebimento", "Venda", "HomeSistema"],
+    //"financeiro" => ["Pagamento", "Recebimento", "HomeSistema"]
+]);
+

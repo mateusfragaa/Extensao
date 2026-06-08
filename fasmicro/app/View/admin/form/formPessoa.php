@@ -16,16 +16,22 @@ $errors = Core\Library\Session::get('formErrors');
     <div class="card card-custom p-4">
         <?php echo exibeAlerta(); ?>
 
-        <form class="row g-4" action="/pessoa/<?= $action_form ?>" method="POST">
+        <form class="row g-4" action="pessoa/<?= $action_form ?>" method="POST">
 
             <?php if ($action_form !== 'insert'): ?>
                 <input type="hidden" name="PES_ID" value="<?= setValue('PES_ID') ?>">
             <?php endif; ?>
 
+
+
             <div class="col-md-8">
-                <label class="form-label">Nome Completo / Razão Social</label>
-                <input type="text" name="PES_NOME" class="form-control <?= isset($errors['PES_NOME']) ? 'is-invalid' : '' ?>"
-                    placeholder="Digite o nome completo" value="<?= setValue('PES_NOME') ?>"
+                <label class="form-label" id="label_nome_pfpj">Nome Completo / Razão Social</label>
+                <input type="text"
+                    name="PES_NOME"
+                    id="nome_pfpj"
+                    class="form-control <?= isset($errors['PES_NOME']) ? 'is-invalid' : '' ?>"
+                    placeholder="Digite o nome completo"
+                    value="<?= setValue('PES_NOME') ?>"
                     <?= $action_form == 'view' ? 'disabled' : '' ?>>
                 <?php if (isset($errors['PES_NOME'])): ?>
                     <div class="invalid-feedback"><?= $errors['PES_NOME'] ?></div>
@@ -128,8 +134,6 @@ $errors = Core\Library\Session::get('formErrors');
 </div>
 
 <script>
-    // Função para inicializar todos os comportamentos do formulário
-    // Definida de forma que possa ser chamada novamente após atualização AJAX
     if (typeof initFormPessoa !== 'function') {
         window.initFormPessoa = function() {
             console.log('Inicializando comportamentos do formulário de pessoa...');
@@ -152,6 +156,29 @@ $errors = Core\Library\Session::get('formErrors');
                 }
             }
 
+            // Nome Completo / Razão Social Dinâmico
+            const labelNome = document.getElementById('label_nome_pfpj');
+            const inputNome = document.getElementById('nome_pfpj');
+
+            function atualizarNomePFPJ(tipo) {
+                if (!labelNome || !inputNome) return;
+
+                if (tipo === 'F') {
+                    labelNome.textContent = 'Nome Completo';
+                    inputNome.placeholder = 'Digite o nome completo';
+                } else if (tipo === 'J') {
+                    labelNome.textContent = 'Razão Social';
+                    inputNome.placeholder = 'Digite a razão social';
+                }
+            }
+
+            if (selectTipo && inputNome) {
+                atualizarNomePFPJ(selectTipo.value);
+                selectTipo.addEventListener('change', function() {
+                    atualizarNomePFPJ(this.value);
+                });
+            }
+
             if (selectTipo && inputCPFCNPJ) {
                 atualizarCPFCNPJ(selectTipo.value);
                 selectTipo.removeEventListener('change', handleTipoChange); // Evita duplicados
@@ -160,6 +187,115 @@ $errors = Core\Library\Session::get('formErrors');
 
             function handleTipoChange() {
                 atualizarCPFCNPJ(this.value);
+                validarDocumento();
+            }
+            // --- IMPLEMENTAÇÃO DE MÁSCARA AUTOMÁTICA ---
+            if (inputCPFCNPJ) {
+                inputCPFCNPJ.addEventListener('input', function(e) {
+                    let v = e.target.value.replace(/\D/g, ''); // Remove tudo que não é número
+                    const tipo = selectTipo.value;
+
+                    if (tipo === 'F') {
+                        // Máscara de CPF: 000.000.000-00
+                        v = v.substring(0, 11);
+                        v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                        v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                        v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                    } else {
+                        // Máscara de CNPJ: 00.000.000/0000-00
+                        v = v.substring(0, 14);
+                        v = v.replace(/^(\d{2})(\d)/, '$1.$2');
+                        v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+                        v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
+                        v = v.replace(/(\d{4})(\d)/, '$1-$2');
+                    }
+
+                    e.target.value = v;
+                });
+            }
+
+            // --- MÁSCARA PARA TELEFONE (BÔNUS) ---
+            const inputTelefone = document.querySelector('input[name="TELEFONE"]');
+            if (inputTelefone) {
+                inputTelefone.addEventListener('input', function(e) {
+                    let v = e.target.value.replace(/\D/g, '');
+                    v = v.substring(0, 11);
+                    v = v.replace(/^(\d{2})(\d)/g, '($1) $2');
+                    v = v.replace(/(\d)(\d{4})$/, '$1-$2');
+                    e.target.value = v;
+                });
+            }
+
+
+            function validarDocumento() {
+                const valor = inputCPFCNPJ.value.replace(/\D/g, '');
+                const tipo = selectTipo.value;
+                let valido = false;
+
+                if (valor === '') return;
+
+                if (tipo === 'F') {
+                    valido = (valor.length === 11) && validarCPF_JS(valor);
+                } else {
+                    valido = (valor.length === 14) && validarCNPJ_JS(valor);
+                }
+
+                if (valido) {
+                    inputCPFCNPJ.classList.remove('is-invalid');
+                    inputCPFCNPJ.classList.add('is-valid');
+                } else {
+                    inputCPFCNPJ.classList.remove('is-valid');
+                    inputCPFCNPJ.classList.add('is-invalid');
+                }
+            }
+
+            function validarCPF_JS(cpf) {
+                if (/^(\d)\1+$/.test(cpf)) return false;
+                let soma = 0,
+                    resto;
+                for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+                resto = (soma * 10) % 11;
+                if ((resto === 10) || (resto === 11)) resto = 0;
+                if (resto !== parseInt(cpf.substring(9, 10))) return false;
+                soma = 0;
+                for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+                resto = (soma * 10) % 11;
+                if ((resto === 10) || (resto === 11)) resto = 0;
+                if (resto !== parseInt(cpf.substring(10, 11))) return false;
+                return true;
+            }
+
+            function validarCNPJ_JS(cnpj) {
+                if (/^(\d)\1+$/.test(cnpj)) return false;
+                let tamanho = cnpj.length - 2;
+                let numeros = cnpj.substring(0, tamanho);
+                let digitos = cnpj.substring(tamanho);
+                let soma = 0,
+                    pos = tamanho - 7;
+                for (let i = tamanho; i >= 1; i--) {
+                    soma += numeros.charAt(tamanho - i) * pos--;
+                    if (pos < 2) pos = 9;
+                }
+                let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+                if (resultado != digitos.charAt(0)) return false;
+                tamanho = tamanho + 1;
+                numeros = cnpj.substring(0, tamanho);
+                soma = 0;
+                pos = tamanho - 7;
+                for (let i = tamanho; i >= 1; i--) {
+                    soma += numeros.charAt(tamanho - i) * pos--;
+                    if (pos < 2) pos = 9;
+                }
+                resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+                if (resultado != digitos.charAt(1)) return false;
+                return true;
+            }
+
+            if (inputCPFCNPJ) {
+                inputCPFCNPJ.addEventListener('blur', validarDocumento);
+                inputCPFCNPJ.addEventListener('input', function() {
+                    if (this.classList.contains('is-invalid')) validarDocumento();
+                });
             }
 
             const inputNumero = document.getElementById('numero_casa');
@@ -208,15 +344,18 @@ $errors = Core\Library\Session::get('formErrors');
                     .then(r => r.json())
                     .then(data => {
                         if (data.erro) {
-                            cepStatus.innerHTML = 'CEP não encontrado. <a href="#" id="link_busca_cidade">Buscar por Cidade + UF</a>';
+                            cepStatus.textContent = 'CEP não encontrado.';
+                            cepStatus.className = 'text-danger small';
                             return;
                         }
                         preencherEndereco(data);
-                        cepStatus.textContent = '✅ Endereço preenchido!';
-                        cepStatus.className = 'text-success small';
+                        cepStatus.textContent = ''; // Limpa o status em caso de sucesso
                     })
                     .catch(() => {
-                        if (cepStatus) cepStatus.textContent = 'Erro ao buscar CEP.';
+                        if (cepStatus) {
+                            cepStatus.textContent = 'Erro ao buscar CEP.';
+                            cepStatus.className = 'text-danger small';
+                        }
                     });
             }
 
@@ -233,48 +372,7 @@ $errors = Core\Library\Session::get('formErrors');
                 }
             }
 
-            // Delegação de evento para o link de busca por cidade (que é dinâmico)
-            document.removeEventListener('click', handleCidadeUFClick);
-            document.addEventListener('click', handleCidadeUFClick);
 
-            function handleCidadeUFClick(e) {
-                if (e.target.id === 'link_busca_cidade') {
-                    e.preventDefault();
-                    buscarPorCidadeUF();
-                }
-            }
-
-            function buscarPorCidadeUF() {
-                const uf = prompt("Digite a UF (ex: SP, RJ, MG):")?.toUpperCase().trim();
-                const cidade = prompt("Digite o nome da cidade:")?.trim();
-
-                if (!uf || !cidade) return alert("UF e Cidade são obrigatórios!");
-
-                if (cepStatus) {
-                    cepStatus.textContent = 'Buscando...';
-                    cepStatus.className = 'text-primary small';
-                }
-
-                fetch(`https://viacep.com.br/ws/${uf}/${encodeURIComponent(cidade)}/json/`)
-                    .then(r => r.json())
-                    .then(data => {
-                        if (Array.isArray(data) && data.length > 0) {
-                            preencherEndereco(data[0]);
-                            if (cepStatus) {
-                                cepStatus.textContent = `✅ ${data.length} endereço(s) encontrado(s)`;
-                                cepStatus.className = 'text-success small';
-                            }
-                        } else {
-                            if (cepStatus) {
-                                cepStatus.textContent = 'Nenhum endereço encontrado.';
-                                cepStatus.className = 'text-danger small';
-                            }
-                        }
-                    })
-                    .catch(() => {
-                        if (cepStatus) cepStatus.textContent = 'Erro na busca.';
-                    });
-            }
         };
     }
 
