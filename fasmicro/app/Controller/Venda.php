@@ -119,6 +119,7 @@ class Venda extends ControllerMain
         $serviceVenda = new PedidoVenda();
         $data['produtos_pedidos'] = $serviceVenda->comecarPedidoVenda($_POST);
         $data['produtos'] = $serviceVenda->listaProduto('prd_descricao');
+        $data['info_venda'] = $serviceVenda->getVenda(Session::getDestroy('id_pedido_editando'));
         $data['action_form_modal'] = 'editandoVenda';
         $data['action_form'] = 'editandoVenda';
 

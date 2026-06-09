@@ -22,6 +22,7 @@ class PedidoVenda
         // Vai somente criar e adicionar os itens iniciais do pedido e retornar os itens
         $id_pedido_criado = $this->vendaModel->criarPedido();
         Session::set('id_pedido_editando', $id_pedido_criado);
+        
         $this->addProdutoPedido($id_pedido_criado, $post);
         return $this->select_produto_venda($id_pedido_criado);
     }
@@ -39,7 +40,7 @@ class PedidoVenda
                 'qtd' => (int) $dados['qtd'],
                 'valorVenda' => (float) $dados['valorVenda']
             ];
-
+            
             $this->vendaItemModel->addProdutoPedido($id,$resultado);
         }
     }

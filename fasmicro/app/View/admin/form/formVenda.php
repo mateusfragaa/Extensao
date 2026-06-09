@@ -3,7 +3,8 @@
     $info_venda = (isset($data['data']['info_venda'])) ? $data['data']['info_venda'] : [];
     $id_venda = isset($data['data']['produtos_pedidos'][0]['PEVI_VENDA_ID']) ? $data['data']['produtos_pedidos'][0]['PEVI_VENDA_ID'] : '';
     // var_dump('produtos para selecionar', $produtos);
-    var_dump('data["data"]', $data['data']);
+    var_dump($_SESSION);
+    var_dump($info_venda, $id_venda);
     ?>
     <div class="container py-4">
         <div class="d-flex justify-content-between align-items-center mb-4">

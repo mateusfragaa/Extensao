@@ -58,7 +58,8 @@ class VendaModel extends ModelMain
 
     public function getVenda($id)
     {
-        return $this->getById($id);
+        $pdo = $this->db->dbSelect('select * from tb_pedido_venda where pev_id = :venda', [':venda' => $id]);
+        return $this->db->dbBuscaArray($pdo);;
     }
 
     public function updateValorTotal($acrescimo, $desconto, $venda)

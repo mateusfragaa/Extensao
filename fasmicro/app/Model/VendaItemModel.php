@@ -22,9 +22,9 @@ class VendaItemModel extends ModelMain
                     'pevi_preco_unitario' => $value['valorVenda']
                 ]);
             }
-                    
+
                     // $this->db->commit()
-            return 'true';
+            return true;
         } catch (\PDOException $e) {
 
             // $this->db->rollBack();
