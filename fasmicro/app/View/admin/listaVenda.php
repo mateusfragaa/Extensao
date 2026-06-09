@@ -7,7 +7,7 @@
             <h4 class="fw-bold m-0">Gestão de Vendas</h4>
             <p class="text-muted small m-0">Mais agilidade para o seu processo de vendas.</p>
         </div>
-        <a class="btn btn-primary-custom text-white shadow-sm" href="/Venda/formVenda/">
+        <a class="btn btn-primary-custom text-white shadow-sm" href="/Venda/formVenda/insert">
             <i class="bi bi-plus-lg me-2"></i> Nova Venda
         </a>
     </div>

@@ -405,7 +405,6 @@ class Database
                 $this->where .= $condition . " = ? ";
             }
             $this->params = array_merge($this->params, [$params]);
-
         } else {
 
             $lAnd = false;

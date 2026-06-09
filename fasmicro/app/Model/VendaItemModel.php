@@ -3,7 +3,6 @@
 namespace App\Model;
 
 use Core\Library\ModelMain;
-use Exception;
 
 class VendaItemModel extends ModelMain
 {
@@ -14,21 +13,17 @@ class VendaItemModel extends ModelMain
     public function addProdutoPedido($id_pedido, $produtos)
     {
         // $this->db->beginTransaction();
-
         try {
-
             foreach ($produtos as $key => $value) {
-
                 $this->db->insert([
                     'pevi_venda_id' => $id_pedido,
                     'pevi_prd_id' => $value['prd_id'],
                     'pevi_quantidade' => $value['qtd'],
-                    'pevi_preco_unitario' => 40,
+                    'pevi_preco_unitario' => $value['valorVenda']
                 ]);
             }
-
-            // $this->db->commit();
-
+                    
+                    // $this->db->commit()
             return 'true';
         } catch (\PDOException $e) {
 
@@ -42,10 +37,9 @@ class VendaItemModel extends ModelMain
     {
         return $this->db
             ->select(
-                "p.prd_id,
+                    "p.prd_id,
                     p.prd_descricao,
-                    pevi_preco_unitario,
-                    pevi_subtotal"
+                    tb_pedido_venda_item.*"
             )->join("tb_produto p", "p.prd_id = PEVI_PRD_ID", "inner")
             ->where("pevi_venda_id", $id_pedido)
             ->findAll();

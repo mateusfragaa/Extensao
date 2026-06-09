@@ -79,7 +79,6 @@ $action_form = formDadosInput($data, 'produto');
                 <textarea class="form-control" rows="3" placeholder="Detalhes técnicos ou observações..." name="prd_observacao"><?= setValue('PRD_OBSERVACAO') ?></textarea>
             </div>
             <div class="col-12 d-flex justify-content-end gap-2 mt-4">
-                <!-- <a class="btn btn-light border px-4" href="#" >Cancelar</a> -->
                 <button type="reset" class="btn btn-light border px-4">Cancelar</button>
                 <?php if ($action_form !== "view") : ?>
                     <button type="submit" class="btn btn-primary-custom px-5">Salvar Produto</button>

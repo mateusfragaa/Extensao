@@ -2,9 +2,11 @@
 
 namespace App\Controller;
 
+use App\Service\PedidoVenda;
+
 use Core\Library\ControllerMain;
 use Core\Library\Redirect;
-use App\Model\ProdutoModel;
+use Core\Library\Session;
 
 class Venda extends ControllerMain
 {
@@ -40,9 +42,8 @@ class Venda extends ControllerMain
         $this->index(true);
     }
 
-    /*
-    * Prepara o formulário para as ações e faz o require do mesmo
-    */
+    // =====================================================================
+    // Prepara o formulário da esquerda do formVenda.php
     public function formVenda($acao,$id)
     {
         $data = [];
@@ -59,19 +60,16 @@ class Venda extends ControllerMain
             case 'view':
                 $data["action_form"] = "view";
                 break;
-            case 'editando_venda':
-                // Quando o pedido estiver iniciado caira aqui
-                $data["action_form"] = "editandoVenda";
-                $this->
-                return;
-
         }
 
-        if ($acao != 'cadastro') $data["vendas"] = $this->model->getById($id);
-            
+        if ($acao == 'insert') {
+            $produtoModel = $this->loadModel('Produto');
+            $data['produtos'] = $produtoModel->lista('prd_descricao');
+            unset($produtoModel);
+        }else{
+            $data["vendas"] = $this->model->getById($id);
+        }
         // Carrega os produtos para a pesquisa de itens para a venda
-        $produtoModel = new ProdutoModel();
-        $data['produtos'] = $produtoModel->lista('prd_descricao');
 
         $this->view(
             'admin/form/formVenda',
@@ -81,7 +79,10 @@ class Venda extends ControllerMain
             'sistema'
         );
     }
+    // =====================================================================
 
+    // =====================================================================
+    // Tratar o formulário da esquerda do formVenda.php
     public function update()
     {
         if ($this->model->update($_POST)) {
@@ -110,42 +111,75 @@ class Venda extends ControllerMain
         }
     }
 
+    // =====================================================================
+
     public function inicioVenda()
     {   
-        /*
-         1 - criar o pedido
-         2 - com o id do pedido criado adicionar itens
-         3 - so posso criar pedido no inicio depois e atualizar o existente
-        */
-        $resultado = [];
+        $data = [];
+        $serviceVenda = new PedidoVenda();
+        $data['produtos_pedidos'] = $serviceVenda->comecarPedidoVenda($_POST);
+        $data['produtos'] = $serviceVenda->listaProduto('prd_descricao');
+        $data['action_form_modal'] = 'editandoVenda';
+        $data['action_form'] = 'editandoVenda';
 
-        foreach ($_POST['produto'] as $produtoId => $dados) {
-
-            if (!isset($dados['selecionado'])) {
-                continue;
-            }
-
-            $resultado[] = [
-                'prd_id' => (int) $produtoId,
-                'qtd' => (int) $dados['qtd']
-            ];
-        }
-        
-        $id_pedido = $this->model->criarPedido();
-        $venda_item = $this->loadModel('VendaItem');
-        $venda_item->addProdutoPedido($id_pedido, $resultado);
-        // $venda_item->select_produto_venda($id_pedido);
-        // Redirect::pageSobrecarga('Venda/formVenda/editando_venda', 'produto_venda',$venda_item->select_produto_venda($id_pedido)[0]);
-        $this->editandoVenda($id_pedido);
+        $this->view(
+            'admin/form/formVenda',
+            [
+                "data" => $data
+            ],
+            'sistema'
+        );   
     }
 
-    public function editandoVenda($id_pedido)
+    public function calculaTotalVenda() {
+        $data = json_decode(file_get_contents('php://input'), true);
+        $serviceVenda = new PedidoVenda();
+        $novoTotal = $serviceVenda->calcularTotal($data['acrescimo'], $data['desconto'], $data['venda']);
+        echo json_encode($novoTotal);
+    }
+
+    public function editandoVenda($action = '', $id_pedido = 0)
     {
-        // preciso do id do pedido
-        // colocar os dados dos produtos no pedido
-        // atualiazar a tela com js
-        $venda_item = $this->loadModel('VendaItem');
-        Redirect::pageSobrecarga('Venda/formVenda/editando_venda', 'produto_venda', $venda_item->select_produto_venda($id_pedido)[0]);
+        echo('Ação - '.$action);
+        echo('<br>');
+        echo('ID - '.$id_pedido);
+        var_dump('post', $_POST);
+
+        /**
+         * 1- verificar se é editando a venda ou os itens atráves da ação ✅
+         * 2- chamar o service com os dados novos e atualizar a venda ✅
+         * 3- retornar os dados e itens da vendas com os produtos para selecionar para incluir mais produtos
+         * 4- tentar o redirect caso não de certo usar  a view
+         */
+
+        $data = [];
+        $serviceVenda = new PedidoVenda();
+        
+        if ($action == 'modal') {
+            $serviceVenda->addProdutoPedido($id_pedido, $_POST);
+            $data['produtos_pedidos'] = $serviceVenda->select_produto_venda($id_pedido);
+            $data['produtos'] = $serviceVenda->listaProduto('prd_descricao');
+            $data['info_venda'] = $serviceVenda->getVenda($id_pedido);
+            $data['action_form_modal'] = 'editandoVenda';
+            $data['action_form'] = 'editandoVenda';
+        }else {
+            $this->update([
+                'PEV_STATUS' => $_POST[''],
+                'PEV_ACRESCIMO' => $_POST[''],
+                'PEV_DESCONTO' => $_POST[''],
+                'PEV_CLIENTE_ID' => $_POST[''],
+                'PEV_SUB_TOTAL' => $_POST[''],
+                'PEV_TOTAL' => $_POST['']
+            ]);
+        }
+
+        $this->view(
+            'admin/form/formVenda',
+            [
+                "data" => $data
+            ],
+            'sistema'
+        );
     }
 
     

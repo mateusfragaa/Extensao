@@ -4,6 +4,7 @@ namespace App\Model;
 
 use Core\Library\ModelMain;
 use Exception;
+use Override;
 
 class VendaModel extends ModelMain
 {
@@ -54,8 +55,22 @@ class VendaModel extends ModelMain
         $id =  $this->db->dbInsert('insert into tb_pedido_venda(pev_cliente_id)values(:cliente)',['cliente' => 1]);
         return $id;
     }
+
+    public function getVenda($id)
+    {
+        return $this->getById($id);
+    }
+
+    public function updateValorTotal($acrescimo, $desconto, $venda)
+    {
+        $this->db
+        // Trocar para fazer a query manualmente
+        ->dbUpdate("update {$this->table} set PEV_ACRESCIMO = :acrescimo, PEV_DESCONTO = :desconto where {$this->primaryKey} = :venda", [
+            ':acrescimo' => number_format($acrescimo, 2, '.', ','),
+            ':desconto' => number_format($desconto, 2, '.', ','),
+            ':venda' => $venda
+        ]);
+        $pdo = $this->db->dbSelect('select pev_total from tb_pedido_venda where pev_id = :venda', [':venda' => $venda]);
+        return $this->db->dbBuscaArray($pdo);
+    }
 }
-
-
-// $pdo = $this->db->dbSelect("CALL sp_buscar_produtos(:ids)", ['ids' => $ids]);
-// return $this->db->dbBuscaArrayAll($pdo); 
