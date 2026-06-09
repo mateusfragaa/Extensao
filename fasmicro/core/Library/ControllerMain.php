@@ -171,5 +171,29 @@ class ControllerMain
             
         }
     }
+
+     public function onConstruct() {
+
+        // --- Proteção CSRF ---
+        if (CSRF_ENABLE && $_SERVER["REQUEST_METHOD"] === "POST") {
+            $currentUrl = $_SERVER["REQUEST_URI"];
+            $isExcepted = false;
+            foreach (CSRF_EXCEPT_URLS as $exceptUrl) {
+                if (strpos($currentUrl, $exceptUrl) !== false) {
+                    $isExcepted = true;
+                    break;
+                }
+            }
+
+            if (!$isExcepted) {
+                if (!Csrf::validateToken()) {
+                    // Token inválido ou expirado, redireciona com erro 419
+                    header("Location: /erro/419"); // Ou para uma página de erro personalizada
+                    exit();
+                }
+            }
+        }
+        
+    }
   
 }

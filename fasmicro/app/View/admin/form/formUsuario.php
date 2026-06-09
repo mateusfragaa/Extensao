@@ -19,6 +19,7 @@ $isEdit = isset($usuario['USU_ID']) && $usuario['USU_ID'] > 0;
 
     <div class="card card-custom p-4">
         <form action="/usuario/salvar" method="POST" class="row g-4">
+            <?= csrfField() ?>
             <input type="hidden" name="USU_ID" value="<?= $data['usuario']['USU_ID'] ?? '0' ?>">
             <div class="col-md-6">
                 <label class="form-label">Nome Completo</label>

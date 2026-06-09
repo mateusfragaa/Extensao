@@ -4,6 +4,17 @@ namespace Core\Library;
 // Melhor do que herança, interfaces e classe abstratas código facil de ser reutilizados de forma rápida
 trait RequestTrait
 {
+
+    public function post(bool $filterCsrf = true): array {
+        $postData = $_POST;
+
+        if ($filterCsrf && CSRF_ENABLE && isset($postData[CSRF_TOKEN_NAME])) {
+            unset($postData[CSRF_TOKEN_NAME]);
+        }
+
+        return $postData;
+    }
+
     static public function getRotaParametros()
     { 
         $auxPar         = [];

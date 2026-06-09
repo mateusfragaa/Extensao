@@ -58,3 +58,20 @@ defined("PERMISSOES") || define("PERMISSOES", [
     //"financeiro" => ["Pagamento", "Recebimento", "HomeSistema"]
 ]);
 
+// --- CONFIGURAÇÕES DE PROTEÇÃO CSRF ---
+// Ativa ou desativa a proteção globalmente
+defined("CSRF_ENABLE") || define("CSRF_ENABLE", true);
+
+// Nome do campo que aparecerá no formulário e na sessão
+defined("CSRF_TOKEN_NAME") || define("CSRF_TOKEN_NAME", "csrf_token");
+
+// Tempo de expiração do token (2 horas em segundos)
+defined("CSRF_EXPIRE") || define("CSRF_EXPIRE", 7200);
+
+// URLs que NÃO precisam de proteção (ex: APIs externas ou Webhooks)
+defined("CSRF_EXCEPT_URLS") || define("CSRF_EXCEPT_URLS", [
+    "/api/externa",
+    "/notificacao/webhook"
+]);
+
+
