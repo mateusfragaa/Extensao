@@ -40,11 +40,19 @@ $errors = Core\Library\Session::get('formErrors');
 
             <div class="col-md-4">
                 <label class="form-label" id="label_cpf_cnpj">CPF / CNPJ</label>
-                <input type="text" name="CPF_CNPJ" id="cpf_cnpj"
-                    class="form-control <?= isset($errors['CPF_CNPJ']) ? 'is-invalid' : '' ?>"
-                    placeholder="000.000.000-00"
-                    value="<?= setValue('CPF_CNPJ') ?>"
-                    <?= $action_form == 'view' ? 'disabled' : '' ?>>
+                <div class="input-group">
+                    <input type="text" name="CPF_CNPJ" id="cpf_cnpj"
+                        class="form-control <?= isset($errors['CPF_CNPJ']) ? 'is-invalid' : '' ?>"
+                        placeholder="000.000.000-00"
+                        value="<?= setValue('CPF_CNPJ') ?>"
+                        <?= $action_form == 'view' ? 'disabled' : '' ?>>
+
+                    <?php if ($action_form == 'insert' || $action_form == 'update'): ?>
+                        <button class="btn btn-outline-secondary" type="button" id="btn_validar_receita" title="Validar na Receita Federal">
+                            <i class="bi bi-shield-check text-success"></i> Verificar
+                        </button>
+                    <?php endif; ?>
+                </div>
                 <?php if (isset($errors['CPF_CNPJ'])): ?>
                     <div class="invalid-feedback"><?= $errors['CPF_CNPJ'] ?></div>
                 <?php endif; ?>
@@ -372,6 +380,159 @@ $errors = Core\Library\Session::get('formErrors');
                 }
             }
 
+            // --- INTEGRAÇÃO COM A RECEITA FEDERAL ---
+
+            // -------------------------------------------------------
+            // Toast: substitui alert() por notificacoes elegantes
+            // -------------------------------------------------------
+            function mostrarToast(mensagem, tipo) {
+                tipo = tipo || 'success';
+                const cores = {
+                    success: { bg: '#198754', icone: 'bi-check-circle-fill' },
+                    danger:  { bg: '#dc3545', icone: 'bi-exclamation-triangle-fill' },
+                    warning: { bg: '#fd7e14', icone: 'bi-info-circle-fill' },
+                    info:    { bg: '#0dcaf0', icone: 'bi-info-circle' }
+                };
+                const c = cores[tipo] || cores.info;
+                let container = document.getElementById('toast-container-custom');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'toast-container-custom';
+                    container.style.cssText = 'position:fixed;top:1.25rem;right:1.25rem;'
+                        + 'z-index:9999;display:flex;flex-direction:column;gap:.5rem;';
+                    document.body.appendChild(container);
+                }
+                const toast = document.createElement('div');
+                toast.style.cssText = 'background:' + c.bg + ';color:#fff;'
+                    + 'padding:.85rem 1.2rem;border-radius:.5rem;'
+                    + 'box-shadow:0 4px 12px rgba(0,0,0,.2);'
+                    + 'display:flex;align-items:center;gap:.65rem;'
+                    + 'min-width:280px;max-width:420px;font-size:.92rem;'
+                    + 'opacity:0;transition:opacity .3s;';
+                toast.innerHTML = '<i class="bi ' + c.icone + '" style="font-size:1.2rem;flex-shrink:0"></i>'
+                    + '<span>' + mensagem + '</span>';
+                container.appendChild(toast);
+                requestAnimationFrame(function() { toast.style.opacity = '1'; });
+                setTimeout(function() {
+                    toast.style.opacity = '0';
+                    setTimeout(function() { toast.remove(); }, 350);
+                }, 5000);
+            }
+
+            const btnValidarReceita = document.getElementById('btn_validar_receita');
+
+            if (btnValidarReceita) {
+                btnValidarReceita.addEventListener('click', function() {
+                    const tipoPessoa = selectTipo.value;
+
+                    // == CNPJ: consulta API receitaws.com.br ==
+                    if (tipoPessoa === 'J') {
+                        const cnpjRaw = inputCPFCNPJ.value.replace(/\D/g, '');
+                        if (cnpjRaw.length !== 14) {
+                            mostrarToast('Preencha o CNPJ completo (14 digitos) antes de verificar.', 'warning');
+                            inputCPFCNPJ.focus();
+                            return;
+                        }
+                        btnValidarReceita.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Consultando...';
+                        btnValidarReceita.disabled = true;
+                        fetch('/pessoa/consultarCNPJAjax', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: new URLSearchParams({ cnpj: cnpjRaw })
+                        })
+                        .then(function(r) { return r.json(); })
+                        .then(function(resp) {
+                            if (resp.sucesso) {
+                                inputCPFCNPJ.classList.remove('is-invalid');
+                                inputCPFCNPJ.classList.add('is-valid');
+                                const inputNome = document.getElementById('nome_pfpj');
+                                if (inputNome && resp.nome) inputNome.value = resp.nome;
+                                mostrarToast('CNPJ valido! Empresa: <b>' + resp.nome + '</b> &mdash; Situacao: <b>' + resp.situacao + '</b>', 'success');
+                            } else {
+                                inputCPFCNPJ.classList.remove('is-valid');
+                                inputCPFCNPJ.classList.add('is-invalid');
+                                mostrarToast(resp.mensagem, 'danger');
+                            }
+                        })
+                        .catch(function() {
+                            mostrarToast('Erro ao consultar o CNPJ. Tente novamente.', 'danger');
+                        })
+                        .finally(function() {
+                            btnValidarReceita.innerHTML = '<i class="bi bi-shield-check text-success"></i> Verificar';
+                            btnValidarReceita.disabled = false;
+                        });
+                        return;
+                    }
+
+                    // == CPF: popup da Receita Federal ==
+                    if (tipoPessoa !== 'F') {
+                        mostrarToast('Selecione o Tipo de Pessoa antes de verificar.', 'warning');
+                        return;
+                    }
+
+                    const urlReceita = "https://servicos.receita.fazenda.gov.br/Servicos/CPF/ConsultaPublica.asp";
+                    const popup = window.open(urlReceita, "ConsultaReceita", "width=800,height=600,scrollbars=yes");
+
+                    if (!popup) {
+                        mostrarToast('Bloqueador de popups ativado. Permita popups para este site.', 'warning');
+                        return;
+                    }
+
+                    btnValidarReceita.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Aguardando...`;
+                    btnValidarReceita.disabled = true;
+
+                    const checarPopup = setInterval(function() {
+                        try {
+                            if (popup.closed) {
+                                clearInterval(checarPopup);
+                                btnValidarReceita.innerHTML = `<i class="bi bi-shield-check text-success"></i> Verificar`;
+                                btnValidarReceita.disabled = false;
+                                return;
+                            }
+                            if (popup.document.querySelector('.clConteudoDados')) {
+                                clearInterval(checarPopup);
+                                const htmlCapturado = popup.document.documentElement.innerHTML;
+                                popup.close();
+                                const dadosParaPost = new URLSearchParams();
+                                dadosParaPost.append('html_receita', htmlCapturado);
+                                fetch('/pessoa/validarReceitaAjax', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/x-www-form-urlencoded',
+                                        'X-Requested-With': 'XMLHttpRequest'
+                                    },
+                                    body: dadosParaPost
+                                })
+                                .then(function(response) { return response.json(); })
+                                .then(function(data) {
+                                    if (data.sucesso) {
+                                        const inputNome = document.getElementById('nome_pfpj');
+                                        if (inputNome) {
+                                            inputNome.value = data.nome;
+                                            inputNome.classList.add('is-valid');
+                                        }
+                                        mostrarToast('CPF validado! Nome: <b>' + data.nome + '</b>', 'success');
+                                    } else {
+                                        mostrarToast('Erro na validacao: ' + data.mensagem, 'danger');
+                                    }
+                                })
+                                .catch(function() {
+                                    mostrarToast('Erro interno ao processar os dados.', 'danger');
+                                })
+                                .finally(function() {
+                                    btnValidarReceita.innerHTML = `<i class="bi bi-shield-check text-success"></i> Verificar`;
+                                    btnValidarReceita.disabled = false;
+                                });
+                            }
+                        } catch (e) {
+                            // Same-Origin Policy durante navegacao - ignorar
+                        }
+                    }, 1500);
+                });
+            }
 
         };
     }

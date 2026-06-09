@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS `tb_pagamento_item` (
   KEY `PAGI_PAG_ID_idx` (`PAGI_PAG_ID`),
   CONSTRAINT `PAGI_PAG_ID` FOREIGN KEY (`PAGI_PAG_ID`) REFERENCES `tb_pagamento` (`PAG_ID`) ON UPDATE CASCADE,
   CONSTRAINT `PAGI_TIPO_DOCUMENTO` FOREIGN KEY (`PAGI_TIPO_DOCUMENTO`) REFERENCES `tb_tipo_documento` (`TDC_ID`)
-);
+);  
 
 -- Exportação de dados foi desmarcado.
 

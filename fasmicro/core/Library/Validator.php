@@ -21,64 +21,72 @@ class Validator
                     switch ($items[0]) {
 
                         case 'required':
-
                             if (($data[$ruleKey] == "") || (empty($data[$ruleKey]))) {
                                 $errors[$ruleKey] = "O campo <b>{$ruleValue['label']}</b> deve ser preenchido.";
                             }
-
                             break;
 
                         case 'email':
-
                             if (!filter_var($data[$ruleKey], FILTER_VALIDATE_EMAIL)) {
                                 $errors[$ruleKey] = "O campo <b>{$ruleValue['label']}</b> não é válido.";
                             }
-
                             break;
 
                         case 'float':
-
                             if (!filter_var($data[$ruleKey], FILTER_VALIDATE_FLOAT)) {
                                 $errors[$ruleKey] = "O campo <b>{$ruleValue['label']}</b> deve conter número decimal.";
                             }
-
                             break;
 
                         case 'int':
-
                             if (!filter_var($data[$ruleKey], FILTER_VALIDATE_INT)) {
                                 $errors[$ruleKey] = "O campo <b>{$ruleValue['label']}</b> deve conter número inteiro.";
                             }
-
                             break;
 
                         case "min":
-
                             if (strlen(strip_tags($data[$ruleKey])) < $items[1]) {
-                                $errors[$ruleKey] = "O campo <b>{$ruleValue['label']}</b> dever conter um mínimo " . $items[1] . " caracteres.";
+                                $errors[$ruleKey] = "O campo <b>{$ruleValue['label']}</b> deve conter no mínimo " . $items[1] . " caracteres.";
                             }
-
                             break;
 
                         case 'max':
-
                             if (strlen(strip_tags($data[$ruleKey])) > $items[1]) {
-                                $errors[$ruleKey] = "O campo <b>{$ruleValue['label']}</b> dever conter um maximo " . $items[1] . " caracteres.";
+                                $errors[$ruleKey] = "O campo <b>{$ruleValue['label']}</b> deve conter no máximo " . $items[1] . " caracteres.";
                             }
-
                             break;
-                        // Adição de validação para CPF/CNPJ
+
+                        // -------------------------------------------------------
+                        // Validação CPF / CNPJ
+                        // Para CPF: valida matematicamente os dígitos verificadores.
+                        // Para CNPJ: valida os dígitos E consulta a API pública da
+                        //            Receita (receitaws.com.br) para confirmar que
+                        //            o CNPJ realmente existe e está ATIVO.
+                        // -------------------------------------------------------
                         case 'cpf_cnpj':
-                            $val = preg_replace('/\D/', '', $data[$ruleKey]);
+                            $val  = preg_replace('/\D/', '', $data[$ruleKey]);
                             $tipo = $data['TIPO_PESSOA'] ?? 'F';
 
-                            if ($tipo == 'F') {
-                                if (strlen($val) != 11 || !self::validarCPF($val)) {
+                            if ($tipo === 'F') {
+                                // ── CPF ──────────────────────────────────────
+                                if (strlen($val) !== 11) {
+                                    $errors[$ruleKey] = "O <b>CPF</b> deve ter 11 dígitos.";
+                                } elseif (!self::validarCPF($val)) {
                                     $errors[$ruleKey] = "O <b>CPF</b> informado é inválido.";
                                 }
                             } else {
-                                if (strlen($val) != 14 || !self::validarCNPJ($val)) {
-                                    $errors[$ruleKey] = "O <b>CNPJ</b> informado é inválido.";
+                                // ── CNPJ ─────────────────────────────────────
+                                if (strlen($val) !== 14) {
+                                    $errors[$ruleKey] = "O <b>CNPJ</b> deve ter 14 dígitos.";
+                                } elseif (!self::validarCNPJ($val)) {
+                                    $errors[$ruleKey] = "O <b>CNPJ</b> informado é inválido (dígito verificador incorreto).";
+                                } else {
+                                    // Dígitos OK → consulta a Receita Federal
+                                    $resultadoReceita = self::consultarCNPJReceita($val);
+                                    if ($resultadoReceita !== true) {
+                                        // $resultadoReceita contém a mensagem de erro amigável
+                                        $errors[$ruleKey] = $resultadoReceita;
+                                    }
                                 }
                             }
                             break;
@@ -88,11 +96,11 @@ class Validator
                     }
                 }
             } else {
-                $errors[$ruleKey] = "O campo <b>{$ruleValue['label']}</b> é obrigatório [" . $data[$ruleKey] . "].";
+                $errors[$ruleKey] = "O campo <b>{$ruleValue['label']}</b> é obrigatório.";
             }
         }
 
-        if ($errors) {                          // Se encontrar erros na validação
+        if ($errors) {
             Session::set('formErrors', $errors);
             Session::set('formInputs', $data);
             return true;
@@ -103,43 +111,106 @@ class Validator
         }
     }
 
-    private static function validarCPF($cpf)
+    // ══════════════════════════════════════════════════════════════════
+    // CPF – validação matemática dos dígitos verificadores
+    // ══════════════════════════════════════════════════════════════════
+    private static function validarCPF(string $cpf): bool
     {
-        if (preg_match('/(\d)\1{10}/', $cpf)) return false;
+        // Rejeita sequências repetidas (111.111.111-11 etc.)
+        if (preg_match('/^(\d)\1{10}$/', $cpf)) return false;
+
         for ($t = 9; $t < 11; $t++) {
-            for ($d = 0, $c = 0; $c < $t; $c++) {
-                $d += $cpf[$c] * (($t + 1) - $c);
+            $soma = 0;
+            for ($c = 0; $c < $t; $c++) {
+                $soma += $cpf[$c] * (($t + 1) - $c);
             }
-            $d = ((10 * $d) % 11) % 10;
-            if ($cpf[$c] != $d) return false;
+            $d = ((10 * $soma) % 11) % 10;
+            if ($cpf[$t] != $d) return false;
         }
         return true;
     }
 
-    private static function validarCNPJ($cnpj)
+    // ══════════════════════════════════════════════════════════════════
+    // CNPJ – validação matemática dos dígitos verificadores
+    // ══════════════════════════════════════════════════════════════════
+    private static function validarCNPJ(string $cnpj): bool
     {
-        if (preg_match('/(\d)\1{13}/', $cnpj)) return false;
-        $tamanho = strlen($cnpj) - 2;
-        $numeros = substr($cnpj, 0, $tamanho);
-        $digitos = substr($cnpj, $tamanho);
-        $soma = 0;
-        $pos = $tamanho - 7;
-        for ($i = $tamanho; $i >= 1; $i--) {
-            $soma += $numeros[$tamanho - $i] * $pos--;
-            if ($pos < 2) $pos = 9;
+        // Rejeita sequências repetidas (00.000.000/0000-00 etc.)
+        if (preg_match('/^(\d)\1{13}$/', $cnpj)) return false;
+
+        $calcDigito = function (string $base) use ($cnpj): bool {
+            $tamanho = strlen($base);
+            $soma    = 0;
+            $pos     = $tamanho - 7;
+            for ($i = $tamanho; $i >= 1; $i--) {
+                $soma += $base[$tamanho - $i] * $pos--;
+                if ($pos < 2) $pos = 9;
+            }
+            $resultado = $soma % 11 < 2 ? 0 : 11 - $soma % 11;
+            return $resultado == $cnpj[$tamanho];
+        };
+
+        return $calcDigito(substr($cnpj, 0, 12))
+            && $calcDigito(substr($cnpj, 0, 13));
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // Consulta à Receita Federal via receitaws.com.br (API pública)
+    //
+    // Retorna:
+    //   true          → CNPJ existe e está ATIVO
+    //   string        → mensagem de erro amigável para o usuário
+    // ══════════════════════════════════════════════════════════════════
+    private static function consultarCNPJReceita(string $cnpj)
+    {
+        $url = "https://receitaws.com.br/v1/cnpj/{$cnpj}";
+
+        $ctx = stream_context_create([
+            'http' => [
+                'method'          => 'GET',
+                'timeout'         => 8,   // 8 segundos de timeout
+                'ignore_errors'   => true,
+                'header'          => "User-Agent: PHP-Validator\r\n",
+            ],
+            'ssl' => [
+                'verify_peer'      => false,
+                'verify_peer_name' => false,
+            ],
+        ]);
+
+        $resposta = @file_get_contents($url, false, $ctx);
+
+        // Se não conseguiu conectar (sem internet, timeout etc.) — não bloqueia o cadastro
+        if ($resposta === false) {
+            Session::set(
+                'msgAlerta',
+                'Não foi possível validar o CNPJ na Receita Federal agora (sem conexão). Verifique manualmente se necessário.'
+            );
+            return true; // Permite salvar mas avisa
         }
-        $resultado = $soma % 11 < 2 ? 0 : 11 - $soma % 11;
-        if ($resultado != $digitos[0]) return false;
-        $tamanho = $tamanho + 1;
-        $numeros = substr($cnpj, 0, $tamanho);
-        $soma = 0;
-        $pos = $tamanho - 7;
-        for ($i = $tamanho; $i >= 1; $i--) {
-            $soma += $numeros[$tamanho - $i] * $pos--;
-            if ($pos < 2) $pos = 9;
+
+        $dados = json_decode($resposta, true);
+
+        if (!$dados || !isset($dados['status'])) {
+            // API retornou algo inesperado — não bloqueia
+            return true;
         }
-        $resultado = $soma % 11 < 2 ? 0 : 11 - $soma % 11;
-        if ($resultado != $digitos[1]) return false;
-        return true;
+
+        // A API retorna status "ERROR" para CNPJs não encontrados
+        if (strtoupper($dados['status']) === 'ERROR') {
+            $msg = $dados['message'] ?? 'CNPJ não localizado na Receita Federal.';
+            return "O <b>CNPJ</b> informado não foi encontrado na Receita Federal: {$msg}";
+        }
+
+        // Verifica a situação cadastral
+        $situacao = strtoupper($dados['situacao'] ?? '');
+
+        if ($situacao !== 'ATIVA') {
+            $situacaoFormatada = ucfirst(strtolower($situacao ?: 'desconhecida'));
+            $razaoSocial       = $dados['nome'] ?? 'Não informado';
+            return "O <b>CNPJ</b> pertence a <b>{$razaoSocial}</b> mas sua situação cadastral é <b>{$situacaoFormatada}</b>, não ATIVA.";
+        }
+
+        return true; // Tudo OK
     }
 }

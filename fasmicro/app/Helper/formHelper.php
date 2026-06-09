@@ -11,13 +11,11 @@ if (!function_exists('formDadosInput')) {
     */
     function formDadosInput($data, $key)
     {
-// ver se essa mudança vai poder ser permanente.
-    if (isset($data['data'][$key])) {
-        _viewData($data['data'][$key]);
+        if (isset($data['data'][$key])) {
+            _viewData($data['data'][$key]);
+        }
+        return $data['data']['action_form'] ?? null;
     }
-    return $data['data']['action_form'] ?? null;
-}
-//.
 }
 
 if (!function_exists('formSubTitulo')) {
@@ -48,37 +46,44 @@ if (!function_exists('formSubTitulo')) {
 if (!function_exists('exibeAlerta')) {
 
     /**
-     * Undocumented function
+     * Exibe alertas Bootstrap vindos da sessão.
+     * CORREÇÃO: Session::get() retorna false (não "") quando a chave não existe,
+     * portanto usamos comparação estrita com false.
      *
      * @return string
      */
     function exibeAlerta()
     {
         $msgSucesso = Session::getDestroy('msgSucesso');
-        $msgError = Session::getDestroy('msgError');
-        $msgAlerta = Session::getDestroy('msgAlerta');
+        $msgError   = Session::getDestroy('msgError');
+        $msgAlerta  = Session::getDestroy('msgAlerta');
 
-        $mensagem = '';
+        $mensagem   = '';
         $classAlerta = '';
+        $icone      = '';
 
-        if ($msgSucesso != "") {
-            $mensagem = $msgSucesso;
+        if ($msgSucesso !== false && $msgSucesso !== '') {
+            $mensagem    = $msgSucesso;
             $classAlerta = 'success';
-        } elseif ($msgError != "") {
-            $mensagem = $msgError;
+            $icone       = '<i class="bi bi-check-circle-fill me-2"></i>';
+        } elseif ($msgError !== false && $msgError !== '') {
+            $mensagem    = $msgError;
             $classAlerta = 'danger';
-        } elseif ($msgAlerta != "") {
-            $mensagem = $msgAlerta;
+            $icone       = '<i class="bi bi-exclamation-triangle-fill me-2"></i>';
+        } elseif ($msgAlerta !== false && $msgAlerta !== '') {
+            $mensagem    = $msgAlerta;
             $classAlerta = 'warning';
+            $icone       = '<i class="bi bi-info-circle-fill me-2"></i>';
         }
 
-        if ($mensagem == "") {
-            return "";
-        } else {
-            return '<div class="alert alert-' . $classAlerta . ' alert-dismissible fade show" role="alert">
-                        <strong>' . $mensagem . '</strong>.
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>';
+        if ($mensagem === '') {
+            return '';
         }
+
+        return '<div class="alert alert-' . $classAlerta . ' alert-dismissible fade show d-flex align-items-center" role="alert">'
+            . $icone
+            . '<span>' . htmlspecialchars($mensagem, ENT_QUOTES, 'UTF-8') . '</span>'
+            . '<button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Fechar"></button>'
+            . '</div>';
     }
 }
