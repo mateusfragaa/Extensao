@@ -11,6 +11,7 @@
 
         <?php echo exibeAlerta(); ?>
         <form action="/auth/login" method="POST">
+            <?= csrfField() ?>
             <div class="mb-3">
                 <label for="email" class="form-label">E-mail ou Usuário</label>
                 <div class="input-group">

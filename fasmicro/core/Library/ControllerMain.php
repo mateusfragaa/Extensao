@@ -19,6 +19,11 @@ class ControllerMain
      */
     public function __construct()
     {
+        // Impedir cache, evitando que ao apertar o voltar do navegador, o usuário volte para dentro do sistema sem se autenticar novamente.
+        header("Cache-Control: no-cache, no-store, must-revalidate");
+        header("Pragma: no-cache");
+        header("Expires: 0");
+
         $aParametros        = Self::getRotaParametros();
         $this->controller   = $aParametros['controller'];
         $this->method       = $aParametros['method'];
@@ -33,6 +38,8 @@ class ControllerMain
         // Verificação de permissão dos controllers autorizados sem login
 
         $this->checkPermission(); // Chama a trava de segurança
+
+        $this->onConstruct();
     }
 
     /**
@@ -143,8 +150,8 @@ class ControllerMain
 
             // 1. usamos dbSelect para buscar dados
             $sqlBusca = "SELECT * FROM tb_usuario";
-            $stmt = $db->dbSelect($sqlBusca); 
-            
+            $stmt = $db->dbSelect($sqlBusca);
+
             // 2. Usamos dbBuscaArrayAll para transformar o resultado em um array
             $usuarios = $db->dbBuscaArrayAll($stmt);
 
@@ -152,7 +159,7 @@ class ControllerMain
                 // 3. SQL de Inserção
                 $sqlInsert = "INSERT INTO tb_usuario (USU_NOME, USU_LOGIN, USU_EMAIL, USU_SENHA, USU_NIVEL, USU_STATUS) 
                             VALUES (?, ?, ?, ?, ?, ?)";
-                
+
                 $dados = [
                     'Administrador Geral',
                     'admin',
@@ -164,15 +171,15 @@ class ControllerMain
 
                 // 4. Usamos dbInsert para inserir
                 $db->dbInsert($sqlInsert, $dados);
-                
+
                 \Core\Library\Session::set('msgSucesso', 'Sistema inicializado! Use login "admin" e senha "123456".');
             }
         } catch (\Exception $e) {
-            
         }
     }
 
-     public function onConstruct() {
+    public function onConstruct()
+    {
 
         // --- Proteção CSRF ---
         if (CSRF_ENABLE && $_SERVER["REQUEST_METHOD"] === "POST") {
@@ -186,14 +193,37 @@ class ControllerMain
             }
 
             if (!$isExcepted) {
-                if (!Csrf::validateToken()) {
-                    // Token inválido ou expirado, redireciona com erro 419
-                    header("Location: /erro/419"); // Ou para uma página de erro personalizada
+                if (!\Core\Library\Csrf::validateToken()) {
+                    // vamos usar a sessão e voltar
+                    \Core\Library\Session::set('msgError', 'Sessão expirada ou token inválido. Por favor, tente novamente.');
+
+                    // Redireciona de volta para onde o usuário estava
+                    $referer = $_SERVER['HTTP_REFERER'] ?? '/auth/formLogin';
+                    header("Location: " . $referer);
                     exit();
                 }
             }
         }
-        
     }
-  
+
+    /**
+     * Verifica se o usuário está logado para acessar páginas privadas
+     */
+    private function checkAuth() {
+        // Lista de URLs que podem ser acessadas sem login
+        $rotasPublicas = [
+            '/auth/formLogin',
+            '/auth/login',
+            '/auth/logout'
+        ];
+
+        // Obtém a URL atual (apenas o caminho, sem parâmetros de busca)
+        $urlAtual = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+        // Se NÃO estiver logado e a rota NÃO for pública, expulsa para o login
+        if (!isset($_SESSION['usuario_logado']) && !in_array($urlAtual, $rotasPublicas)) {
+            header("Location: /auth/formLogin");
+            exit();
+        }
+    }
 }
