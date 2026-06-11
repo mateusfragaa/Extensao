@@ -11,7 +11,8 @@ class PedidoVenda
     private $vendaItemModel;
     private $produtoModel;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->vendaModel = new VendaModel();
         $this->vendaItemModel = new VendaItemModel();
         $this->produtoModel = new ProdutoModel();
@@ -45,7 +46,8 @@ class PedidoVenda
         }
     }
 
-    public function calcularTotal($acrescimo, $desconto, $venda){
+    public function calcularTotal($acrescimo, $desconto, $venda)
+    {
         // Lógica de validação
         // $pedido_venda = $this->vendaModel->getVenda($venda);
         // Desconto não pode maior que o valor total da venda
@@ -56,17 +58,24 @@ class PedidoVenda
         return $this->vendaModel->updateValorTotal($acrescimo, $desconto, $venda);
     }
 
-    public function select_produto_venda($id){
+    public function select_produto_venda($id)
+    {
        return $this->vendaItemModel->select_produto_venda($id);
     }
 
-    public function listaProduto($ordem) {
+    public function listaProduto($ordem)
+    {
         return $this->produtoModel->lista($ordem);
     }
 
-    public function getVenda($id) {
+    public function getVenda($id)
+    {
         return $this->vendaModel->getVenda($id);
     }
 
-
+    public function updateVenda($post)
+    {
+        var_dump($post);
+        die();
+    }
 }

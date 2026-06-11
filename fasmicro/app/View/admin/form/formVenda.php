@@ -158,7 +158,8 @@
                         </form>
                     </div>
 
-                    <form action="/venda/<?= $data['data']['action_form_modal'] ?? "inicioVenda" ?>/modal/<?= $id_venda ?>" method="post" id="form_escolha_prd_modal_venda">
+                    <form action="/venda/<?= $data['data']['action_form_modal'] ?? "inicioVenda" ?>" 
+                        method="post" id="form_escolha_prd_modal_venda">
                         <div class="table-responsive tabela-scroll">
                             <table class="table table-custom m-0">
                                 <thead>
