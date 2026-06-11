@@ -12,7 +12,8 @@ defined("DEFAULT_METHOD") || define("DEFAULT_METHOD", "index");
 // Controllers autorizados a executar sem autenticação
 defined("CONTROLLER_AUTH") || define("CONTROLLER_AUTH", [
     "Home",
-    "Login"
+    "Login",
+    "Auth"
 ]);
 
 // Tamanho máximo para upload de arquivos (5 mega bytes)
@@ -49,3 +50,28 @@ defined('FILE_ALLOWEDTYPES') || define('FILE_ALLOWEDTYPES', [
     'application/json',
     'application/xml'
 ]);
+
+// Definição de permissões por nível
+defined("PERMISSOES") || define("PERMISSOES", [
+    "admin"      => ["Usuario", "Pessoa", "Produto", "Venda", "Pagamento", "Recebimento", "HomeSistema"],
+    "vendedor"   => ["Pessoa", "Produto", "Recebimento", "Venda", "HomeSistema"],
+    //"financeiro" => ["Pagamento", "Recebimento", "HomeSistema"]
+]);
+
+// --- CONFIGURAÇÕES DE PROTEÇÃO CSRF ---
+// Ativa ou desativa a proteção globalmente
+defined("CSRF_ENABLE") || define("CSRF_ENABLE", true);
+
+// Nome do campo que aparecerá no formulário e na sessão
+defined("CSRF_TOKEN_NAME") || define("CSRF_TOKEN_NAME", "csrf_token");
+
+// Tempo de expiração do token (2 horas em segundos)
+defined("CSRF_EXPIRE") || define("CSRF_EXPIRE", 7200);
+
+// URLs que NÃO precisam de proteção (ex: APIs externas ou Webhooks)
+defined("CSRF_EXCEPT_URLS") || define("CSRF_EXCEPT_URLS", [
+    "/api/externa",
+    "/notificacao/webhook"
+]);
+
+

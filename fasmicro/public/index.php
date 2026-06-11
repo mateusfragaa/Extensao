@@ -15,7 +15,7 @@
     // seta timezone da aplicação
     date_default_timezone_set(DEFAULT_TIME_ZONE);
 
-    // instancinando classe ambinte e rota
+    // instanciando classe ambiente e rota
     $ambiente = new Ambiente();
     $routes = new Routes();
 

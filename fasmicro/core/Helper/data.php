@@ -28,3 +28,16 @@ if (!function_exists('setValue')) {
         return $source ?? $default;
     }
 }
+
+
+function temPermissao($controller) {
+    $usuario = \Core\Library\Session::get('usuario_logado');
+
+    if (!$usuario) return false;
+    
+    $nivel = $usuario['USU_NIVEL'];
+    $permitidos = PERMISSOES[$nivel] ?? [];
+    
+    return in_array($controller, $permitidos);
+}
+

@@ -2,7 +2,21 @@
 
 use Core\Library\Request;
 use Core\Library\Session;
+use Core\Library\Csrf;
 
+/**
+ * Gera um campo de input oculto com o token CSRF.
+ * Deve ser usado dentro de formulários POST.
+ * @return string
+ */
+function csrfField(): string {
+    if (!CSRF_ENABLE) {
+        return "";
+    }
+    $token = Csrf::getToken();
+    $name = CSRF_TOKEN_NAME;
+    return "<input type=\"hidden\" name=\"$name\" value=\"$token\">";
+}
 
 if (!function_exists('formDadosInput')) {
 

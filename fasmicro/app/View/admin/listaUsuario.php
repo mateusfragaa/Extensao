@@ -7,9 +7,11 @@
         <a class="btn btn-primary-custom shadow-sm" href="/usuario/formUsuario">
             <i class="bi bi-person-plus-fill me-2"></i> Novo Usuário
         </a>
+        
     </div>
-
+    <?php echo exibeAlerta(); ?>
     <div class="card card-custom mb-4">
+
         <div class="card-body p-3">
             <form class="row g-2">
                 <div class="col-md-10">
@@ -40,30 +42,44 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td class="text-muted fw-bold">#001</td>
-                        <td>
-                            <div class="d-flex align-items-center">
-                                <div class="avatar-placeholder me-3">AD</div>
-                                <span class="fw-bold">Administrador Geral</span>
-                            </div>
-                        </td>
-                        <td>admin</td>
-                        <td><span class="badge-access bg-admin">Administrador</span></td>
-                        <td class="text-end">
-                            <button class="btn btn-sm btn-light border" title="Editar"><i
-                                    class="bi bi-eye text-primary"></i></button>
-                            <button class="btn btn-sm btn-light border" title="Editar"><i
-                                    class="bi bi-pencil"></i></button>
-                            <button class="btn btn-sm btn-light border text-danger" title="Excluir"><i
-                                    class="bi bi-trash"></i></button>
-                        </td>
-                    </tr>
+                    <?php if (empty($data['usuarios'])): ?>
+                        <tr>
+                            <td colspan="3" class="text-center text-muted py-4">Nenhum usuário cadastrado.</td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach ($data['usuarios'] as $user): ?>
+                            <tr>
+                                <td class="text-muted fw-bold"><?= $user['USU_ID'] ?></td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-placeholder me-3"><?= strtoupper(substr($user['USU_NOME'], 0, 2)) ?></div>
+                                        <span class="fw-bold"><?= $user['USU_NOME'] ?></span>
+                                    </div>
+                                </td>
+                                <td><?= $user['USU_LOGIN'] ?></td>
+                                <td><span class="badge-access bg-admin"><?= $user['USU_NIVEL'] ?></span></td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-light border" title="Editar"><i
+                                            class="bi bi-eye text-primary"></i></button>
+                                    <a href="/usuario/formUsuario/<?= $user['USU_ID'] ?> ?>">
+                                        <button class="btn btn-sm btn-light border" title="Editar"><i
+                                                class="bi bi-pencil"></i></button>
+                                    </a>
+                                    <a href="/usuario/excluir/<?= $user['USU_ID'] ?>"
+                                        class="btn btn-sm btn-light border text-danger"
+                                        onclick="return confirm('Tem certeza que deseja excluir este usuário?')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
         <div class="card-footer bg-white border-0 p-3 text-center border-top">
-            <small class="text-muted">Total de 3 usuários encontrados</small>
+            <small class="text-muted">Total de <?= $data['total'] ?> usuários encontrados</small>
         </div>
     </div>
 </div>

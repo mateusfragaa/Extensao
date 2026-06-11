@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/assests/css/geral.css">
     <link rel="stylesheet" href="/assests/css/home.css">
+    <?php if (CSRF_ENABLE): ?>
+        <meta name="csrf-token" content="<?= Core\Library\Csrf::getToken() ?>">
+    <?php endif; ?>
 </head>
 
 <body>

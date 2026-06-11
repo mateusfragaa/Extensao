@@ -33,52 +33,74 @@
                 <i class="bi bi-bar-chart-line-fill text-primary"></i> ERP System
             </a>
 
+            <pre>
+
+</pre>
+
             <div class="collapse navbar-collapse justify-content-center">
                 <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/venda">
-                            <i class="bi bi-cart3"></i> Vendas
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/produto">
-                            <i class="bi bi-box-seam"></i> Produtos
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/recebimento">
-                            <i class="bi bi-currency-dollar"></i> Recebimentos
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/pagamento">
-                            <i class="bi bi-credit-card"></i> Pagamentos
-                        </a>
-                    </li>
+                    <?php if (temPermissao('Venda')): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/venda">
+                                <i class="bi bi-cart3"></i> Vendas
+                            </a>
+                        </li>
+                    <?php endif; ?>
+
+                    <?php if (temPermissao('Produto')): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/produto">
+                                <i class="bi bi-box-seam"></i> Produtos
+                            </a>
+                        </li>
+                    <?php endif; ?>
+
+                    <?php if (temPermissao('Recebimento')): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/recebimento">
+                                <i class="bi bi-currency-dollar"></i> Recebimentos
+                            </a>
+                        </li>
+                    <?php endif; ?>
+
+                    <?php if (temPermissao('Pagamento')): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/pagamento">
+                                <i class="bi bi-credit-card"></i> Pagamentos
+                            </a>
+                        </li>
+                    <?php endif; ?>
+
                     <li class="nav-item">
                         <a class="nav-link" href="/tipoDocumento">
                             <i class="bi bi-file-earmark"></i> Tipo Documento
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/pessoa">
-                            <i class="bi bi-people"></i>Pessoas
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/usuario">
-                            <i class="bi bi-person"></i> Usuários
-                        </a>
-                    </li>
+
+                    <?php if (temPermissao('Pessoa')): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/pessoa">
+                                <i class="bi bi-people"></i>Pessoas
+                            </a>
+                        </li>
+                    <?php endif; ?>
+
+                    <?php if (temPermissao('Usuario')): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/usuario">
+                                <i class="bi bi-person"></i> Usuários
+                            </a>
+                        </li>
+                    <?php endif; ?>
                 </ul>
             </div>
 
             <div class="right-actions">
                 <div class="user-profile">
                     <i class="bi bi-person-circle fs-5"></i>
-                    <span>Nome</span>
+                    <span><?= \Core\Library\Session::get('usuario_logado')['USU_NOME'] ?? '' ?></span>
                 </div>
-                <a class="btn btn-danger" href="/">
+                <a class="btn btn-danger" href="/auth/logout">
                     <i class="bi bi-box-arrow-right"></i> Sair
                 </a>
             </div>
