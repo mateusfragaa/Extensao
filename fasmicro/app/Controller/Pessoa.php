@@ -166,7 +166,7 @@ class Pessoa extends ControllerMain
             exit;
         }
 
-        $url = "    {$cnpj}";
+        $url = "https://brasilapi.com.br/api/cnpj/v1/{$cnpj}";
 
         $ctx = stream_context_create([
             'http' => [

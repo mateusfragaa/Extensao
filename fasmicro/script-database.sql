@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS `tb_pedido_venda_item` (
 
 -- Copiando estrutura para tabela extensao.tb_pessoa
 CREATE TABLE IF NOT EXISTS `tb_pessoa` (
-  `PES_ID` int(10) unsigned NOT NULL,
+  `PES_ID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `PES_NOME` varchar(45) NOT NULL,
   `CPF_CNPJ` varchar(14) DEFAULT NULL,
   `EMAIL` varchar(50) DEFAULT NULL,
@@ -89,6 +89,9 @@ CREATE TABLE IF NOT EXISTS `tb_pessoa` (
   UNIQUE KEY `CLI_ID_UNIQUE` (`PES_ID`),
   UNIQUE KEY `CPF_CNPJ` (`CPF_CNPJ`)
 );
+
+//Mudança feita para permitir auto incremento na tabela tb_pessoa, pois o mesmo estava desabilitado.
+ALTER TABLE tb_pessoa MODIFY PES_ID int(10) unsigned NOT NULL AUTO_INCREMENT;
 
 -- Exportação de dados foi desmarcado.
 
