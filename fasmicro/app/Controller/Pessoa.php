@@ -14,6 +14,9 @@ class Pessoa extends ControllerMain
         return parent::__construct();
     }
 
+    /**
+     * Lista todas as pessoas cadastradas.
+     */
     public function index($action = null, $id = null)
     {
         $this->view(
@@ -25,6 +28,9 @@ class Pessoa extends ControllerMain
         );
     }
 
+    /**
+     * Filtragem via AJAX ou requisição normal.
+     */
     public function filtroListagemPessoa($action = null, $id = null)
     {
         $isAjax = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest');
@@ -40,54 +46,37 @@ class Pessoa extends ControllerMain
     }
 
     /**
-     * Prepara o formulário para as ações e faz o require do mesmo
+     * Prepara o formulário para as ações insert / update / delete / view.
      */
     public function formPessoa($acao = 'view', $id = null)
     {
         $data = [];
 
-        // Se houver erros de validação na sessão, recupera os dados digitados
+        // Se houver falha de validação na sessão, recupera o que o usuário digitou
         $formInputs = Session::getDestroy('formInputs');
 
-        if ($acao == 'insert') {
-            $data["action_form"] = "insert";
-            $data["pessoa"] = $formInputs ?: [];
+        if ($acao === 'insert') {
+            $data['action_form'] = 'insert';
+            $data['pessoa']      = $formInputs ?: [];
         } else {
-            $data["action_form"] = $acao;
-            // Se falhou a validação no update, usa o que o usuário digitou, senão busca do banco
-            $data["pessoa"] = $formInputs ?: $this->model->getById($id);
+            $data['action_form'] = $acao;
+            // Em caso de falha de update usa o que estava no POST, senão busca no banco
+            $data['pessoa']      = $formInputs ?: $this->model->getById($id);
         }
 
         $this->view(
             'admin/form/formPessoa',
-            [
-                "data" => $data
-            ],
+            ['data' => $data],
             'sistema'
         );
     }
 
-    public function update($action = null, $id = null)
-    {
-        if ($this->model->update($_POST)) {
-            Redirect::page("pessoa/", ['msgSucesso' => 'Sucesso ao atualizar o registro']);
-        } else {
-            $msgError = Session::get('msgError') ?: 'Erro ao atualizar registro, verifique os dados!';
-            Redirect::page("pessoa/formPessoa/update/" . $_POST['PES_ID'], ['msgError' => $msgError]);
-        }
-    }
-
-    public function delete($action = null, $id = null)
-    {
-        if ($this->model->delete($_POST)) {
-            Redirect::page("pessoa/", ['msgSucesso' => 'Sucesso ao apagar o registro']);
-        } else {
-            Redirect::page("pessoa/", ['msgError' => 'Erro ao apagar registro!']);
-        }
-    }
+    /**
+     * Insere nova pessoa.
+     */
     public function insert($action = null, $id = null)
     {
-        // Remove o PES_ID para que o banco de dados gere o ID automaticamente (AUTO_INCREMENT)
+        // Remove PES_ID para que o banco gere via AUTO_INCREMENT
         if (isset($_POST['PES_ID'])) {
             unset($_POST['PES_ID']);
         }
@@ -95,65 +84,46 @@ class Pessoa extends ControllerMain
         $idGerado = $this->model->insert($_POST);
 
         if ($idGerado) {
-            Redirect::page('pessoa/', ['msgSucesso' => 'Sucesso ao inserir registro, nova pessoa: ' . $idGerado]);
+            Redirect::page('pessoa/', ['msgSucesso' => 'Cadastro realizado com sucesso! (ID: ' . $idGerado . ')']);
         } else {
-            $msgError = Session::get('msgError') ?: 'Erro ao inserir registro, verifique os campos obrigatórios!';
+            $msgError = Session::get('msgError') ?: 'Verifique os campos obrigatórios e tente novamente.';
             Redirect::page('pessoa/formPessoa/insert', ['msgError' => $msgError]);
         }
     }
 
-    public function validarReceitaAjax()
+    /**
+     * Atualiza pessoa existente.
+     */
+    public function update($action = null, $id = null)
     {
-        // Garante que a resposta devolvida seja estritamente um JSON
-        header('Content-Type: application/json');
-
-        // Recupera o HTML que o JavaScript vai enviar via POST
-        $htmlRaw = $_POST['html_receita'] ?? null;
-
-        if (!$htmlRaw) {
-            echo json_encode(['sucesso' => false, 'mensagem' => 'Nenhum código HTML foi recebido pelo servidor.']);
-            exit;
+        if ($this->model->update($_POST)) {
+            Redirect::page('pessoa/', ['msgSucesso' => 'Registro atualizado com sucesso.']);
+        } else {
+            $msgError = Session::get('msgError') ?: 'Erro ao atualizar registro. Verifique os dados informados.';
+            Redirect::page('pessoa/formPessoa/update/' . $_POST['PES_ID'], ['msgError' => $msgError]);
         }
-
-        // Processamento do HTML usando o DOMDocument e XPath com base na sua imagem real
-        libxml_use_internal_errors(true);
-        $dom = new \DOMDocument();
-
-        // Tratamento de encoding para não estragar acentos ou cedilhas no nome
-        $dom->loadHTML(mb_convert_encoding($htmlRaw, 'HTML-ENTITIES', 'UTF-8'));
-        $xpath = new \DOMXPath($dom);
-        libxml_clear_errors();
-
-        // Seletores exatos baseados na árvore HTML do site da Receita Federal que você me mandou:
-        // Pega o <b> dentro do span com classe clConteudoDados que contém o texto "Nome:"
-        $queryNome = $xpath->query("//span[@class='clConteudoDados'][contains(text(), 'Nome:')]/b");
-
-        // Tentativa automática de pegar a situação cadastral (geralmente segue o mesmo padrão de classe)
-        $querySituacao = $xpath->query("//span[@class='clConteudoDados'][contains(text(), 'Situação Cadastral:')]/b");
-
-        $nomeCompleto = $queryNome->length > 0 ? trim($queryNome->item(0)->nodeValue) : null;
-        $situacao = $querySituacao->length > 0 ? trim($querySituacao->item(0)->nodeValue) : 'REGULAR';
-
-        if (!$nomeCompleto) {
-            echo json_encode([
-                'sucesso' => false,
-                'mensagem' => 'Não foi possível ler o nome no HTML. Certifique-se de que a consulta foi concluída.'
-            ]);
-            exit;
-        }
-
-        // Se achou o nome com sucesso, devolve o JSON limpo para o front-end
-        echo json_encode([
-            'sucesso' => true,
-            'nome' => $nomeCompleto,
-            'situacao' => $situacao
-        ]);
-        exit;
     }
 
     /**
-     * Consulta CNPJ na API publica receitaws.com.br e retorna JSON
-     * Rota: /pessoa/consultarCNPJAjax  (POST, AJAX)
+     * Exclui pessoa.
+     */
+    public function delete($action = null, $id = null)
+    {
+        if ($this->model->delete($_POST)) {
+            Redirect::page('pessoa/', ['msgSucesso' => 'Registro excluído com sucesso.']);
+        } else {
+            Redirect::page('pessoa/', ['msgError' => 'Erro ao excluir registro. Verifique se não há vínculos com outros dados.']);
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // AJAX — Consulta CNPJ
+    // Rota: POST /pessoa/consultarCNPJAjax
+    // ══════════════════════════════════════════════════════════════════
+
+    /**
+     * Consulta CNPJ usando múltiplas APIs públicas com fallback automático.
+     * Ordem: BrasilAPI → publica.cnpj.ws → receitaws.com.br
      */
     public function consultarCNPJAjax()
     {
@@ -162,18 +132,186 @@ class Pessoa extends ControllerMain
         $cnpj = preg_replace('/\D/', '', $_POST['cnpj'] ?? '');
 
         if (strlen($cnpj) !== 14) {
-            echo json_encode(['sucesso' => false, 'mensagem' => 'CNPJ invalido: deve ter 14 digitos.']);
+            echo json_encode(['sucesso' => false, 'mensagem' => 'CNPJ inválido: deve conter 14 dígitos.']);
             exit;
         }
 
-        $url = "https://brasilapi.com.br/api/cnpj/v1/{$cnpj}";
+        // Tenta cada API na ordem; retorna assim que uma funcionar
+        $resultado = $this->_consultarBrasilAPI($cnpj)
+                  ?? $this->_consultarCnpjWs($cnpj)
+                  ?? $this->_consultarReceitaWs($cnpj);
 
+        if ($resultado === null) {
+            echo json_encode([
+                'sucesso'  => false,
+                'mensagem' => 'Não foi possível consultar o CNPJ no momento. Todas as fontes estão indisponíveis. Tente novamente em instantes.'
+            ]);
+            exit;
+        }
+
+        echo json_encode($resultado);
+        exit;
+    }
+
+    /**
+     * BrasilAPI — https://brasilapi.com.br/api/cnpj/v1/{cnpj}
+     * Resposta: { cnpj, razao_social, nome_fantasia, situacao_cadastral (string), ... }
+     */
+    private function _consultarBrasilAPI(string $cnpj): ?array
+    {
+        $url      = "https://brasilapi.com.br/api/cnpj/v1/{$cnpj}";
+        $resposta = $this->_httpGet($url);
+
+        if ($resposta === null) {
+            return null; // API indisponível — tentar próxima
+        }
+
+        $dados = json_decode($resposta, true);
+
+        if (!$dados || isset($dados['type'])) {
+            // BrasilAPI retorna { type, message, ... } em erros
+            $msg = $dados['message'] ?? 'CNPJ não localizado.';
+            return ['sucesso' => false, 'mensagem' => $msg];
+        }
+
+        $situacao = $dados['descricao_situacao_cadastral'] ?? ($dados['situacao_cadastral'] ?? 'Desconhecida');
+
+        if (strtoupper($situacao) !== 'ATIVA') {
+            $nome = $dados['razao_social'] ?? 'Não informado';
+            return [
+                'sucesso'  => false,
+                'mensagem' => "CNPJ pertence a \"{$nome}\" mas a situação cadastral é \"{$situacao}\" (não ATIVA)."
+            ];
+        }
+
+        return [
+            'sucesso'   => true,
+            'nome'      => $dados['razao_social']   ?? 'Não informado',
+            'fantasia'  => $dados['nome_fantasia']  ?? '',
+            'situacao'  => ucfirst(strtolower($situacao)),
+            'municipio' => $dados['municipio']      ?? '',
+            'uf'        => $dados['uf']             ?? '',
+            'cep'       => preg_replace('/\D/', '', $dados['cep'] ?? ''),
+            'logradouro'=> $dados['logradouro_tipo'] . ' ' . ($dados['logradouro'] ?? ''),
+            'numero'    => $dados['numero']         ?? '',
+            'bairro'    => $dados['bairro']         ?? '',
+            'fonte'     => 'BrasilAPI',
+        ];
+    }
+
+    /**
+     * publica.cnpj.ws — https://publica.cnpj.ws/cnpj/{cnpj}
+     * Resposta: { razao_social, estabelecimento: { situacao_cadastral, ... } }
+     */
+    private function _consultarCnpjWs(string $cnpj): ?array
+    {
+        $url      = "https://publica.cnpj.ws/cnpj/{$cnpj}";
+        $resposta = $this->_httpGet($url);
+
+        if ($resposta === null) {
+            return null;
+        }
+
+        $dados = json_decode($resposta, true);
+
+        if (!$dados || isset($dados['status']) || empty($dados['razao_social'])) {
+            return null; // Formato inesperado — tentar próxima
+        }
+
+        $est      = $dados['estabelecimento'] ?? [];
+        $situacao = $est['situacao_cadastral'] ?? 'Desconhecida';
+
+        if (strtoupper($situacao) !== 'ATIVA') {
+            $nome = $dados['razao_social'] ?? 'Não informado';
+            return [
+                'sucesso'  => false,
+                'mensagem' => "CNPJ pertence a \"{$nome}\" mas a situação cadastral é \"{$situacao}\" (não ATIVA)."
+            ];
+        }
+
+        $end = $est['endereco'] ?? [];
+
+        return [
+            'sucesso'   => true,
+            'nome'      => $dados['razao_social']      ?? 'Não informado',
+            'fantasia'  => $est['nome_fantasia']       ?? '',
+            'situacao'  => ucfirst(strtolower($situacao)),
+            'municipio' => $end['municipio']['ibge_nome'] ?? ($end['municipio']['nome'] ?? ''),
+            'uf'        => $end['estado']['sigla']     ?? '',
+            'cep'       => preg_replace('/\D/', '', $end['cep'] ?? ''),
+            'logradouro'=> $end['logradouro']          ?? '',
+            'numero'    => $end['numero']              ?? '',
+            'bairro'    => $end['bairro']              ?? '',
+            'fonte'     => 'cnpj.ws',
+        ];
+    }
+
+    /**
+     * receitaws.com.br — https://receitaws.com.br/v1/cnpj/{cnpj}
+     * Resposta: { status, nome, fantasia, situacao, municipio, uf, ... }
+     * ATENÇÃO: tem rate limit de 3 req/min no plano gratuito.
+     */
+    private function _consultarReceitaWs(string $cnpj): ?array
+    {
+        $url      = "https://receitaws.com.br/v1/cnpj/{$cnpj}";
+        $resposta = $this->_httpGet($url);
+
+        if ($resposta === null) {
+            return null;
+        }
+
+        $dados = json_decode($resposta, true);
+
+        if (!$dados || !isset($dados['status'])) {
+            return null;
+        }
+
+        if (strtoupper($dados['status']) === 'ERROR') {
+            $msg = $dados['message'] ?? 'CNPJ não localizado na Receita Federal.';
+            return ['sucesso' => false, 'mensagem' => $msg];
+        }
+
+        $situacao = $dados['situacao'] ?? 'Desconhecida';
+
+        if (strtoupper($situacao) !== 'ATIVA') {
+            $nome = $dados['nome'] ?? 'Não informado';
+            return [
+                'sucesso'  => false,
+                'mensagem' => "CNPJ pertence a \"{$nome}\" mas a situação cadastral é \"{$situacao}\" (não ATIVA)."
+            ];
+        }
+
+        return [
+            'sucesso'   => true,
+            'nome'      => $dados['nome']      ?? 'Não informado',
+            'fantasia'  => $dados['fantasia']  ?? '',
+            'situacao'  => ucfirst(strtolower($situacao)),
+            'municipio' => $dados['municipio'] ?? '',
+            'uf'        => $dados['uf']        ?? '',
+            'cep'       => preg_replace('/\D/', '', $dados['cep'] ?? ''),
+            'logradouro'=> $dados['logradouro'] ?? '',
+            'numero'    => $dados['numero']    ?? '',
+            'bairro'    => $dados['bairro']    ?? '',
+            'fonte'     => 'ReceitaWS',
+        ];
+    }
+
+    /**
+     * Helper HTTP GET com timeout e SSL flexível.
+     * Retorna null em caso de falha de conexão (para o fallback agir).
+     */
+    private function _httpGet(string $url): ?string
+    {
         $ctx = stream_context_create([
             'http' => [
                 'method'        => 'GET',
                 'timeout'       => 8,
                 'ignore_errors' => true,
-                'header'        => "User-Agent: PHP-MVC-Validator\r\n",
+                'header'        => implode("\r\n", [
+                    'Accept: application/json',
+                    'User-Agent: PHP-ExtensaoMVC/1.0',
+                    'Accept-Charset: UTF-8',
+                ]),
             ],
             'ssl' => [
                 'verify_peer'      => false,
@@ -183,48 +321,64 @@ class Pessoa extends ControllerMain
 
         $resposta = @file_get_contents($url, false, $ctx);
 
-        if ($resposta === false) {
+        // Verifica se foi HTTP 429 (rate limit) ou outros erros por header
+        if ($resposta !== false && isset($http_response_header)) {
+            $statusLine = $http_response_header[0] ?? '';
+            preg_match('/HTTP\/\d\.\d\s+(\d{3})/', $statusLine, $m);
+            $httpCode = (int)($m[1] ?? 200);
+
+            if ($httpCode === 429 || $httpCode >= 500) {
+                return null; // Tratar como indisponível
+            }
+        }
+
+        return $resposta !== false ? $resposta : null;
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // AJAX — Validação CPF via HTML da Receita Federal (popup)
+    // Rota: POST /pessoa/validarReceitaAjax
+    // ══════════════════════════════════════════════════════════════════
+
+    /**
+     * Recebe o HTML capturado do popup da Receita Federal
+     * e extrai o nome e situação cadastral do CPF.
+     */
+    public function validarReceitaAjax()
+    {
+        header('Content-Type: application/json');
+
+        $htmlRaw = $_POST['html_receita'] ?? null;
+
+        if (!$htmlRaw) {
+            echo json_encode(['sucesso' => false, 'mensagem' => 'Nenhum HTML recebido pelo servidor.']);
+            exit;
+        }
+
+        libxml_use_internal_errors(true);
+        $dom = new \DOMDocument();
+        $dom->loadHTML(mb_convert_encoding($htmlRaw, 'HTML-ENTITIES', 'UTF-8'));
+        $xpath = new \DOMXPath($dom);
+        libxml_clear_errors();
+
+        $queryNome     = $xpath->query("//span[@class='clConteudoDados'][contains(text(), 'Nome:')]/b");
+        $querySituacao = $xpath->query("//span[@class='clConteudoDados'][contains(text(), 'Situação Cadastral:')]/b");
+
+        $nomeCompleto = $queryNome->length     > 0 ? trim($queryNome->item(0)->nodeValue)     : null;
+        $situacao     = $querySituacao->length > 0 ? trim($querySituacao->item(0)->nodeValue) : 'REGULAR';
+
+        if (!$nomeCompleto) {
             echo json_encode([
                 'sucesso'  => false,
-                'mensagem' => 'Nao foi possivel conectar a Receita Federal. Verifique sua conexao.'
-            ]);
-            exit;
-        }
-
-        $dados = json_decode($resposta, true);
-
-        if (!$dados || !isset($dados['status'])) {
-            echo json_encode(['sucesso' => false, 'mensagem' => 'Resposta inesperada da Receita Federal.']);
-            exit;
-        }
-
-        if (strtoupper($dados['status']) === 'ERROR') {
-            $msg = $dados['message'] ?? 'CNPJ nao localizado na Receita Federal.';
-            echo json_encode(['sucesso' => false, 'mensagem' => $msg]);
-            exit;
-        }
-
-        $situacao    = $dados['situacao']    ?? 'Desconhecida';
-        $nome        = $dados['nome']        ?? 'Nao informado';
-        $fantasia    = $dados['fantasia']    ?? '';
-        $municipio   = $dados['municipio']   ?? '';
-        $uf          = $dados['uf']          ?? '';
-
-        if (strtoupper($situacao) !== 'ATIVA') {
-            echo json_encode([
-                'sucesso'  => false,
-                'mensagem' => "O CNPJ pertence a \"$nome\" mas a situacao cadastral e \"$situacao\" (nao ATIVA)."
+                'mensagem' => 'Não foi possível extrair o nome do HTML. Certifique-se de que a consulta foi concluída no site da Receita.'
             ]);
             exit;
         }
 
         echo json_encode([
-            'sucesso'   => true,
-            'nome'      => $nome,
-            'fantasia'  => $fantasia,
-            'situacao'  => ucfirst(strtolower($situacao)),
-            'municipio' => $municipio,
-            'uf'        => $uf,
+            'sucesso'  => true,
+            'nome'     => $nomeCompleto,
+            'situacao' => $situacao
         ]);
         exit;
     }
