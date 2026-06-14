@@ -20,19 +20,24 @@ class Venda extends ControllerMain
 
     public function index(bool $temFiltro)
     {
+        $data = [];
         if (!$temFiltro) {
+            $data["vendas"] = $this->model->listaVenda();
+            $data["status_venda"] = $this->serviceVenda->getStatusVenda();
             $this->view(
                 'admin/listaVenda',
                 [
-                    "vendas" => $this->model->lista('pev_status'),
+                    "data" => $data
                 ],
                 'sistema'
             );
         }else {
+            $data["vendas"] = $this->model->filtroListagem($_POST);
+            $data["status_venda"] = $this->serviceVenda->getStatusVenda();
             $this->view(
                 'admin/listaVenda',
                 [
-                    "vendas" => $this->model->filtroListagem($_POST)
+                    "data" => $data
                 ],
                 'sistema'
             );
@@ -69,12 +74,13 @@ class Venda extends ControllerMain
                 2- Com base na ação eu altero a venda do id
                 3- Para update eu preciso carregar
         */
+
         if ($acao == 'insert') {
-            $produtoModel = $this->loadModel('Produto');
-            $data['produtos'] = $produtoModel->lista('prd_descricao');
-            unset($produtoModel);
+            $data['produtos'] = $this->serviceVenda->listaProduto('prd_descricao');
+            $data['pessoas'] = $this->serviceVenda->listaPessoa('pes_nome');
+            $data['status_venda'] = $this->serviceVenda->getStatusVenda();
         } else {
-            // die('carrega a venda id');
+            die('carrega a venda id');
             $data["vendas"] = $this->model->getById($id);
         }
 
@@ -90,10 +96,10 @@ class Venda extends ControllerMain
 
     // =====================================================================
     // Tratar o formulário da esquerda do formVenda.php
-    public function update()
+    public function update($action, $id_pedido)
     {
-        if ($this->serviceVenda->updateVenda($_POST)) {
-            Redirect::page("venda/", ['msgSucesso' => 'Sucesso ao atualizar o registro']);
+        if ($this->serviceVenda->updateVenda($_POST, $id_pedido)) {
+            Redirect::page("venda/editandoVenda/form/$id_pedido", ['msgSucesso' => 'Sucesso ao atualizar o registro']);
         } else {
             Redirect::page("venda/", ['msgError' => 'Erro ao atualizar registro, verifique se os dados estão corretos!']);
         }
@@ -125,7 +131,9 @@ class Venda extends ControllerMain
         $data = [];
         $data['produtos_pedidos'] = $this->serviceVenda->comecarPedidoVenda($_POST);
         $data['produtos'] = $this->serviceVenda->listaProduto('prd_descricao');
+        $data['pessoas'] = $this->serviceVenda->listaPessoa('pes_nome');
         $data['info_venda'] = $this->serviceVenda->getVenda(Session::getDestroy('id_pedido_editando'));
+        $data['status_venda'] = $this->serviceVenda->getStatusVenda();
         $data['action_form_modal'] = 'editandoVenda';
         $data['action_form'] = 'update';
 
@@ -138,33 +146,28 @@ class Venda extends ControllerMain
         );   
     }
 
+    // =====================================================================
     public function calculaTotalVenda() {
         $data = json_decode(file_get_contents('php://input'), true);
         $novoTotal = $this->serviceVenda->calcularTotal($data['acrescimo'], $data['desconto'], $data['venda']);
         echo json_encode($novoTotal);
     }
 
+    // =====================================================================
     public function editandoVenda($action = '', $id_pedido = 0)
     {
-        echo('Ação - '.$action);
-        echo('<br>');
-        echo('ID - '.$id_pedido);
-        var_dump('post', $_POST);
-
-        /**
-         * 1- verificar se é editando a venda ou os itens atráves da ação ✅
-         * 2- chamar o service com os dados novos e atualizar a venda ✅
-         * 3- retornar os dados e itens da vendas com os produtos para selecionar para incluir mais produtos
-         * 4- tentar o redirect caso não de certo usar  a view
-         */
-
         $data = [];
-        $this->serviceVenda->addProdutoPedido($id_pedido, $_POST);
+        if ($action == 'modal') {
+            $this->serviceVenda->addProdutoPedido($id_pedido, $_POST);
+        }
+
         $data['produtos_pedidos'] = $this->serviceVenda->select_produto_venda($id_pedido);
         $data['produtos'] = $this->serviceVenda->listaProduto('prd_descricao');
+        $data['pessoas'] = $this->serviceVenda->listaPessoa('pes_nome');
         $data['info_venda'] = $this->serviceVenda->getVenda($id_pedido);
+        $data['status_venda'] = $this->serviceVenda->getStatusVenda();
         $data['action_form_modal'] = 'editandoVenda';
-        $data['action_form'] = 'editandoVenda';
+        $data['action_form'] = 'update';
         
 
         $this->view(
@@ -175,5 +178,11 @@ class Venda extends ControllerMain
             'sistema'
         );
     }   
+
+    public function excluirProduto()
+    {
+        $data = json_decode(file_get_contents('php://input'), true);
+        echo json_encode($this->serviceVenda->excluirProduto($data['produtos_excluir']));
+    }
 }
 

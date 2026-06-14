@@ -11,6 +11,17 @@ class VendaModel extends ModelMain
     protected $table = 'tb_pedido_venda';
     protected $primaryKey = "PEV_ID";
     public $validationRules = [];
+    public $status_venda = [
+        'A' => 'Aberta',
+        'F' => 'Faturada',
+        'C' => 'Cancelada',
+        'O' => 'Orçamento'
+    ];
+
+    public function getStatus()
+    {
+        return $this->status_venda;
+    }
 
     public function filtroListagem($dados)
     {
@@ -26,9 +37,8 @@ class VendaModel extends ModelMain
                 $sqlparte[] = "pev_id = :pev_id";
                 $params[':pev_id'] = $id_nome_cliente;
             } else {
-
-                $sqlparte[] = "pev_cliente_nome like :pev_cliente_nome";
-                $params[':pev_cliente_nome'] = "%{$id_nome_cliente}%";
+                $sqlparte[] = "pev_cliente_nome like %{:pev_cliente_nome}%";
+                $params[':pev_cliente_nome'] = "$id_nome_cliente";
             }
         }
 
@@ -48,6 +58,14 @@ class VendaModel extends ModelMain
         $sql .= count($sqlparte) > 0 ? ' where ' . implode(' and ', $sqlparte) : '';
         $pdo = $this->db->dbSelect($sql, $params);
         return $this->db->dbBuscaArrayAll($pdo);
+    }
+
+    public function listaVenda()
+    {
+        return $this->db
+        ->select('pev_id, pes.pes_nome, pev_data_venda, pev_total, pev_status')
+        ->join('tb_pessoa pes', 'pes.pes_id = pev_cliente_id')
+        ->findAll();
     }
 
     public function criarPedido()

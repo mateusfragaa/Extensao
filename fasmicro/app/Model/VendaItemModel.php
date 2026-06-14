@@ -44,4 +44,9 @@ class VendaItemModel extends ModelMain
             ->where("pevi_venda_id", $id_pedido)
             ->findAll();
     }
+
+    public function apagarProdutoPedido($ids)
+    {
+        return $this->db->whereIn('pevi_id', $ids)->delete();
+    }
 }

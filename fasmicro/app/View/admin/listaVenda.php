@@ -1,5 +1,7 @@
 <?php
-// var_dump($vendas);
+$vendas = isset($data['data']['vendas']) ? $data['data']['vendas'] : [];
+$status_vendas = isset($data['data']['status_venda']) ? $data['data']['status_venda'] : [];
+
 ?>
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -12,6 +14,8 @@
         </a>
     </div>
 
+    <?= exibeAlerta() ?>
+    
     <div class="card card-custom mb-4">
         <div class="card-body p-3">
             <form action="/venda/filtroListagemVenda" method="post">
@@ -68,16 +72,16 @@
                 <tbody>
                     <?php foreach ($vendas as $key => $venda) : ?>
                         <tr>
-                            <td class="fw-bold text-primary">#<?= $venda['PEV_ID'] ?></td>
-                            <td class="fw-medium"><?= $venda['PEV_CLIENTE_ID'] ?></td>
-                            <td class="text-muted"><?= $venda['PEV_DATA_VENDA'] ?></td>
-                            <td class="fw-bold">R$ <?= number_format($venda['PEV_TOTAL'], 2, ',', '.') ?></td>
-                            <td><span class="badge-status status-concluida"><?= $venda['PEV_STATUS'] ?></span></td>
+                            <td class="fw-bold text-primary">#<?= $venda['pev_id'] ?></td>
+                            <td class="fw-medium"><?= $venda['pes_nome'] ?></td>
+                            <td class="text-muted"><?= $venda['pes_nome'] ?></td>
+                            <td class="fw-bold">R$ <?= number_format($venda['pev_total'], 2, ',', '.') ?></td>
+                            <td><span class="badge-status status-concluida"><?= $status_vendas[$venda['pev_status']] ?></span></td>
                             <td class="text-end">
                                 <button class="btn btn-sm btn-light border" title="Editar"><i class="bi bi-eye text-primary"></i></button>
-                                <button class="btn btn-sm btn-light border me-1" title="Visualizar"><i
+                                <button class="btn btn-sm btn-light border me-1" title="Editar"><i
                                         class="bi bi-pencil "></i></button>
-                                <button class="btn btn-sm btn-light border" title="Imprimir"><i
+                                <button class="btn btn-sm btn-light border" title="Excluir"><i
                                         class="bi bi-trash text-danger"></i></button>
                             </td>
                         </tr>
