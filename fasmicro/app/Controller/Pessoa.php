@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use Core\Library\ControllerMain;
+use Core\Library\Csrf;
 use Core\Library\Redirect;
 use Core\Library\Session;
 
@@ -14,72 +15,51 @@ class Pessoa extends ControllerMain
         return parent::__construct();
     }
 
-    /**
-     * Lista todas as pessoas cadastradas.
-     */
+    /** Lista todas as pessoas. */
     public function index($action = null, $id = null)
     {
         $this->view(
             'admin/listaPessoa',
-            [
-                "pessoas" => $this->model->lista('PES_NOME')
-            ],
+            ['pessoas' => $this->model->lista('PES_NOME')],
             'sistema'
         );
     }
 
-    /**
-     * Filtragem via AJAX ou requisição normal.
-     */
+    /** Filtragem via AJAX ou requisição normal. */
     public function filtroListagemPessoa($action = null, $id = null)
     {
-        $isAjax = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest');
-        $layout = $isAjax ? null : 'sistema';
+        $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH'])
+               && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
 
         $this->view(
             'admin/listaPessoa',
-            [
-                "pessoas" => $this->model->filtroListagem($_POST)
-            ],
-            $layout
+            ['pessoas' => $this->model->filtroListagem($_POST)],
+            $isAjax ? null : 'sistema'
         );
     }
 
-    /**
-     * Prepara o formulário para as ações insert / update / delete / view.
-     */
+    /** Prepara formulário para insert / update / delete / view. */
     public function formPessoa($acao = 'view', $id = null)
     {
-        $data = [];
-
-        // Se houver falha de validação na sessão, recupera o que o usuário digitou
         $formInputs = Session::getDestroy('formInputs');
 
         if ($acao === 'insert') {
-            $data['action_form'] = 'insert';
-            $data['pessoa']      = $formInputs ?: [];
+            $data = ['action_form' => 'insert', 'pessoa' => $formInputs ?: []];
         } else {
-            $data['action_form'] = $acao;
-            // Em caso de falha de update usa o que estava no POST, senão busca no banco
-            $data['pessoa']      = $formInputs ?: $this->model->getById($id);
+            $data = [
+                'action_form' => $acao,
+                'pessoa'      => $formInputs ?: $this->model->getById($id),
+            ];
         }
 
-        $this->view(
-            'admin/form/formPessoa',
-            ['data' => $data],
-            'sistema'
-        );
+        $this->view('admin/form/formPessoa', ['data' => $data], 'sistema');
     }
 
-    /**
-     * Insere nova pessoa.
-     */
+    /** Insere nova pessoa — limpa máscaras antes de salvar. */
     public function insert($action = null, $id = null)
     {
-        // Remove PES_ID para que o banco gere via AUTO_INCREMENT
-        if (isset($_POST['PES_ID'])) {
-            unset($_POST['PES_ID']);
-        }
+        unset($_POST['PES_ID']);
+        $_POST = $this->limparMascaras($_POST);
 
         $idGerado = $this->model->insert($_POST);
 
@@ -91,60 +71,70 @@ class Pessoa extends ControllerMain
         }
     }
 
-    /**
-     * Atualiza pessoa existente.
-     */
+    /** Atualiza pessoa existente — limpa máscaras antes de salvar. */
     public function update($action = null, $id = null)
     {
+        $_POST = $this->limparMascaras($_POST);
+
         if ($this->model->update($_POST)) {
             Redirect::page('pessoa/', ['msgSucesso' => 'Registro atualizado com sucesso.']);
         } else {
-            $msgError = Session::get('msgError') ?: 'Erro ao atualizar registro. Verifique os dados informados.';
+            $msgError = Session::get('msgError') ?: 'Erro ao atualizar. Verifique os dados informados.';
             Redirect::page('pessoa/formPessoa/update/' . $_POST['PES_ID'], ['msgError' => $msgError]);
         }
     }
 
-    /**
-     * Exclui pessoa.
-     */
+    /** Exclui pessoa. */
     public function delete($action = null, $id = null)
     {
         if ($this->model->delete($_POST)) {
             Redirect::page('pessoa/', ['msgSucesso' => 'Registro excluído com sucesso.']);
         } else {
-            Redirect::page('pessoa/', ['msgError' => 'Erro ao excluir registro. Verifique se não há vínculos com outros dados.']);
+            Redirect::page('pessoa/', ['msgError' => 'Erro ao excluir. Verifique se há vínculos com outros dados.']);
         }
     }
 
     // ══════════════════════════════════════════════════════════════════
-    // AJAX — Consulta CNPJ
+    // AJAX — Consulta CNPJ via opencnpj.org com fallback entre datasets
     // Rota: POST /pessoa/consultarCNPJAjax
+    // Datasets disponíveis: receita | cno | rntrc
     // ══════════════════════════════════════════════════════════════════
 
-    /**
-     * Consulta CNPJ usando múltiplas APIs públicas com fallback automático.
-     * Ordem: BrasilAPI → publica.cnpj.ws → receitaws.com.br
-     */
     public function consultarCNPJAjax()
     {
         header('Content-Type: application/json; charset=utf-8');
 
-        $cnpj = preg_replace('/\D/', '', $_POST['cnpj'] ?? '');
+        $cnpj    = preg_replace('/\D/', '', $_POST['cnpj']    ?? '');
+        $dataset = preg_replace('/[^a-z]/', '', strtolower($_POST['dataset'] ?? 'receita'));
+
+        $datasetsPermitidos = ['receita', 'cno', 'rntrc'];
+        if (!in_array($dataset, $datasetsPermitidos)) {
+            $dataset = 'receita';
+        }
 
         if (strlen($cnpj) !== 14) {
             echo json_encode(['sucesso' => false, 'mensagem' => 'CNPJ inválido: deve conter 14 dígitos.']);
             exit;
         }
 
-        // Tenta cada API na ordem; retorna assim que uma funcionar
-        $resultado = $this->_consultarBrasilAPI($cnpj)
-                  ?? $this->_consultarCnpjWs($cnpj)
-                  ?? $this->_consultarReceitaWs($cnpj);
+        $resultado = $this->_consultarOpenCNPJ($cnpj, $dataset);
+
+        if ($resultado === null) {
+            // Fallback automático: tenta datasets alternativos
+            foreach ($datasetsPermitidos as $ds) {
+                if ($ds === $dataset) continue;
+                $resultado = $this->_consultarOpenCNPJ($cnpj, $ds);
+                if ($resultado !== null) {
+                    $resultado['dataset_usado'] = $ds;
+                    break;
+                }
+            }
+        }
 
         if ($resultado === null) {
             echo json_encode([
                 'sucesso'  => false,
-                'mensagem' => 'Não foi possível consultar o CNPJ no momento. Todas as fontes estão indisponíveis. Tente novamente em instantes.'
+                'mensagem' => 'Não foi possível consultar o CNPJ em nenhuma das fontes disponíveis. Tente novamente em instantes.'
             ]);
             exit;
         }
@@ -154,58 +144,26 @@ class Pessoa extends ControllerMain
     }
 
     /**
-     * BrasilAPI — https://brasilapi.com.br/api/cnpj/v1/{cnpj}
-     * Resposta: { cnpj, razao_social, nome_fantasia, situacao_cadastral (string), ... }
+     * opencnpj.org — GET https://api.opencnpj.org/{cnpj}?dataset={dataset}
+     *
+     * JSON real retornado pela API (campos confirmados na documentação):
+     * {
+     *   "cnpj": "00000000000000",
+     *   "razao_social": "EMPRESA EXEMPLO LTDA",   ← NÃO é "nome"
+     *   "nome_fantasia": "EXEMPLO",
+     *   "situacao_cadastral": "Ativa",             ← NÃO é "situacao"
+     *   "logradouro": "RUA EXEMPLO",
+     *   "numero": "123",
+     *   "bairro": "BAIRRO",
+     *   "cep": "00000000",
+     *   "uf": "SP",
+     *   "municipio": "SAO PAULO",
+     *   ...
+     * }
      */
-    private function _consultarBrasilAPI(string $cnpj): ?array
+    private function _consultarOpenCNPJ(string $cnpj, string $dataset): ?array
     {
-        $url      = "https://brasilapi.com.br/api/cnpj/v1/{$cnpj}";
-        $resposta = $this->_httpGet($url);
-
-        if ($resposta === null) {
-            return null; // API indisponível — tentar próxima
-        }
-
-        $dados = json_decode($resposta, true);
-
-        if (!$dados || isset($dados['type'])) {
-            // BrasilAPI retorna { type, message, ... } em erros
-            $msg = $dados['message'] ?? 'CNPJ não localizado.';
-            return ['sucesso' => false, 'mensagem' => $msg];
-        }
-
-        $situacao = $dados['descricao_situacao_cadastral'] ?? ($dados['situacao_cadastral'] ?? 'Desconhecida');
-
-        if (strtoupper($situacao) !== 'ATIVA') {
-            $nome = $dados['razao_social'] ?? 'Não informado';
-            return [
-                'sucesso'  => false,
-                'mensagem' => "CNPJ pertence a \"{$nome}\" mas a situação cadastral é \"{$situacao}\" (não ATIVA)."
-            ];
-        }
-
-        return [
-            'sucesso'   => true,
-            'nome'      => $dados['razao_social']   ?? 'Não informado',
-            'fantasia'  => $dados['nome_fantasia']  ?? '',
-            'situacao'  => ucfirst(strtolower($situacao)),
-            'municipio' => $dados['municipio']      ?? '',
-            'uf'        => $dados['uf']             ?? '',
-            'cep'       => preg_replace('/\D/', '', $dados['cep'] ?? ''),
-            'logradouro'=> $dados['logradouro_tipo'] . ' ' . ($dados['logradouro'] ?? ''),
-            'numero'    => $dados['numero']         ?? '',
-            'bairro'    => $dados['bairro']         ?? '',
-            'fonte'     => 'BrasilAPI',
-        ];
-    }
-
-    /**
-     * publica.cnpj.ws — https://publica.cnpj.ws/cnpj/{cnpj}
-     * Resposta: { razao_social, estabelecimento: { situacao_cadastral, ... } }
-     */
-    private function _consultarCnpjWs(string $cnpj): ?array
-    {
-        $url      = "https://publica.cnpj.ws/cnpj/{$cnpj}";
+        $url      = "https://api.opencnpj.org/{$cnpj}?dataset={$dataset}";
         $resposta = $this->_httpGet($url);
 
         if ($resposta === null) {
@@ -214,91 +172,51 @@ class Pessoa extends ControllerMain
 
         $dados = json_decode($resposta, true);
 
-        if (!$dados || isset($dados['status']) || empty($dados['razao_social'])) {
-            return null; // Formato inesperado — tentar próxima
+        // Erro explícito da API (CNPJ inválido, não encontrado, etc.)
+        if (!$dados || isset($dados['error']) || isset($dados['message'])) {
+            $msg = $dados['message'] ?? ($dados['error'] ?? 'CNPJ não localizado neste dataset.');
+            return ['sucesso' => false, 'mensagem' => $msg, 'dataset' => $dataset];
         }
 
-        $est      = $dados['estabelecimento'] ?? [];
-        $situacao = $est['situacao_cadastral'] ?? 'Desconhecida';
+        // ── Lê os campos com os nomes corretos da API opencnpj.org ──
+        $nome      = $dados['razao_social']      ?? 'Não informado';
+        $fantasia  = $dados['nome_fantasia']     ?? '';
+        $situacao  = $dados['situacao_cadastral'] ?? 'Desconhecida';
+        $municipio = $dados['municipio']         ?? '';
+        $uf        = $dados['uf']                ?? '';
+        $cep       = preg_replace('/\D/', '', $dados['cep']       ?? '');
+        $logradouro= $dados['logradouro']        ?? '';
+        $numero    = $dados['numero']            ?? '';
+        $bairro    = $dados['bairro']            ?? '';
 
-        if (strtoupper($situacao) !== 'ATIVA') {
-            $nome = $dados['razao_social'] ?? 'Não informado';
+        // A API retorna "Ativa", "Inapta", "Baixada", "Suspensa", "Nula"
+        if (strtolower($situacao) !== 'ativa') {
             return [
                 'sucesso'  => false,
-                'mensagem' => "CNPJ pertence a \"{$nome}\" mas a situação cadastral é \"{$situacao}\" (não ATIVA)."
-            ];
-        }
-
-        $end = $est['endereco'] ?? [];
-
-        return [
-            'sucesso'   => true,
-            'nome'      => $dados['razao_social']      ?? 'Não informado',
-            'fantasia'  => $est['nome_fantasia']       ?? '',
-            'situacao'  => ucfirst(strtolower($situacao)),
-            'municipio' => $end['municipio']['ibge_nome'] ?? ($end['municipio']['nome'] ?? ''),
-            'uf'        => $end['estado']['sigla']     ?? '',
-            'cep'       => preg_replace('/\D/', '', $end['cep'] ?? ''),
-            'logradouro'=> $end['logradouro']          ?? '',
-            'numero'    => $end['numero']              ?? '',
-            'bairro'    => $end['bairro']              ?? '',
-            'fonte'     => 'cnpj.ws',
-        ];
-    }
-
-    /**
-     * receitaws.com.br — https://receitaws.com.br/v1/cnpj/{cnpj}
-     * Resposta: { status, nome, fantasia, situacao, municipio, uf, ... }
-     * ATENÇÃO: tem rate limit de 3 req/min no plano gratuito.
-     */
-    private function _consultarReceitaWs(string $cnpj): ?array
-    {
-        $url      = "https://receitaws.com.br/v1/cnpj/{$cnpj}";
-        $resposta = $this->_httpGet($url);
-
-        if ($resposta === null) {
-            return null;
-        }
-
-        $dados = json_decode($resposta, true);
-
-        if (!$dados || !isset($dados['status'])) {
-            return null;
-        }
-
-        if (strtoupper($dados['status']) === 'ERROR') {
-            $msg = $dados['message'] ?? 'CNPJ não localizado na Receita Federal.';
-            return ['sucesso' => false, 'mensagem' => $msg];
-        }
-
-        $situacao = $dados['situacao'] ?? 'Desconhecida';
-
-        if (strtoupper($situacao) !== 'ATIVA') {
-            $nome = $dados['nome'] ?? 'Não informado';
-            return [
-                'sucesso'  => false,
-                'mensagem' => "CNPJ pertence a \"{$nome}\" mas a situação cadastral é \"{$situacao}\" (não ATIVA)."
+                'mensagem' => "CNPJ pertence a \"{$nome}\" mas a situação cadastral é \"{$situacao}\" (não Ativa).",
+                'dataset'  => $dataset,
             ];
         }
 
         return [
-            'sucesso'   => true,
-            'nome'      => $dados['nome']      ?? 'Não informado',
-            'fantasia'  => $dados['fantasia']  ?? '',
-            'situacao'  => ucfirst(strtolower($situacao)),
-            'municipio' => $dados['municipio'] ?? '',
-            'uf'        => $dados['uf']        ?? '',
-            'cep'       => preg_replace('/\D/', '', $dados['cep'] ?? ''),
-            'logradouro'=> $dados['logradouro'] ?? '',
-            'numero'    => $dados['numero']    ?? '',
-            'bairro'    => $dados['bairro']    ?? '',
-            'fonte'     => 'ReceitaWS',
+            'sucesso'       => true,
+            'nome'          => $nome,
+            'fantasia'      => $fantasia,
+            'situacao'      => $situacao,
+            'municipio'     => $municipio,
+            'uf'            => $uf,
+            'cep'           => $cep,
+            'logradouro'    => $logradouro,
+            'numero'        => $numero,
+            'bairro'        => $bairro,
+            'dataset'       => $dataset,
+            'dataset_usado' => $dataset,
         ];
     }
 
     /**
-     * Helper HTTP GET com timeout e SSL flexível.
-     * Retorna null em caso de falha de conexão (para o fallback agir).
+     * Helper HTTP GET com timeout, User-Agent e verificação de status.
+     * Retorna null em qualquer falha para que o chamador faça fallback.
      */
     private function _httpGet(string $url): ?string
     {
@@ -321,14 +239,11 @@ class Pessoa extends ControllerMain
 
         $resposta = @file_get_contents($url, false, $ctx);
 
-        // Verifica se foi HTTP 429 (rate limit) ou outros erros por header
         if ($resposta !== false && isset($http_response_header)) {
-            $statusLine = $http_response_header[0] ?? '';
-            preg_match('/HTTP\/\d\.\d\s+(\d{3})/', $statusLine, $m);
-            $httpCode = (int)($m[1] ?? 200);
-
-            if ($httpCode === 429 || $httpCode >= 500) {
-                return null; // Tratar como indisponível
+            preg_match('/HTTP\/\S+\s+(\d{3})/', $http_response_header[0] ?? '', $m);
+            $code = (int)($m[1] ?? 200);
+            if ($code === 429 || $code >= 500) {
+                return null;
             }
         }
 
@@ -336,14 +251,9 @@ class Pessoa extends ControllerMain
     }
 
     // ══════════════════════════════════════════════════════════════════
-    // AJAX — Validação CPF via HTML da Receita Federal (popup)
-    // Rota: POST /pessoa/validarReceitaAjax
+    // AJAX — Validação CPF via HTML capturado do popup da Receita Federal
     // ══════════════════════════════════════════════════════════════════
 
-    /**
-     * Recebe o HTML capturado do popup da Receita Federal
-     * e extrai o nome e situação cadastral do CPF.
-     */
     public function validarReceitaAjax()
     {
         header('Content-Type: application/json');
@@ -351,7 +261,7 @@ class Pessoa extends ControllerMain
         $htmlRaw = $_POST['html_receita'] ?? null;
 
         if (!$htmlRaw) {
-            echo json_encode(['sucesso' => false, 'mensagem' => 'Nenhum HTML recebido pelo servidor.']);
+            echo json_encode(['sucesso' => false, 'mensagem' => 'Nenhum HTML recebido.']);
             exit;
         }
 
@@ -361,25 +271,48 @@ class Pessoa extends ControllerMain
         $xpath = new \DOMXPath($dom);
         libxml_clear_errors();
 
-        $queryNome     = $xpath->query("//span[@class='clConteudoDados'][contains(text(), 'Nome:')]/b");
-        $querySituacao = $xpath->query("//span[@class='clConteudoDados'][contains(text(), 'Situação Cadastral:')]/b");
+        $qNome = $xpath->query("//span[@class='clConteudoDados'][contains(text(), 'Nome:')]/b");
+        $qSit  = $xpath->query("//span[@class='clConteudoDados'][contains(text(), 'Situação Cadastral:')]/b");
 
-        $nomeCompleto = $queryNome->length     > 0 ? trim($queryNome->item(0)->nodeValue)     : null;
-        $situacao     = $querySituacao->length > 0 ? trim($querySituacao->item(0)->nodeValue) : 'REGULAR';
+        $nome     = $qNome->length > 0 ? trim($qNome->item(0)->nodeValue) : null;
+        $situacao = $qSit->length  > 0 ? trim($qSit->item(0)->nodeValue)  : 'REGULAR';
 
-        if (!$nomeCompleto) {
-            echo json_encode([
-                'sucesso'  => false,
-                'mensagem' => 'Não foi possível extrair o nome do HTML. Certifique-se de que a consulta foi concluída no site da Receita.'
-            ]);
+        if (!$nome) {
+            echo json_encode(['sucesso' => false, 'mensagem' => 'Não foi possível extrair o nome. Conclua a consulta no site da Receita antes de fechar.']);
             exit;
         }
 
-        echo json_encode([
-            'sucesso'  => true,
-            'nome'     => $nomeCompleto,
-            'situacao' => $situacao
-        ]);
+        echo json_encode(['sucesso' => true, 'nome' => $nome, 'situacao' => $situacao]);
         exit;
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // Helpers internos
+    // ══════════════════════════════════════════════════════════════════
+
+    /**
+     * Remove máscaras de formatação dos campos antes de enviar ao banco.
+     * CPF/CNPJ, Telefone e CEP ficam apenas com dígitos.
+     * TELEFONE é limitado a 15 chars para caber no varchar(15) do banco.
+     */
+    private function limparMascaras(array $dados): array
+    {
+        // CPF: 000.000.000-00 → 00000000000 (11 dígitos)
+        // CNPJ: 00.000.000/0000-00 → 00000000000000 (14 dígitos)
+        if (!empty($dados['CPF_CNPJ'])) {
+            $dados['CPF_CNPJ'] = preg_replace('/\D/', '', $dados['CPF_CNPJ']);
+        }
+
+        // Telefone: (00) 00000-0000 → somente dígitos, max 15 chars
+        if (!empty($dados['TELEFONE'])) {
+            $dados['TELEFONE'] = substr(preg_replace('/\D/', '', $dados['TELEFONE']), 0, 15);
+        }
+
+        // CEP: 00000-000 → 00000000 (8 dígitos)
+        if (!empty($dados['CEP'])) {
+            $dados['CEP'] = preg_replace('/\D/', '', $dados['CEP']);
+        }
+
+        return $dados;
     }
 }

@@ -91,7 +91,12 @@ CREATE TABLE IF NOT EXISTS `tb_pessoa` (
 );
 
 //Mudança feita para permitir auto incremento na tabela tb_pessoa, pois o mesmo estava desabilitado.
-ALTER TABLE tb_pessoa MODIFY PES_ID int(10) unsigned NOT NULL AUTO_INCREMENT;
+ALTER TABLE `tb_pessoa`
+    MODIFY `PES_ID` int(10) unsigned NOT NULL AUTO_INCREMENT;
+-- 2. TELEFONE - Modificando o campo para aceitar números de telefone com DDD e 9 dígitos, além de permitir valores nulos.
+ALTER TABLE `tb_pessoa`
+    MODIFY `TELEFONE` varchar(15) DEFAULT NULL;
+
 
 -- Exportação de dados foi desmarcado.
 

@@ -1,12 +1,12 @@
 <?php
+use Core\Library\Csrf;
+
 $action_form = formDadosInput($data, 'pessoa');
 $errors      = \Core\Library\Session::get('formErrors');
 ?>
 <div class="container py-5">
     <div class="d-flex align-items-center mb-4">
-        <a href="/pessoa/" class="btn btn-light border me-3">
-            <i class="bi bi-arrow-left"></i>
-        </a>
+        <a href="/pessoa/" class="btn btn-light border me-3"><i class="bi bi-arrow-left"></i></a>
         <div>
             <h4 class="fw-bold m-0">Cadastro de Pessoa <?= formSubTitulo($action_form) ?></h4>
             <p class="text-muted small m-0">Pessoa Física (CPF) ou Pessoa Jurídica (CNPJ).</p>
@@ -18,57 +18,60 @@ $errors      = \Core\Library\Session::get('formErrors');
 
         <form class="row g-4" action="/pessoa/<?= $action_form ?>" method="POST">
 
+            <?= Csrf::getHiddenField() ?>
+
             <?php if ($action_form !== 'insert'): ?>
                 <input type="hidden" name="PES_ID" value="<?= setValue('PES_ID') ?>">
             <?php endif; ?>
 
-            <!-- ── Tipo de Pessoa ─────────────────────────────────── -->
+            <!-- ── Tipo de Pessoa ──────────────────────────────────── -->
             <div class="col-md-3">
                 <label class="form-label">Tipo de Pessoa <span class="text-danger">*</span></label>
                 <select name="TIPO_PESSOA" id="tipo_pessoa"
                         class="form-select <?= isset($errors['TIPO_PESSOA']) ? 'is-invalid' : '' ?>"
                         <?= $action_form === 'view' ? 'disabled' : '' ?>>
                     <option value="F" <?= (setValue('TIPO_PESSOA', 'F') === 'F') ? 'selected' : '' ?>>Pessoa Física</option>
-                    <option value="J" <?= (setValue('TIPO_PESSOA') === 'J') ? 'selected' : '' ?>>Pessoa Jurídica</option>
+                    <option value="J" <?= (setValue('TIPO_PESSOA') === 'J')       ? 'selected' : '' ?>>Pessoa Jurídica</option>
                 </select>
-                <?php if (isset($errors['TIPO_PESSOA'])): ?>
-                    <div class="invalid-feedback"><?= $errors['TIPO_PESSOA'] ?></div>
-                <?php endif; ?>
+                <?php if (isset($errors['TIPO_PESSOA'])): ?><div class="invalid-feedback"><?= $errors['TIPO_PESSOA'] ?></div><?php endif; ?>
             </div>
 
-            <!-- ── Nome / Razão Social ───────────────────────────── -->
+            <!-- ── Nome / Razão Social ─────────────────────────────── -->
             <div class="col-md-9">
-                <label class="form-label" id="label_nome_pfpj">
-                    Nome Completo <span class="text-danger">*</span>
-                </label>
+                <label class="form-label" id="label_nome_pfpj">Nome Completo <span class="text-danger">*</span></label>
                 <input type="text" name="PES_NOME" id="nome_pfpj"
                     class="form-control <?= isset($errors['PES_NOME']) ? 'is-invalid' : '' ?>"
                     placeholder="Digite o nome completo"
-                    value="<?= setValue('PES_NOME') ?>"
+                    value="<?= htmlspecialchars(setValue('PES_NOME')) ?>"
                     maxlength="45"
                     <?= $action_form === 'view' ? 'disabled' : '' ?>>
-                <?php if (isset($errors['PES_NOME'])): ?>
-                    <div class="invalid-feedback"><?= $errors['PES_NOME'] ?></div>
-                <?php endif; ?>
+                <?php if (isset($errors['PES_NOME'])): ?><div class="invalid-feedback"><?= $errors['PES_NOME'] ?></div><?php endif; ?>
             </div>
 
-            <!-- ── CPF / CNPJ ────────────────────────────────────── -->
+            <!-- ── CPF / CNPJ ─────────────────────────────────────── -->
             <div class="col-md-4">
-                <label class="form-label" id="label_cpf_cnpj">
-                    CPF <span class="text-danger">*</span>
-                </label>
+                <label class="form-label" id="label_cpf_cnpj">CPF <span class="text-danger">*</span></label>
                 <div class="input-group">
                     <input type="text" name="CPF_CNPJ" id="cpf_cnpj"
                         class="form-control <?= isset($errors['CPF_CNPJ']) ? 'is-invalid' : '' ?>"
                         placeholder="000.000.000-00"
-                        value="<?= setValue('CPF_CNPJ') ?>"
+                        value="<?php
+                            // Ao exibir, reaplicar máscara nos dados vindos do banco (só dígitos)
+                            $rawDoc = preg_replace('/\D/', '', setValue('CPF_CNPJ'));
+                            if (strlen($rawDoc) === 11) {
+                                echo preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $rawDoc);
+                            } elseif (strlen($rawDoc) === 14) {
+                                echo preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $rawDoc);
+                            } else {
+                                echo htmlspecialchars(setValue('CPF_CNPJ'));
+                            }
+                        ?>"
                         maxlength="18"
                         <?= $action_form === 'view' ? 'disabled' : '' ?>>
 
                     <?php if ($action_form === 'insert' || $action_form === 'update'): ?>
                         <button class="btn btn-outline-secondary" type="button"
-                                id="btn_validar_receita"
-                                title="Verificar na Receita Federal">
+                                id="btn_validar_receita" title="Verificar na Receita Federal">
                             <i class="bi bi-shield-check text-success"></i>
                             <span id="btn_verificar_label">Verificar</span>
                         </button>
@@ -78,42 +81,63 @@ $errors      = \Core\Library\Session::get('formErrors');
                         <div class="invalid-feedback"><?= $errors['CPF_CNPJ'] ?></div>
                     <?php endif; ?>
                 </div>
+
+                <!-- Seletor de dataset (apenas para CNPJ) -->
+                <div id="bloco_dataset" class="mt-1" style="display:none;">
+                    <select id="sel_dataset" class="form-select form-select-sm">
+                        <option value="receita">Receita Federal</option>
+                        <option value="cno">CNO — Cadastro Nacional de Obras</option>
+                        <option value="rntrc">RNTRC — Transportadores</option>
+                    </select>
+                    <small class="text-muted">Selecione a fonte de consulta. Se não encontrar, tente outra.</small>
+                </div>
                 <small id="cpf_cnpj_fonte" class="text-muted"></small>
             </div>
 
-            <!-- ── E-mail ─────────────────────────────────────────── -->
+            <!-- ── E-mail ──────────────────────────────────────────── -->
             <div class="col-md-4">
-                <label class="form-label">
-                    E-mail <span class="text-danger">*</span>
-                </label>
+                <label class="form-label">E-mail <span class="text-danger">*</span></label>
                 <input type="email" name="EMAIL"
                     class="form-control <?= isset($errors['EMAIL']) ? 'is-invalid' : '' ?>"
                     placeholder="exemplo@email.com"
-                    value="<?= setValue('EMAIL') ?>"
+                    value="<?= htmlspecialchars(setValue('EMAIL')) ?>"
                     maxlength="50"
                     <?= $action_form === 'view' ? 'disabled' : '' ?>>
-                <?php if (isset($errors['EMAIL'])): ?>
-                    <div class="invalid-feedback"><?= $errors['EMAIL'] ?></div>
-                <?php endif; ?>
+                <?php if (isset($errors['EMAIL'])): ?><div class="invalid-feedback"><?= $errors['EMAIL'] ?></div><?php endif; ?>
             </div>
 
-            <!-- ── Telefone ───────────────────────────────────────── -->
+            <!-- ── Telefone ────────────────────────────────────────── -->
             <div class="col-md-4">
                 <label class="form-label">Telefone / WhatsApp</label>
                 <input type="text" name="TELEFONE" id="input_telefone"
                     class="form-control"
                     placeholder="(00) 00000-0000"
-                    value="<?= setValue('TELEFONE') ?>"
+                    value="<?php
+                        // Reaplicar máscara no telefone vindo do banco
+                        $tel = preg_replace('/\D/', '', setValue('TELEFONE'));
+                        if (strlen($tel) === 11) {
+                            echo '(' . substr($tel,0,2) . ') ' . substr($tel,2,5) . '-' . substr($tel,7,4);
+                        } elseif (strlen($tel) === 10) {
+                            echo '(' . substr($tel,0,2) . ') ' . substr($tel,2,4) . '-' . substr($tel,6,4);
+                        } else {
+                            echo htmlspecialchars(setValue('TELEFONE'));
+                        }
+                    ?>"
                     maxlength="15"
                     <?= $action_form === 'view' ? 'disabled' : '' ?>>
             </div>
 
-            <!-- ── CEP ───────────────────────────────────────────── -->
+            <!-- ── CEP ────────────────────────────────────────────── -->
             <div class="col-md-2">
                 <label class="form-label">CEP</label>
                 <input type="text" name="CEP" id="cep"
                     class="form-control" placeholder="00000-000"
-                    value="<?= setValue('CEP') ?>"
+                    value="<?php
+                        $cep = preg_replace('/\D/', '', setValue('CEP'));
+                        echo strlen($cep) === 8
+                            ? substr($cep,0,5) . '-' . substr($cep,5,3)
+                            : htmlspecialchars(setValue('CEP'));
+                    ?>"
                     maxlength="9"
                     <?= $action_form === 'view' ? 'disabled' : '' ?>>
                 <small id="cep_status" class="text-muted small"></small>
@@ -124,7 +148,7 @@ $errors      = \Core\Library\Session::get('formErrors');
                 <label class="form-label">Endereço</label>
                 <input type="text" name="ENDERECO" id="endereco"
                     class="form-control" placeholder="Rua, Av., Logradouro..."
-                    value="<?= setValue('ENDERECO') ?>"
+                    value="<?= htmlspecialchars(setValue('ENDERECO')) ?>"
                     maxlength="50"
                     <?= $action_form === 'view' ? 'disabled' : '' ?>>
             </div>
@@ -132,13 +156,11 @@ $errors      = \Core\Library\Session::get('formErrors');
             <!-- ── Número ─────────────────────────────────────────── -->
             <div class="col-md-3">
                 <label class="form-label">Número</label>
-                <div class="input-group">
-                    <input type="text" name="NUMERO" id="numero_casa"
-                        class="form-control" placeholder="123"
-                        value="<?= setValue('NUMERO') ?>"
-                        maxlength="6"
-                        <?= $action_form === 'view' ? 'disabled' : '' ?>>
-                </div>
+                <input type="text" name="NUMERO" id="numero_casa"
+                    class="form-control" placeholder="123"
+                    value="<?= htmlspecialchars(setValue('NUMERO')) ?>"
+                    maxlength="6"
+                    <?= $action_form === 'view' ? 'disabled' : '' ?>>
                 <?php if ($action_form !== 'view'): ?>
                     <div class="form-check mt-1">
                         <input class="form-check-input" type="checkbox" id="sem_numero"
@@ -153,7 +175,7 @@ $errors      = \Core\Library\Session::get('formErrors');
                 <label class="form-label">Bairro</label>
                 <input type="text" name="BAIRRO" id="bairro"
                     class="form-control"
-                    value="<?= setValue('BAIRRO') ?>"
+                    value="<?= htmlspecialchars(setValue('BAIRRO')) ?>"
                     maxlength="40"
                     <?= $action_form === 'view' ? 'disabled' : '' ?>>
             </div>
@@ -163,7 +185,7 @@ $errors      = \Core\Library\Session::get('formErrors');
                 <label class="form-label">Cidade</label>
                 <input type="text" name="CIDADE" id="cidade"
                     class="form-control"
-                    value="<?= setValue('CIDADE') ?>"
+                    value="<?= htmlspecialchars(setValue('CIDADE')) ?>"
                     maxlength="40"
                     <?= $action_form === 'view' ? 'disabled' : '' ?>>
             </div>
@@ -179,8 +201,7 @@ $errors      = \Core\Library\Session::get('formErrors');
                             'MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC',
                             'SP','SE','TO'];
                     foreach ($ufs as $sigla): ?>
-                        <option value="<?= $sigla ?>"
-                            <?= (setValue('UF') === $sigla) ? 'selected' : '' ?>>
+                        <option value="<?= $sigla ?>" <?= (setValue('UF') === $sigla) ? 'selected' : '' ?>>
                             <?= $sigla ?>
                         </option>
                     <?php endforeach; ?>
@@ -205,62 +226,56 @@ $errors      = \Core\Library\Session::get('formErrors');
 (function () {
     'use strict';
 
-    // ── Elementos ──────────────────────────────────────────────────
-    const selectTipo      = document.getElementById('tipo_pessoa');
-    const inputCPFCNPJ    = document.getElementById('cpf_cnpj');
-    const labelCPFCNPJ    = document.getElementById('label_cpf_cnpj');
-    const labelNome       = document.getElementById('label_nome_pfpj');
-    const inputNome       = document.getElementById('nome_pfpj');
-    const inputTelefone   = document.getElementById('input_telefone');
-    const inputCEP        = document.getElementById('cep');
-    const cepStatus       = document.getElementById('cep_status');
-    const inputNumero     = document.getElementById('numero_casa');
-    const checkSemNumero  = document.getElementById('sem_numero');
-    const btnVerificar    = document.getElementById('btn_validar_receita');
-    const fonteSpan       = document.getElementById('cpf_cnpj_fonte');
+    const selectTipo    = document.getElementById('tipo_pessoa');
+    const inputDoc      = document.getElementById('cpf_cnpj');
+    const labelDoc      = document.getElementById('label_cpf_cnpj');
+    const labelNome     = document.getElementById('label_nome_pfpj');
+    const inputNome     = document.getElementById('nome_pfpj');
+    const inputTel      = document.getElementById('input_telefone');
+    const inputCEP      = document.getElementById('cep');
+    const cepStatus     = document.getElementById('cep_status');
+    const inputNumero   = document.getElementById('numero_casa');
+    const checkSemNum   = document.getElementById('sem_numero');
+    const btnVerificar  = document.getElementById('btn_validar_receita');
+    const fonteSpan     = document.getElementById('cpf_cnpj_fonte');
+    const blocoDataset  = document.getElementById('bloco_dataset');
+    const selDataset    = document.getElementById('sel_dataset');
 
     // ── Toast ──────────────────────────────────────────────────────
-    function mostrarToast(mensagem, tipo) {
+    function toast(msg, tipo) {
         tipo = tipo || 'success';
-        const cores = {
-            success: { bg: '#198754', ico: 'bi-check-circle-fill' },
-            danger:  { bg: '#dc3545', ico: 'bi-exclamation-triangle-fill' },
-            warning: { bg: '#fd7e14', ico: 'bi-info-circle-fill' },
-            info:    { bg: '#0dcaf0', ico: 'bi-info-circle' }
-        };
-        const c = cores[tipo] || cores.info;
-        let container = document.getElementById('_toast_box');
-        if (!container) {
-            container = document.createElement('div');
-            container.id = '_toast_box';
-            container.style.cssText = 'position:fixed;top:1.25rem;right:1.25rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem;';
-            document.body.appendChild(container);
+        const c = { success:'#198754', danger:'#dc3545', warning:'#fd7e14', info:'#0dcaf0' };
+        const i = { success:'bi-check-circle-fill', danger:'bi-exclamation-triangle-fill', warning:'bi-info-circle-fill', info:'bi-info-circle' };
+        let box = document.getElementById('_toast_box');
+        if (!box) {
+            box = document.createElement('div');
+            box.id = '_toast_box';
+            box.style.cssText = 'position:fixed;top:1.25rem;right:1.25rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem;max-width:440px;';
+            document.body.appendChild(box);
         }
         const t = document.createElement('div');
-        t.style.cssText = `background:${c.bg};color:#fff;padding:.85rem 1.2rem;border-radius:.5rem;`
-            + 'box-shadow:0 4px 12px rgba(0,0,0,.2);display:flex;align-items:center;gap:.65rem;'
-            + 'min-width:280px;max-width:440px;font-size:.92rem;opacity:0;transition:opacity .3s;';
-        t.innerHTML = `<i class="bi ${c.ico}" style="font-size:1.2rem;flex-shrink:0"></i><span>${mensagem}</span>`;
-        container.appendChild(t);
-        requestAnimationFrame(() => { t.style.opacity = '1'; });
-        setTimeout(() => {
-            t.style.opacity = '0';
-            setTimeout(() => t.remove(), 350);
-        }, 6000);
+        t.style.cssText = `background:${c[tipo]||c.info};color:#fff;padding:.85rem 1.2rem;border-radius:.5rem;`
+            + 'box-shadow:0 4px 12px rgba(0,0,0,.2);display:flex;align-items:center;gap:.65rem;font-size:.92rem;opacity:0;transition:opacity .3s;';
+        t.innerHTML = `<i class="bi ${i[tipo]||i.info}" style="font-size:1.2rem;flex-shrink:0"></i><span>${msg}</span>`;
+        box.appendChild(t);
+        requestAnimationFrame(() => t.style.opacity = '1');
+        setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 350); }, 6000);
     }
 
-    // ── Tipo de pessoa → atualiza labels e máscaras ────────────────
+    // ── Tipo de pessoa → atualiza labels ──────────────────────────
     function atualizarTipo(tipo) {
         if (tipo === 'J') {
-            if (labelNome)    labelNome.innerHTML    = 'Razão Social <span class="text-danger">*</span>';
-            if (inputNome)    inputNome.placeholder  = 'Digite a razão social';
-            if (labelCPFCNPJ) labelCPFCNPJ.innerHTML = 'CNPJ <span class="text-danger">*</span>';
-            if (inputCPFCNPJ) { inputCPFCNPJ.placeholder = '00.000.000/0000-00'; inputCPFCNPJ.maxLength = 18; }
+            if (labelNome) labelNome.innerHTML = 'Razão Social <span class="text-danger">*</span>';
+            if (inputNome) inputNome.placeholder = 'Digite a razão social';
+            if (labelDoc)  labelDoc.innerHTML  = 'CNPJ <span class="text-danger">*</span>';
+            if (inputDoc)  { inputDoc.placeholder = '00.000.000/0000-00'; inputDoc.maxLength = 18; }
+            if (blocoDataset) blocoDataset.style.display = 'block';
         } else {
-            if (labelNome)    labelNome.innerHTML    = 'Nome Completo <span class="text-danger">*</span>';
-            if (inputNome)    inputNome.placeholder  = 'Digite o nome completo';
-            if (labelCPFCNPJ) labelCPFCNPJ.innerHTML = 'CPF <span class="text-danger">*</span>';
-            if (inputCPFCNPJ) { inputCPFCNPJ.placeholder = '000.000.000-00'; inputCPFCNPJ.maxLength = 14; }
+            if (labelNome) labelNome.innerHTML = 'Nome Completo <span class="text-danger">*</span>';
+            if (inputNome) inputNome.placeholder = 'Digite o nome completo';
+            if (labelDoc)  labelDoc.innerHTML  = 'CPF <span class="text-danger">*</span>';
+            if (inputDoc)  { inputDoc.placeholder = '000.000.000-00'; inputDoc.maxLength = 14; }
+            if (blocoDataset) blocoDataset.style.display = 'none';
         }
     }
 
@@ -268,12 +283,20 @@ $errors      = \Core\Library\Session::get('formErrors');
         atualizarTipo(selectTipo.value);
         selectTipo.addEventListener('change', function () {
             atualizarTipo(this.value);
-            if (inputCPFCNPJ) { inputCPFCNPJ.value = ''; inputCPFCNPJ.className = 'form-control'; }
+            if (inputDoc) {
+                inputDoc.value = '';
+                inputDoc.className = 'form-control';
+                // Remove feedback de validação (borda + texto) ao trocar tipo
+                const inputGroup = inputDoc.closest('.input-group');
+                const colPai     = inputGroup ? inputGroup.parentNode : inputDoc.parentNode;
+                const fb = colPai.querySelector('.doc-feedback');
+                if (fb) fb.remove();
+            }
         });
     }
 
-    // ── Máscara CPF / CNPJ ─────────────────────────────────────────
-    function aplicarMascara(v, tipo) {
+    // ── Máscara CPF / CNPJ ────────────────────────────────────────
+    function mascararDoc(v, tipo) {
         v = v.replace(/\D/g, '');
         if (tipo === 'F') {
             v = v.substring(0, 11);
@@ -290,32 +313,122 @@ $errors      = \Core\Library\Session::get('formErrors');
         return v;
     }
 
-    if (inputCPFCNPJ && selectTipo) {
-        inputCPFCNPJ.addEventListener('input', function (e) {
-            e.target.value = aplicarMascara(e.target.value, selectTipo.value);
+    if (inputDoc && selectTipo) {
+        inputDoc.addEventListener('input', function (e) {
+            e.target.value = mascararDoc(e.target.value, selectTipo.value);
+            // Valida em tempo real assim que o tamanho estiver completo
+            const digits = e.target.value.replace(/\D/g, '');
+            const tipo   = selectTipo.value;
+            const completo = (tipo === 'F' && digits.length === 11)
+                          || (tipo === 'J' && digits.length === 14);
+            if (completo) validarDocumento(digits, tipo);
+            // Se apagou dígitos, limpa feedback
+            if (!completo) {
+                inputDoc.classList.remove('is-valid', 'is-invalid');
+                const fb = inputDoc.parentNode.querySelector('.doc-feedback');
+                if (fb) fb.remove();
+            }
+        });
+
+        // Valida ao sair do campo (blur)
+        inputDoc.addEventListener('blur', function () {
+            const digits = this.value.replace(/\D/g, '');
+            const tipo   = selectTipo.value;
+            if (digits.length > 0) validarDocumento(digits, tipo);
         });
     }
 
-    // ── Máscara Telefone ───────────────────────────────────────────
-    if (inputTelefone) {
-        inputTelefone.addEventListener('input', function (e) {
+    // ── Validação dos dígitos verificadores (CPF e CNPJ) ──────────
+    function validarDocumento(digits, tipo) {
+        const inputEl = inputDoc;
+        let valido = false;
+        let msg    = '';
+
+        if (tipo === 'F') {
+            valido = _validarCPF(digits);
+            msg    = valido ? 'CPF válido ✓' : 'CPF inválido — verifique os dígitos';
+        } else {
+            valido = _validarCNPJ(digits);
+            msg    = valido ? 'CNPJ válido ✓' : 'CNPJ inválido — verifique os dígitos';
+        }
+
+        // Remove feedback anterior — busca no col-md-4 pai do input-group
+        const inputGroup = inputEl.closest('.input-group');
+        const colPai     = inputGroup ? inputGroup.parentNode : inputEl.parentNode;
+        let fb = colPai.querySelector('.doc-feedback');
+        if (!fb) {
+            fb = document.createElement('div');
+            fb.className = 'doc-feedback small mt-1';
+            // Inserir após o input-group dentro do col
+            if (inputGroup) inputGroup.insertAdjacentElement('afterend', fb);
+            else colPai.appendChild(fb);
+        }
+
+        if (valido) {
+            inputEl.classList.remove('is-invalid');
+            inputEl.classList.add('is-valid');
+            fb.style.color  = '#198754';
+            fb.textContent  = msg;
+        } else {
+            inputEl.classList.remove('is-valid');
+            inputEl.classList.add('is-invalid');
+            fb.style.color  = '#dc3545';
+            fb.textContent  = msg;
+        }
+
+        return valido;
+    }
+
+    function _validarCPF(cpf) {
+        // Rejeita sequências repetidas (000.000.000-00, 111... etc.)
+        if (/^(\d)\1+$/.test(cpf) || cpf.length !== 11) return false;
+        let soma = 0, resto;
+        for (let i = 1; i <= 9; i++) soma += parseInt(cpf[i - 1]) * (11 - i);
+        resto = (soma * 10) % 11;
+        if (resto === 10 || resto === 11) resto = 0;
+        if (resto !== parseInt(cpf[9])) return false;
+        soma = 0;
+        for (let i = 1; i <= 10; i++) soma += parseInt(cpf[i - 1]) * (12 - i);
+        resto = (soma * 10) % 11;
+        if (resto === 10 || resto === 11) resto = 0;
+        return resto === parseInt(cpf[10]);
+    }
+
+    function _validarCNPJ(cnpj) {
+        if (cnpj.length !== 14 || /^(\d)\1+$/.test(cnpj)) return false;
+        const calc = (n, tam) => {
+            let soma = 0, pos = tam - 7;
+            for (let i = tam; i >= 1; i--) {
+                soma += parseInt(cnpj[tam - i]) * pos--;
+                if (pos < 2) pos = 9;
+            }
+            const r = soma % 11;
+            return r < 2 ? 0 : 11 - r;
+        };
+        return calc(cnpj, 12) === parseInt(cnpj[12])
+            && calc(cnpj, 13) === parseInt(cnpj[13]);
+    }
+
+    // ── Máscara Telefone ──────────────────────────────────────────
+    if (inputTel) {
+        inputTel.addEventListener('input', function (e) {
             let v = e.target.value.replace(/\D/g, '').substring(0, 11);
             v = v.replace(/^(\d{2})(\d)/, '($1) $2');
-            v = v.replace(/(\d)(\ d{4})$/, '$1-$2');
+            v = v.replace(/(\d{5})(\d{4})$/, '$1-$2');
             e.target.value = v;
         });
     }
 
     // ── Sem número ────────────────────────────────────────────────
-    if (inputNumero && checkSemNumero) {
-        if (checkSemNumero.checked) inputNumero.readOnly = true;
-        checkSemNumero.addEventListener('change', function () {
+    if (inputNumero && checkSemNum) {
+        if (checkSemNum.checked) inputNumero.readOnly = true;
+        checkSemNum.addEventListener('change', function () {
             if (this.checked) { inputNumero.value = 'S/N'; inputNumero.readOnly = true; }
-            else              { if (inputNumero.value === 'S/N') inputNumero.value = ''; inputNumero.readOnly = false; }
+            else { if (inputNumero.value === 'S/N') inputNumero.value = ''; inputNumero.readOnly = false; }
         });
     }
 
-    // ── CEP → ViaCEP ──────────────────────────────────────────────
+    // ── CEP → ViaCEP ─────────────────────────────────────────────
     if (inputCEP) {
         inputCEP.addEventListener('input', function (e) {
             let v = e.target.value.replace(/\D/g, '').substring(0, 8);
@@ -329,10 +442,7 @@ $errors      = \Core\Library\Session::get('formErrors');
         fetch(`https://viacep.com.br/ws/${cep}/json/`)
             .then(r => r.json())
             .then(d => {
-                if (d.erro) {
-                    if (cepStatus) { cepStatus.textContent = 'CEP não encontrado.'; cepStatus.className = 'text-danger small'; }
-                    return;
-                }
+                if (d.erro) { if (cepStatus) { cepStatus.textContent = 'CEP não encontrado.'; cepStatus.className = 'text-danger small'; } return; }
                 preencherEndereco(d.logradouro, d.bairro, d.localidade, d.uf);
                 if (cepStatus) cepStatus.textContent = '';
             })
@@ -340,111 +450,98 @@ $errors      = \Core\Library\Session::get('formErrors');
     }
 
     function preencherEndereco(logradouro, bairro, cidade, uf) {
-        const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
-        setEl('endereco', logradouro);
-        setEl('bairro', bairro);
-        setEl('cidade', cidade);
-        // UF — seleciona no <select>
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+        set('endereco', logradouro);
+        set('bairro', bairro);
+        set('cidade', cidade);
         const selUF = document.getElementById('uf');
         if (selUF) selUF.value = uf || '';
     }
 
-    // ── Botão Verificar (CNPJ → API | CPF → popup Receita) ────────
+    // ── Botão Verificar ───────────────────────────────────────────
+    function setBtnLoading(ativo) {
+        if (!btnVerificar) return;
+        const lbl = document.getElementById('btn_verificar_label');
+        const ico = btnVerificar.querySelector('i');
+        btnVerificar.disabled = ativo;
+        if (ativo) {
+            if (lbl) lbl.textContent = 'Consultando...';
+            if (ico) { ico.classList.remove('bi-shield-check'); ico.classList.add('bi-hourglass-split'); }
+        } else {
+            if (lbl) lbl.textContent = 'Verificar';
+            if (ico) { ico.classList.remove('bi-hourglass-split'); ico.classList.add('bi-shield-check'); }
+        }
+    }
+
     if (btnVerificar) {
         btnVerificar.addEventListener('click', function () {
             const tipo = selectTipo ? selectTipo.value : 'F';
 
             if (tipo === 'J') {
-                // ── CNPJ ──────────────────────────────────────────
-                const cnpjRaw = inputCPFCNPJ ? inputCPFCNPJ.value.replace(/\D/g, '') : '';
+                // ── CNPJ → opencnpj.org ───────────────────────────
+                const cnpjRaw = inputDoc ? inputDoc.value.replace(/\D/g, '') : '';
                 if (cnpjRaw.length !== 14) {
-                    mostrarToast('Preencha o CNPJ completo (14 dígitos) antes de verificar.', 'warning');
-                    if (inputCPFCNPJ) inputCPFCNPJ.focus();
+                    toast('Preencha o CNPJ completo (14 dígitos) antes de verificar.', 'warning');
+                    if (inputDoc) inputDoc.focus();
                     return;
                 }
+                const dataset = selDataset ? selDataset.value : 'receita';
                 setBtnLoading(true);
+
+                // Lê o token CSRF do campo hidden do form
+                const csrfToken = document.querySelector('input[name="csrf_token"]')?.value || '';
+
                 fetch('/pessoa/consultarCNPJAjax', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-Requested-With': 'XMLHttpRequest'
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-Token': csrfToken
                     },
-                    body: new URLSearchParams({ cnpj: cnpjRaw })
+                    body: new URLSearchParams({ cnpj: cnpjRaw, dataset: dataset, csrf_token: csrfToken })
                 })
                 .then(r => r.json())
                 .then(resp => {
                     if (resp.sucesso) {
-                        inputCPFCNPJ.classList.remove('is-invalid');
-                        inputCPFCNPJ.classList.add('is-valid');
-                        if (inputNome && resp.nome)    inputNome.value = resp.nome;
-                        // Preenche endereço se a API retornou
+                        if (inputDoc) { inputDoc.classList.remove('is-invalid'); inputDoc.classList.add('is-valid'); }
+                        if (inputNome && resp.nome)       inputNome.value = resp.nome;
                         if (resp.cep) {
-                            const cepEl = document.getElementById('cep');
-                            if (cepEl) {
-                                let c = resp.cep.replace(/\D/g,'');
-                                cepEl.value = c.length > 5 ? c.substring(0,5)+'-'+c.substring(5) : c;
-                            }
+                            const cepFmt = resp.cep.length === 8 ? resp.cep.substring(0,5) + '-' + resp.cep.substring(5) : resp.cep;
+                            const cepEl  = document.getElementById('cep');
+                            if (cepEl) cepEl.value = cepFmt;
                             preencherEndereco(resp.logradouro, resp.bairro, resp.municipio, resp.uf);
                         }
-                        if (fonteSpan) fonteSpan.textContent = 'Fonte: ' + (resp.fonte || '');
-                        mostrarToast('CNPJ válido! Empresa: <b>' + resp.nome + '</b> — ' + resp.situacao, 'success');
+                        if (fonteSpan) fonteSpan.textContent = 'Fonte: ' + (resp.dataset_usado || resp.dataset || '');
+                        toast('CNPJ válido! Empresa: <b>' + resp.nome + '</b> — ' + resp.situacao + ' (via ' + (resp.dataset_usado || dataset) + ')', 'success');
                     } else {
-                        if (inputCPFCNPJ) { inputCPFCNPJ.classList.remove('is-valid'); inputCPFCNPJ.classList.add('is-invalid'); }
-                        mostrarToast(resp.mensagem, 'danger');
+                        if (inputDoc) { inputDoc.classList.remove('is-valid'); inputDoc.classList.add('is-invalid'); }
+                        const outraFonte = resp.dataset === dataset ? null : resp.dataset;
+                        let msgExtra = outraFonte ? ' Tente mudar a fonte de consulta.' : '';
+                        toast(resp.mensagem + msgExtra, 'danger');
                     }
                 })
-                .catch(() => mostrarToast('Erro ao consultar o CNPJ. Verifique sua conexão.', 'danger'))
+                .catch(() => toast('Erro ao consultar o CNPJ. Verifique sua conexão.', 'danger'))
                 .finally(() => setBtnLoading(false));
 
             } else {
-                // ── CPF — popup Receita Federal ────────────────────
-                const urlReceita = 'https://servicos.receita.fazenda.gov.br/Servicos/CPF/ConsultaPublica.asp';
-                const popup = window.open(urlReceita, 'ConsultaReceita', 'width=800,height=600,scrollbars=yes');
-                if (!popup) { mostrarToast('Bloqueador de pop-ups ativado. Permita para este site.', 'warning'); return; }
-
-                setBtnLoading(true);
-                const timer = setInterval(() => {
-                    try {
-                        if (popup.closed) { clearInterval(timer); setBtnLoading(false); return; }
-                        if (popup.document.querySelector('.clConteudoDados')) {
-                            clearInterval(timer);
-                            const html = popup.document.documentElement.innerHTML;
-                            popup.close();
-                            fetch('/pessoa/validarReceitaAjax', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
-                                body: new URLSearchParams({ html_receita: html })
-                            })
-                            .then(r => r.json())
-                            .then(d => {
-                                if (d.sucesso) {
-                                    if (inputNome) { inputNome.value = d.nome; inputNome.classList.add('is-valid'); }
-                                    mostrarToast('CPF validado! Nome: <b>' + d.nome + '</b>', 'success');
-                                } else {
-                                    mostrarToast('Erro na validação: ' + d.mensagem, 'danger');
-                                }
-                            })
-                            .catch(() => mostrarToast('Erro interno ao processar os dados.', 'danger'))
-                            .finally(() => setBtnLoading(false));
-                        }
-                    } catch (e) { /* Same-Origin durante navegação — ignorar */ }
-                }, 1500);
+                // ── CPF → abre Receita Federal em nova aba ────────
+                // Não é possível capturar os dados automaticamente do site da Receita
+                // por restrições do navegador (Same-Origin Policy / CORS).
+                // A verificação é feita manualmente pelo usuário.
+                const cpfRaw = inputDoc ? inputDoc.value.replace(/\D/g, '') : '';
+                if (cpfRaw.length !== 11) {
+                    toast('Preencha o CPF completo (11 dígitos) antes de verificar.', 'warning');
+                    if (inputDoc) inputDoc.focus();
+                    return;
+                }
+                window.open(
+                    'https://servicos.receita.fazenda.gov.br/Servicos/CPF/ConsultaPublica.asp',
+                    '_blank',
+                    'width=850,height=650,scrollbars=yes,resizable=yes'
+                );
+                toast('Site da Receita Federal aberto em nova aba. Verifique a situação do CPF e volte para continuar o cadastro.', 'info');
             }
         });
-    }
-
-    function setBtnLoading(loading) {
-        if (!btnVerificar) return;
-        const label = document.getElementById('btn_verificar_label');
-        if (loading) {
-            btnVerificar.disabled = true;
-            if (label) label.textContent = 'Consultando...';
-            btnVerificar.querySelector('i')?.classList.replace('bi-shield-check', 'bi-hourglass-split');
-        } else {
-            btnVerificar.disabled = false;
-            if (label) label.textContent = 'Verificar';
-            btnVerificar.querySelector('i')?.classList.replace('bi-hourglass-split', 'bi-shield-check');
-        }
     }
 
 })();

@@ -42,6 +42,17 @@ if (!function_exists('formSubTitulo')) {
         }
     }
 }
+if (!function_exists('csrfField')) {
+    /**
+     * Retorna o <input type="hidden"> com o token CSRF atual.
+     * Deve ser inserido como primeiro filho de todo <form method="POST">.
+     */
+    function csrfField(): string
+    {
+        return \Core\Library\Csrf::getHiddenField();
+    }
+}
+
 
 if (!function_exists('exibeAlerta')) {
 
