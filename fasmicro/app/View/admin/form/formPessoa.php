@@ -524,24 +524,130 @@ $errors      = \Core\Library\Session::get('formErrors');
                 .finally(() => setBtnLoading(false));
 
             } else {
-                // ── CPF → abre Receita Federal em nova aba ────────
-                // Não é possível capturar os dados automaticamente do site da Receita
-                // por restrições do navegador (Same-Origin Policy / CORS).
-                // A verificação é feita manualmente pelo usuário.
+                // ── CPF → modal embutido com iframe da Receita ────
                 const cpfRaw = inputDoc ? inputDoc.value.replace(/\D/g, '') : '';
                 if (cpfRaw.length !== 11) {
                     toast('Preencha o CPF completo (11 dígitos) antes de verificar.', 'warning');
                     if (inputDoc) inputDoc.focus();
                     return;
                 }
-                window.open(
-                    'https://servicos.receita.fazenda.gov.br/Servicos/CPF/ConsultaPublica.asp',
-                    '_blank',
-                    'width=850,height=650,scrollbars=yes,resizable=yes'
-                );
-                toast('Site da Receita Federal aberto em nova aba. Verifique a situação do CPF e volte para continuar o cadastro.', 'info');
+                abrirModalCPF();
             }
         });
+    }
+
+    // ── Modal CPF ─────────────────────────────────────────────────
+    // O site da Receita Federal bloqueia interação dentro de iframe (hCaptcha
+    // não consegue ser resolvido em contexto cross-origin).
+    // Solução: abrir popup nativo do browser (sem as restrições de iframe)
+    // e mostrar um painel lateral elegante no formulário enquanto o usuário
+    // preenche o captcha na janela separada.
+    function abrirModalCPF() {
+        const cpfFormatado = inputDoc ? inputDoc.value : '';
+
+        // Abre popup nativo — hCaptcha funciona normalmente aqui
+        const popup = window.open(
+            'https://servicos.receita.fazenda.gov.br/Servicos/CPF/ConsultaPublica.asp',
+            'ReceitaCPF',
+            'width=860,height=620,top=80,left=200,scrollbars=yes,resizable=yes'
+        );
+
+        if (!popup) {
+            toast('Bloqueador de pop-ups ativo. Permita pop-ups para este site nas configurações do navegador.', 'warning');
+            return;
+        }
+
+        // Remove painel anterior se existir
+        const anterior = document.getElementById('_painel_cpf');
+        if (anterior) anterior.remove();
+
+        // Exibe painel flutuante no formulário com instruções e CPF copiável
+        const painel = document.createElement('div');
+        painel.id = '_painel_cpf';
+        painel.style.cssText = [
+            'position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999',
+            'background:#fff;border-radius:12px;width:300px',
+            'box-shadow:0 8px 32px rgba(0,0,0,.2);border:1px solid #dee2e6',
+            'overflow:hidden;animation:_slideUp .25s ease'
+        ].join(';');
+
+        painel.innerHTML = `
+            <style>
+                @keyframes _slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+            </style>
+            <div style="background:#1351b4;color:#fff;padding:.7rem 1rem;display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-weight:600;font-size:.9rem;">🔒 Consulta na Receita Federal</span>
+                <button id="_painel_fechar" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:6px;padding:.25rem .6rem;cursor:pointer;font-size:.9rem;">✕</button>
+            </div>
+            <div style="padding:1rem;">
+                <p style="font-size:.85rem;color:#495057;margin:0 0 .75rem;">
+                    Uma janela da Receita Federal foi aberta. Siga os passos:
+                </p>
+                <ol style="font-size:.82rem;color:#495057;padding-left:1.1rem;margin:0 0 .85rem;line-height:1.7;">
+                    <li>Digite o CPF abaixo no campo da Receita</li>
+                    <li>Informe sua <b>data de nascimento</b></li>
+                    <li>Resolva o <b>captcha</b> ("Sou humano")</li>
+                    <li>Verifique a situação cadastral</li>
+                </ol>
+                <div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:.5rem .75rem;display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;">
+                    <span style="font-weight:700;letter-spacing:.05em;font-size:.95rem;" id="_cpf_display">${cpfFormatado}</span>
+                    <button id="_btn_copiar_cpf" style="background:none;border:none;cursor:pointer;color:#1351b4;font-size:.8rem;padding:0;">
+                        <i class="bi bi-clipboard"></i> Copiar
+                    </button>
+                </div>
+                <button id="_btn_reabrir_popup" style="width:100%;background:#1351b4;color:#fff;border:none;border-radius:6px;padding:.5rem;font-size:.85rem;cursor:pointer;">
+                    <i class="bi bi-box-arrow-up-right"></i> Reabrir janela da Receita
+                </button>
+            </div>`;
+
+        document.body.appendChild(painel);
+
+        // Botão fechar painel
+        document.getElementById('_painel_fechar').addEventListener('click', () => {
+            painel.remove();
+            if (popup && !popup.closed) popup.close();
+        });
+
+        // Copiar CPF
+        document.getElementById('_btn_copiar_cpf').addEventListener('click', function () {
+            const cpfLimpo = cpfFormatado.replace(/\D/g, '');
+            navigator.clipboard.writeText(cpfLimpo).then(() => {
+                this.innerHTML = '<i class="bi bi-check2"></i> Copiado!';
+                setTimeout(() => { this.innerHTML = '<i class="bi bi-clipboard"></i> Copiar'; }, 2000);
+            }).catch(() => {
+                // Fallback para browsers sem clipboard API
+                const tmp = document.createElement('input');
+                tmp.value = cpfLimpo;
+                document.body.appendChild(tmp);
+                tmp.select();
+                document.execCommand('copy');
+                tmp.remove();
+                this.innerHTML = '<i class="bi bi-check2"></i> Copiado!';
+                setTimeout(() => { this.innerHTML = '<i class="bi bi-clipboard"></i> Copiar'; }, 2000);
+            });
+        });
+
+        // Reabrir popup se o usuário fechou
+        document.getElementById('_btn_reabrir_popup').addEventListener('click', function () {
+            if (!popup || popup.closed) {
+                window.open(
+                    'https://servicos.receita.fazenda.gov.br/Servicos/CPF/ConsultaPublica.asp',
+                    'ReceitaCPF',
+                    'width=860,height=620,top=80,left=200,scrollbars=yes,resizable=yes'
+                );
+            } else {
+                popup.focus();
+            }
+        });
+
+        // Remove painel automaticamente quando popup for fechado
+        const monitorPopup = setInterval(() => {
+            if (!popup || popup.closed) {
+                clearInterval(monitorPopup);
+                // Aguarda um momento antes de remover para não sumir abruptamente
+                setTimeout(() => { if (document.getElementById('_painel_cpf')) painel.remove(); }, 1500);
+            }
+        }, 800);
     }
 
 })();

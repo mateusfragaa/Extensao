@@ -297,6 +297,9 @@ class Pessoa extends ControllerMain
      */
     private function limparMascaras(array $dados): array
     {
+        // Remove campos que não existem na tabela
+        unset($dados['csrf_token'], $dados['sem_numero']);
+
         // CPF: 000.000.000-00 → 00000000000 (11 dígitos)
         // CNPJ: 00.000.000/0000-00 → 00000000000000 (14 dígitos)
         if (!empty($dados['CPF_CNPJ'])) {

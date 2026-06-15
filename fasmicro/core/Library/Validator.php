@@ -68,25 +68,21 @@ class Validator
                             $tipo = $data['TIPO_PESSOA'] ?? 'F';
 
                             if ($tipo === 'F') {
-                                // ── CPF ──────────────────────────────────────
+                                // ── CPF: valida dígitos verificadores ────────
                                 if (strlen($val) !== 11) {
                                     $errors[$ruleKey] = "O <b>CPF</b> deve ter 11 dígitos.";
                                 } elseif (!self::validarCPF($val)) {
                                     $errors[$ruleKey] = "O <b>CPF</b> informado é inválido.";
                                 }
                             } else {
-                                // ── CNPJ ─────────────────────────────────────
+                                // ── CNPJ: valida apenas dígitos verificadores ─
+                                // A consulta à Receita Federal NÃO bloqueia o save.
+                                // Verificação de situação cadastral é feita pelo
+                                // usuário via botão Verificar antes de salvar.
                                 if (strlen($val) !== 14) {
                                     $errors[$ruleKey] = "O <b>CNPJ</b> deve ter 14 dígitos.";
                                 } elseif (!self::validarCNPJ($val)) {
                                     $errors[$ruleKey] = "O <b>CNPJ</b> informado é inválido (dígito verificador incorreto).";
-                                } else {
-                                    // Dígitos OK → consulta a Receita Federal
-                                    $resultadoReceita = self::consultarCNPJReceita($val);
-                                    if ($resultadoReceita !== true) {
-                                        // $resultadoReceita contém a mensagem de erro amigável
-                                        $errors[$ruleKey] = $resultadoReceita;
-                                    }
                                 }
                             }
                             break;

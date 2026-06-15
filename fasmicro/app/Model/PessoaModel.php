@@ -94,9 +94,15 @@ class PessoaModel extends ModelMain
         }
 
         try {
+            $id = $dados[$this->primaryKey];
+
+            // Remove a PK do array de dados — ela vai no WHERE, não no SET
+            $dadosSemPK = $dados;
+            unset($dadosSemPK[$this->primaryKey]);
+
             $resultado = $this->db
-                ->where($this->primaryKey, $dados[$this->primaryKey])
-                ->updateComTratamento($dados);
+                ->where($this->primaryKey, $id)
+                ->updateComTratamento($dadosSemPK);
 
             return $resultado >= 0; // >= 0 pois 0 linhas afetadas ainda é sucesso (dados iguais)
         } catch (\Exception $e) {
@@ -121,25 +127,31 @@ class PessoaModel extends ModelMain
         $sqlParte = [];
         $params   = [];
 
-        if (!empty(trim($post['filtroNomePessoa'] ?? ''))) {
-            $sqlParte[]            = 'PES_NOME LIKE :nomePessoa';
-            $params['nomePessoa']  = '%' . trim($post['filtroNomePessoa']) . '%';
-        }
+        // Campo de busca unificado: procura por nome E por CPF/CNPJ simultaneamente.
+        // Remove tudo que não é dígito para comparar com o campo do banco (que guarda só números).
+        $busca = trim($post['filtroNomePessoa'] ?? '');
+        if ($busca !== '') {
+            $buscaDigitos = preg_replace('/\D/', '', $busca);
 
-        if (!empty(trim($post['filtroCpfCnpj'] ?? ''))) {
-            $cpfCnpjLimpo         = preg_replace('/\D/', '', $post['filtroCpfCnpj']);
-            $sqlParte[]           = 'CPF_CNPJ LIKE :cpfCnpj';
-            $params['cpfCnpj']    = '%' . $cpfCnpjLimpo . '%';
+            if ($buscaDigitos !== '') {
+                // Usuário digitou números (com ou sem máscara): busca só em CPF_CNPJ
+                $sqlParte[]          = 'CPF_CNPJ LIKE :cpfCnpj';
+                $params['cpfCnpj']   = '%' . $buscaDigitos . '%';
+            } else {
+                // Usuário digitou letras: busca só em PES_NOME
+                $sqlParte[]           = 'PES_NOME LIKE :nomePessoa';
+                $params['nomePessoa'] = '%' . $busca . '%';
+            }
         }
 
         if (!empty($post['filtroTipoPessoa'] ?? '')) {
-            $sqlParte[]                = 'TIPO_PESSOA = :tipoPessoa';
-            $params['tipoPessoa']      = $post['filtroTipoPessoa'];
+            $sqlParte[]           = 'TIPO_PESSOA = :tipoPessoa';
+            $params['tipoPessoa'] = $post['filtroTipoPessoa'];
         }
 
         if (!empty($post['filtroUF'] ?? '')) {
-            $sqlParte[]        = 'UF = :uf';
-            $params['uf']      = $post['filtroUF'];
+            $sqlParte[]  = 'UF = :uf';
+            $params['uf'] = $post['filtroUF'];
         }
 
         if (!empty($sqlParte)) {
