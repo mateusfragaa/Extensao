@@ -69,9 +69,9 @@ class Venda extends ControllerMain
         }
     }
 
-    public function delete()
+    public function delete($acao, $id)
     {
-        if ($this->model->delete($_POST)) {
+        if ($this->serviceVenda->apagarVendaEItens($id)) {
             Redirect::page("venda/", ['msgSucesso' => 'Sucesso ao apagar o registro']);
         } else {
             Redirect::page("venda/", ['msgError' => 'Erro ao apagar registro, verifique se os dados estão corretos!']);
@@ -127,10 +127,13 @@ class Venda extends ControllerMain
             $this->serviceVenda->addProdutoPedido($id_pedido, $_POST);
         }
         
+        $data['action_form'] = 'update';
         if ($action == 'insert') {
             $data['action_form_modal'] = 'inicioVenda/insert';
-        }else {
+        }elseif($action == 'update') { // olhar aqui caso não adicione mais
             $data['action_form_modal'] = '/formVenda/update';
+        }elseif($action == 'delete') { // olhar aqui caso não adicione mais
+            $data['action_form'] = 'delete';
         }
 
         $data['produtos'] = $this->serviceVenda->listaProduto('prd_descricao');
@@ -138,7 +141,6 @@ class Venda extends ControllerMain
         $data['pessoas'] = $this->serviceVenda->listaPessoa('pes_nome');
         $data['info_venda'] = $this->serviceVenda->getVenda($id_pedido);
         $data['status_venda'] = $this->serviceVenda->getStatusVenda();
-        $data['action_form'] = 'update';
         $data['acao_venda'] = $action;
         
 

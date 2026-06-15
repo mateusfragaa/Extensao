@@ -66,6 +66,12 @@ class PedidoVenda
         return $this->vendaModel->update($post);
     }
 
+    public function apagarVendaEItens($id_pedido)
+    {
+        $this->vendaModel->delete(['PEV_ID' => $id_pedido]);
+        // $this->vendaItemModel->apagarItensVenda($id_pedido);
+    }
+
     public function select_produto_venda($id)
     {
         return $this->vendaItemModel->select_produto_venda($id);

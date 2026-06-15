@@ -5,6 +5,8 @@ $info_venda = (isset($data['data']['info_venda'])) ? $data['data']['info_venda']
 $status_venda = (isset($data['data']['status_venda'])) ? $data['data']['status_venda'] : [];
 $id_venda = isset($data['data']['produtos_pedidos'][0]['PEVI_VENDA_ID']) ? $data['data']['produtos_pedidos'][0]['PEVI_VENDA_ID'] : '';
 $acao_venda = $data['data']['acao_venda'] ?? '';
+var_dump($acao_venda, $data['data']['produtos_pedidos']);
+var_dump(count($data['data']['produtos_pedidos']) <= 0);
 ?>
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -24,9 +26,6 @@ $acao_venda = $data['data']['acao_venda'] ?? '';
                         <label class="form-label small fw-bold">Cliente</label>
                         <select class="form-select bg-light border-0" name="cliente_venda">
                             <?php foreach ($pessoas as $key => $pessoa): ?>
-                                <option value="1" <?= empty($info_venda) ? 'selected' : '' ?>>
-                                    Consumidor final
-                                </option>
                                 <option
                                     <?= !empty($info_venda) ? ($pessoa['PES_ID'] == $info_venda['PEV_CLIENTE_ID']) ? 'selected' : '' : '' ?>
                                     value="<?= $pessoa['PES_ID'] ?>">
@@ -81,7 +80,7 @@ $acao_venda = $data['data']['acao_venda'] ?? '';
                         </div>
                         <input type="hidden" name="venda_id" value="<?= $id_venda ?>" id="venda_id">
                     </div>
-                    <?php if (isset($data['data']['produtos_pedidos'])) : ?>
+                    <?php if (count($data['data']['produtos_pedidos']) > 0 || $acao_venda == 'update')  : ?>
                         <button type="submit" class="btn btn-primary-custom w-100 py-2 mt-3">Salvar Pedido</button>
                     <?php else: ?>
                         <p class="text-center text-muted">Acrescente algum item para iniciar o pedido.</p>
@@ -124,10 +123,10 @@ $acao_venda = $data['data']['acao_venda'] ?? '';
                 </div>
                 <div class="d-flex flex-row gap-2 mt-2">
                     <!-- <a href="/faturarVenda/" class="btn btn-primary w-100 py-2">Faturar Pedido</a> -->
-                    <?php if (!empty(trim($id_venda))) : ?>
+                    <?php if (count($data['data']['produtos_pedidos']) > 0 && $acao_venda == 'update')  : ?>
                         <a href="/faturarVenda/<?= $action ?? 'faturar' ?>/<?= $id_venda ?>" class="btn btn-primary w-100 py-2">Faturar Pedido</a>
+                        <button type="button" class="btn btn-danger w-100 py-2" id="excluir_produto">Excluir Produto</button>
                     <?php endif; ?>
-                    <button type="button" class="btn btn-danger w-100 py-2" id="excluir_produto">Excluir Produto</button>
                 </div>
             </div>
         </div>

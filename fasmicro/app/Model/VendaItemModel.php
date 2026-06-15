@@ -49,4 +49,9 @@ class VendaItemModel extends ModelMain
     {
         return $this->db->whereIn('pevi_id', $ids)->delete();
     }
+
+    public function apagarItensVenda($id)
+    {
+        return $this->db->where('pevi_venda_id', $id)->delete();
+    }
 }
