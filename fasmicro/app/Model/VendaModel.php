@@ -26,7 +26,7 @@ class VendaModel extends ModelMain
     public function filtroListagem($dados)
     {
         extract($dados);
-        $sql = "select * from {$this->table}";
+        $sql = "select PEV_ID, PES.PES_NOME, PEV_DATA_VENDA, PEV_TOTAL, PEV_STATUS from {$this->table} inner join tb_pessoa pes on pes.pes_id = {$this->table}.pev_cliente_id ";
         $sqlparte = [];
         $params = [];
 
@@ -37,8 +37,8 @@ class VendaModel extends ModelMain
                 $sqlparte[] = "pev_id = :pev_id";
                 $params[':pev_id'] = $id_nome_cliente;
             } else {
-                $sqlparte[] = "pev_cliente_nome like %{:pev_cliente_nome}%";
-                $params[':pev_cliente_nome'] = "$id_nome_cliente";
+                $sqlparte[] = "pes.pes_nome like :pev_cliente_nome";
+                $params[':pev_cliente_nome'] = "%{$id_nome_cliente}%";
             }
         }
 
@@ -63,8 +63,8 @@ class VendaModel extends ModelMain
     public function listaVenda()
     {
         return $this->db
-        ->select('pev_id, pes.pes_nome, pev_data_venda, pev_total, pev_status')
-        ->join('tb_pessoa pes', 'pes.pes_id = pev_cliente_id')
+        ->select('PEV_ID, PES.PES_NOME, PEV_DATA_VENDA, PEV_TOTAL, PEV_STATUS')
+        ->join('TB_PESSOA PES', 'PES.PES_ID = PEV_CLIENTE_ID')
         ->findAll();
     }
 

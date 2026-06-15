@@ -4,14 +4,11 @@ $pessoas = (isset($data['data']['pessoas'])) ? $data['data']['pessoas'] : [];
 $info_venda = (isset($data['data']['info_venda'])) ? $data['data']['info_venda'] : [];
 $status_venda = (isset($data['data']['status_venda'])) ? $data['data']['status_venda'] : [];
 $id_venda = isset($data['data']['produtos_pedidos'][0]['PEVI_VENDA_ID']) ? $data['data']['produtos_pedidos'][0]['PEVI_VENDA_ID'] : '';
-// var_dump($data);
-// $action_form = formDadosInput($data, 'info_venda');
-// var_dump($_SESSION);
-// var_dump($data['data']['produtos_pedidos']);
+$acao_venda = $data['data']['acao_venda'] ?? '';
 ?>
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold m-0">Novo Pedido de Venda</h4>
+        <h4 class="fw-bold m-0">Pedido de Venda<?= formSubTitulo($acao_venda)?></h4>
         <a class="btn btn-outline-secondary btn-sm" href="/venda/">
             <i class="bi bi-arrow-left"></i> Voltar
         </a>
@@ -182,7 +179,7 @@ $id_venda = isset($data['data']['produtos_pedidos'][0]['PEVI_VENDA_ID']) ? $data
                     </form>
                 </div>
 
-                <form action="/venda/<?= $data['data']['action_form_modal'] ?? "inicioVenda" ?>/modal/<?= $id_venda
+                <form action="/venda/<?= $data['data']['action_form_modal'] ?? "inicioVenda/modal" ?>/<?= $id_venda
                                                                                                         ?>"
                     method="post" id="form_escolha_prd_modal_venda">
                     <div class="table-responsive tabela-scroll">

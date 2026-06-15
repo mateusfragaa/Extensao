@@ -51,46 +51,9 @@ class Venda extends ControllerMain
 
     // =====================================================================
     // Prepara o formulário da esquerda do formVenda.php (devo usar na tabela da grid)
-    public function formVenda($acao,$id)
-    {
-        $data = [];
-        switch ($acao) {
-            case 'insert':
-                $data["action_form"] = "insert";
-                break;
-            case 'update':
-                $data["action_form"] = "update";
-                break;
-            case 'delete':
-                $data["action_form"] = "delete";
-                break;
-            case 'view':
-                $data["action_form"] = "view";
-                break;
-        }
-        // Não vai ter como criar venda manual, vai ser criado automaticamente assim que adionar um item e enviar
-        /*
-                1- Receber os dados do post
-                2- Com base na ação eu altero a venda do id
-                3- Para update eu preciso carregar
-        */
-
-        if ($acao == 'insert') {
-            $data['produtos'] = $this->serviceVenda->listaProduto('prd_descricao');
-            $data['pessoas'] = $this->serviceVenda->listaPessoa('pes_nome');
-            $data['status_venda'] = $this->serviceVenda->getStatusVenda();
-        } else {
-            die('carrega a venda id');
-            $data["vendas"] = $this->model->getById($id);
-        }
-
-        $this->view(
-            'admin/form/formVenda',
-            [
-                "data" => $data
-            ],
-            'sistema'
-        );
+    public function formVenda($acao,$id_pedido)
+    { 
+        $this->editandoVenda($acao, $id_pedido);
     }
     // =====================================================================
 
@@ -98,10 +61,11 @@ class Venda extends ControllerMain
     // Tratar o formulário da esquerda do formVenda.php
     public function update($action, $id_pedido)
     {
+      
         if ($this->serviceVenda->updateVenda($_POST, $id_pedido)) {
-            Redirect::page("venda/editandoVenda/form/$id_pedido", ['msgSucesso' => 'Sucesso ao atualizar o registro']);
+            Redirect::page("venda/formVenda/update/$id_pedido", ['msgSucesso' => 'Sucesso ao atualizar o registro']);
         } else {
-            Redirect::page("venda/", ['msgError' => 'Erro ao atualizar registro, verifique se os dados estão corretos!']);
+            Redirect::page("venda/formVenda/update/$id_pedido", ['msgError' => 'Erro ao atualizar registro, verifique se os dados estão corretos!']);
         }
     }
 
@@ -126,7 +90,7 @@ class Venda extends ControllerMain
 
     // =====================================================================
     // Formulário da direita
-    public function inicioVenda()
+    public function inicioVenda($action)
     {   
         $data = [];
         $data['produtos_pedidos'] = $this->serviceVenda->comecarPedidoVenda($_POST);
@@ -134,8 +98,9 @@ class Venda extends ControllerMain
         $data['pessoas'] = $this->serviceVenda->listaPessoa('pes_nome');
         $data['info_venda'] = $this->serviceVenda->getVenda(Session::getDestroy('id_pedido_editando'));
         $data['status_venda'] = $this->serviceVenda->getStatusVenda();
-        $data['action_form_modal'] = 'editandoVenda';
+        $data['action_form_modal'] = '/formVenda/update';
         $data['action_form'] = 'update';
+        $data['acao_venda'] = $action;
 
         $this->view(
             'admin/form/formVenda',
@@ -156,18 +121,25 @@ class Venda extends ControllerMain
     // =====================================================================
     public function editandoVenda($action = '', $id_pedido = 0)
     {
+        // var_dump($action,$id_pedido);
         $data = [];
-        if ($action == 'modal') {
+        if ($action == 'update' && $_SERVER['REQUEST_METHOD'] == 'POST') {
             $this->serviceVenda->addProdutoPedido($id_pedido, $_POST);
         }
+        
+        if ($action == 'insert') {
+            $data['action_form_modal'] = 'inicioVenda/insert';
+        }else {
+            $data['action_form_modal'] = '/formVenda/update';
+        }
 
-        $data['produtos_pedidos'] = $this->serviceVenda->select_produto_venda($id_pedido);
         $data['produtos'] = $this->serviceVenda->listaProduto('prd_descricao');
+        $data['produtos_pedidos'] = $this->serviceVenda->select_produto_venda($id_pedido);
         $data['pessoas'] = $this->serviceVenda->listaPessoa('pes_nome');
         $data['info_venda'] = $this->serviceVenda->getVenda($id_pedido);
         $data['status_venda'] = $this->serviceVenda->getStatusVenda();
-        $data['action_form_modal'] = 'editandoVenda';
         $data['action_form'] = 'update';
+        $data['acao_venda'] = $action;
         
 
         $this->view(
