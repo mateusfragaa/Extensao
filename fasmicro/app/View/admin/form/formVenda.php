@@ -3,8 +3,11 @@ $produtos = (isset($data['data']['produtos'])) ? $data['data']['produtos'] : [];
 $pessoas = (isset($data['data']['pessoas'])) ? $data['data']['pessoas'] : [];
 $info_venda = (isset($data['data']['info_venda'])) ? $data['data']['info_venda'] : [];
 $status_venda = (isset($data['data']['status_venda'])) ? $data['data']['status_venda'] : [];
-$id_venda = isset($data['data']['produtos_pedidos'][0]['PEVI_VENDA_ID']) ? $data['data']['produtos_pedidos'][0]['PEVI_VENDA_ID'] : $data['data']['id_venda'];
+$produtos_pedido = (isset($data['data']['produtos_pedidos'])) ? $data['data']['produtos_pedidos'] : [];
+$id_venda =  isset($data['data']['id_venda']) ? $data['data']['id_venda'] : $produtos_pedido[0]['PEVI_ID'];
 $acao_venda = $data['data']['acao_venda'] ?? '';
+
+var_dump($produtos_pedido);
 ?>
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -82,7 +85,7 @@ $acao_venda = $data['data']['acao_venda'] ?? '';
                         </div>
                         <input type="hidden" name="venda_id" value="<?= $id_venda ?>" id="venda_id">
                     </div>
-                    <?php if (count($data['data']['produtos_pedidos']) > 0 && $acao_venda == 'update' || $acao_venda != 'view') : ?>
+                    <?php if ((count($data['data']['produtos_pedidos']) > 0 || $acao_venda == 'update' || $acao_venda == 'delete')  && ($acao_venda != 'insert' || $acao_venda != 'view')) : ?>
                         <button type="submit" class="btn btn-primary-custom w-100 py-2 mt-3">Salvar Pedido</button>
                     <?php else: ?>
                         <p class="text-center text-muted">Acrescente algum item para iniciar o pedido.</p>
@@ -273,7 +276,7 @@ $acao_venda = $data['data']['acao_venda'] ?? '';
             </div>
         </div>
         <?= jsFormHandler() ?>
-        <?= carrega_itens_venda($data['data']['produtos_pedidos'] ?? []); ?>
+        <?= carrega_itens_venda($produtos_pedido ?? []); ?>
         <?= onChangeTotal(); ?>
         <?= atualiza_total_subtotal_exclusao() ?>
         <?= excluir_item_venda($id_venda); ?>

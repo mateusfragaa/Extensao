@@ -160,7 +160,7 @@ if (!function_exists('onChangeTotal')) {
             const inputTotal = document.getElementById("venda_total_input");
             const spanTotal = document.getElementById("venda_total_span");
             const venda = document.getElementById("venda_id");
-
+        
             async function calcularValor() {
                 const resposta = await fetch('http://fasmicro/Venda/calculaTotalVenda',
                     {
