@@ -98,32 +98,53 @@ if (!function_exists('jsFormHandler')) {
 
 if (!function_exists('carrega_itens_venda')) {
     // itens que foram selecionados e adicionados na venda
-    function carrega_itens_venda($dados) {
-        $dados = json_encode($dados);
-        $subTotal = number_format(array_sum(array_column(json_decode($dados),'PEVI_SUBTOTAL')),2,',','.');
-        return <<<JS
-            <script>
-                const div = document.getElementById("produtos_incluidos_venda");
-                let subTotalSpan = document.getElementById("venda_sub_total_span");
-                let subTotalInput = document.getElementById("venda_sub_total_input").value;
-                const dados = {$dados};
-                dados.forEach((x) => {
-                    div.innerHTML += `<tr>
-                        <td>\${x.prd_id}</td>
-                        <td>\${x.prd_descricao}</td>
-                        <td>\${x.PEVI_QUANTIDADE}</td>
-                        <td>R$ \${x.PEVI_PRECO_UNITARIO}</td>
-                        <td>R$ \${x.PEVI_SUBTOTAL}</td>
-                        <td>
-                            <input type="checkbox" value="\${x.PEVI_ID}" class="form-check-input fs-5 item-venda"/>
-                        </td>
-                        </tr>`
-                });
+    function carrega_itens_venda($dados)
+    {
+        $jsonDados = json_encode($dados);
 
-                subTotalSpan.innerHTML = `Subtotal: R$ {$subTotal}`; 
-                subTotalInput = `{$subTotal}`; 
-            </script>
-        JS;
+        $subTotal = number_format(
+            array_sum(array_column($dados, 'PEVI_SUBTOTAL')),
+            2,
+            ',',
+            '.'
+        );
+
+        return <<<JS
+    <script>
+
+        const div = document.getElementById("produtos_incluidos_venda");
+        const subTotalSpan = document.getElementById("venda_sub_total_span");
+        const subTotalInput = document.getElementById("venda_sub_total_input");
+
+        const dados = {$jsonDados};
+
+        div.innerHTML = '';
+
+        dados.forEach((x) => {
+
+            div.innerHTML += `
+                <tr>
+                    <td>\${x.prd_id}</td>
+                    <td>\${x.prd_descricao}</td>
+                    <td>\${x.PEVI_QUANTIDADE}</td>
+                    <td>R$ \${parseFloat(x.PEVI_PRECO_UNITARIO).toLocaleString('pt-BR')}</td>
+                    <td>R$ \${parseFloat(x.PEVI_SUBTOTAL).toLocaleString('pt-BR')}</td>
+                    <td>
+                        <input
+                            type="checkbox"
+                            value="\${x.PEVI_ID}"
+                            class="form-check-input fs-5 item-venda"
+                        />
+                    </td>
+                </tr>
+            `;
+        });
+
+        subTotalSpan.innerHTML = 'Subtotal: R$ {$subTotal}';
+        subTotalInput.value = '{$subTotal}';
+
+    </script>
+    JS;
     }
 }
 
@@ -131,7 +152,6 @@ if (!function_exists('onChangeTotal')) {
 
     function onChangeTotal()
     {
-
         return <<<JS
         <script>
 
@@ -175,38 +195,146 @@ if (!function_exists('onChangeTotal')) {
     }
 }
 
-if (!function_exists('excluir_item_venda'))
-{
+// if (!function_exists('excluir_item_venda'))
+// {
+//     function excluir_item_venda($id_venda)
+//     {
+//         return <<<JS
+//             <script>
+//                 botao_excluir = document.getElementById('excluir_produto');
+//                 botao_excluir.addEventListener('click', async (e) => {
+
+//                 const selecionados = document.querySelectorAll('.item-venda:checked');
+
+//                 const ids = [...selecionados]
+//                     .map(item => item.value);
+
+//                 await fetch('http://fasmicro/Venda/excluirProduto', {
+//                     method: 'POST',
+//                     headers: {
+//                         'Content-Type': 'application/json'
+//                     },
+//                     body: JSON.stringify({
+//                         produtos_excluir: ids
+//                     })
+//                 });
+
+//                 selecionados.forEach(item => {
+//                     // closest - procura o elemento pai mais próximo
+//                     item.closest('tr').remove();
+//                 });
+//             });
+//             </script>
+//         JS;
+//     }
+// }
+
+// function atualiza_total_subtotal_exclusao()
+// {
+//     return <<<JS
+//     <script>
+
+//         async function atualizaTotalSubtotalExclusao(id) {
+
+//             const desconto = document.getElementById("desconto_venda");
+//             const acrescimo = document.getElementById("acrescimo_venda");
+//             const venda = document.getElementById("venda_id");
+
+//             const resposta = await fetch(
+//                 'http://fasmicro/Venda/carregaValorExclusao',
+//                 {
+//                     method: 'POST',
+//                     headers: {
+//                         'Content-Type': 'application/json'
+//                     },
+//                     body: JSON.stringify({
+//                         'pedido_id' : id
+//                     })
+//                 }
+//             );
+
+//             const dados = await resposta.json();
+
+//             document.getElementById("venda_total_span").innerHTML =
+//                 'Total: R$ ' + parseFloat(dados.pev_total).toLocaleString('pt-BR');
+
+//             document.getElementById("venda_sub_total_span").innerHTML =
+//                 'Subtotal: R$ ' + parseFloat(dados.pev_sub_total).toLocaleString('pt-BR');
+//         }
+
+//     </script>
+//     JS;
+// }
+
+
+if(!function_exists('excluir_item_venda')){
     function excluir_item_venda($id_venda)
     {
         return <<<JS
-            <script>
-                botao_excluir = document.getElementById('excluir_produto');
-                botao_excluir.addEventListener('click', async (e) => {
+    <script>
 
-                const selecionados = document.querySelectorAll('.item-venda:checked');
+        const botao_excluir = document.getElementById('excluir_produto');
 
-                const ids = [...selecionados]
-                    .map(item => item.value);
+        botao_excluir.addEventListener('click', async () => {
 
-                await fetch('http://fasmicro/Venda/excluirProduto', {
+            const selecionados = document.querySelectorAll('.item-venda:checked');
+
+            const ids = [...selecionados]
+                .map(item => item.value);
+
+            await fetch('http://fasmicro/Venda/excluirProduto', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    produtos_excluir: ids
+                })
+            });
+
+            selecionados.forEach(item => {
+                item.closest('tr').remove();
+            });
+
+            await atualizaTotalSubtotalExclusao({$id_venda});
+        });
+
+    </script>
+    JS;
+    }
+}
+
+if(!function_exists('atualiza_total_subtotal_exclusao')){
+    function atualiza_total_subtotal_exclusao()
+    {
+        return <<<JS
+    <script>
+
+        async function atualizaTotalSubtotalExclusao(id) {
+
+            const resposta = await fetch(
+                'http://fasmicro/Venda/carregaValorExclusao',
+                {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        produtos_excluir: ids
+                        pedido_id: id
                     })
-                });
+                }
+            );
 
-                selecionados.forEach(item => {
-                    // closest - procura o elemento pai mais próximo
-                    item.closest('tr').remove();
-                });
-            });
-            </script>
-        JS;
+            const dados = await resposta.json();
+
+            document.getElementById("venda_total_span").innerHTML =
+                'Total: R$ ' + parseFloat(dados.PEV_TOTAL).toLocaleString('pt-BR');
+
+            document.getElementById("venda_sub_total_span").innerHTML =
+                'Subtotal: R$ ' + parseFloat(dados.PEV_SUB_TOTAL).toLocaleString('pt-BR');
+        }
+
+    </script>
+    JS;
     }
 }
-
-

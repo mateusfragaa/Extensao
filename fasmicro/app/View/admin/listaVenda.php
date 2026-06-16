@@ -1,7 +1,6 @@
 <?php
 $vendas = isset($data['data']['vendas']) ? $data['data']['vendas'] : [];
 $status_vendas = isset($data['data']['status_venda']) ? $data['data']['status_venda'] : [];
-var_dump($vendas);
 ?>
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">

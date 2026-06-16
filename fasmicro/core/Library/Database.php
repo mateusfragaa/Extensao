@@ -764,7 +764,8 @@ class Database
 
             $query  = $this->connect()->prepare($sql);
             $query->execute($this->params);
-
+            // var_dump($query, $this->params);
+            // die();
             $rs = $query->rowCount();
             self::dbClear();
 

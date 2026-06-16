@@ -3,14 +3,12 @@ $produtos = (isset($data['data']['produtos'])) ? $data['data']['produtos'] : [];
 $pessoas = (isset($data['data']['pessoas'])) ? $data['data']['pessoas'] : [];
 $info_venda = (isset($data['data']['info_venda'])) ? $data['data']['info_venda'] : [];
 $status_venda = (isset($data['data']['status_venda'])) ? $data['data']['status_venda'] : [];
-$id_venda = isset($data['data']['produtos_pedidos'][0]['PEVI_VENDA_ID']) ? $data['data']['produtos_pedidos'][0]['PEVI_VENDA_ID'] : '';
+$id_venda = isset($data['data']['produtos_pedidos'][0]['PEVI_VENDA_ID']) ? $data['data']['produtos_pedidos'][0]['PEVI_VENDA_ID'] : $data['data']['id_venda'];
 $acao_venda = $data['data']['acao_venda'] ?? '';
-var_dump($acao_venda, $data['data']['produtos_pedidos']);
-var_dump(count($data['data']['produtos_pedidos']) <= 0);
 ?>
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold m-0">Pedido de Venda<?= formSubTitulo($acao_venda)?></h4>
+        <h4 class="fw-bold m-0">Pedido de Venda<?= formSubTitulo($acao_venda) ?></h4>
         <a class="btn btn-outline-secondary btn-sm" href="/venda/">
             <i class="bi bi-arrow-left"></i> Voltar
         </a>
@@ -55,14 +53,18 @@ var_dump(count($data['data']['produtos_pedidos']) <= 0);
                         </select>
                     </div>
                     <div class="col-6">
-                        <label class="form-label small fw-bold">Acréscimo</label>
-                        <input type="number" class="form-control bg-light border-0" placeholder="0,00" min="0" name="acrescimo_venda" id="acrescimo_venda"
-                            value="<?= $info_venda['PEV_ACRESCIMO'] ?? '' ?>">
+                        <?php if (count($info_venda) > 0 ) : ?>
+                            <label class="form-label small fw-bold">Acréscimo</label>
+                            <input type="number" class="form-control bg-light border-0" placeholder="0,00" min="0" name="acrescimo_venda" id="acrescimo_venda"
+                                value="<?= $info_venda['PEV_ACRESCIMO'] ?? '' ?>">
+                        <?php endif; ?>
                     </div>
                     <div class="col-6">
-                        <label class="form-label small fw-bold">Desconto</label>
-                        <input type="number" class="form-control bg-light border-0" placeholder="0,00" min="0" name="desconto_venda" id="desconto_venda"
-                            value="<?= $info_venda['PEV_DESCONTO'] ?? '' ?>">
+                        <?php if (count($info_venda) > 0) : ?>
+                            <label class="form-label small fw-bold">Desconto</label>
+                            <input type="number" class="form-control bg-light border-0" placeholder="0,00" min="0" name="desconto_venda" id="desconto_venda"
+                                value="<?= $info_venda['PEV_DESCONTO'] ?? '' ?>">
+                        <?php endif; ?>
                     </div>
                     <div class="col-12 mt-4 p-3 bg-light rounded text-end">
                         <div class="small text-muted">
@@ -80,7 +82,7 @@ var_dump(count($data['data']['produtos_pedidos']) <= 0);
                         </div>
                         <input type="hidden" name="venda_id" value="<?= $id_venda ?>" id="venda_id">
                     </div>
-                    <?php if (count($data['data']['produtos_pedidos']) > 0 || $acao_venda == 'update')  : ?>
+                    <?php if (count($data['data']['produtos_pedidos']) > 0 && $acao_venda == 'update' || $acao_venda != 'view') : ?>
                         <button type="submit" class="btn btn-primary-custom w-100 py-2 mt-3">Salvar Pedido</button>
                     <?php else: ?>
                         <p class="text-center text-muted">Acrescente algum item para iniciar o pedido.</p>
@@ -95,12 +97,14 @@ var_dump(count($data['data']['produtos_pedidos']) <= 0);
                 <div class="mb-3 d-flex justify-content-between">
                     <div>
                         <?php if ($id_venda) : ?>
-                            <p class="text-muted h4">Número do Pedido <?= $data['data']['produtos_pedidos'][0]['PEVI_VENDA_ID'] ?></p>
+                            <p class="text-muted h4">Número do Pedido <?= $id_venda ?></p>
                         <?php endif; ?>
                     </div>
-                    <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                        Incluir Produto
-                    </button>
+                    <?php if ($acao_venda != 'delete' && $acao_venda != 'view') : ?>
+                        <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                            Incluir Produto
+                        </button>
+                    <?php endif; ?>
                 </div>
 
                 <div class="scroll-div">
@@ -123,7 +127,7 @@ var_dump(count($data['data']['produtos_pedidos']) <= 0);
                 </div>
                 <div class="d-flex flex-row gap-2 mt-2">
                     <!-- <a href="/faturarVenda/" class="btn btn-primary w-100 py-2">Faturar Pedido</a> -->
-                    <?php if (count($data['data']['produtos_pedidos']) > 0 && $acao_venda == 'update')  : ?>
+                    <?php if (count($data['data']['produtos_pedidos']) > 0 && $acao_venda == 'update' || $acao_venda == 'insert') : ?>
                         <a href="/faturarVenda/<?= $action ?? 'faturar' ?>/<?= $id_venda ?>" class="btn btn-primary w-100 py-2">Faturar Pedido</a>
                         <button type="button" class="btn btn-danger w-100 py-2" id="excluir_produto">Excluir Produto</button>
                     <?php endif; ?>
@@ -271,5 +275,6 @@ var_dump(count($data['data']['produtos_pedidos']) <= 0);
         <?= jsFormHandler() ?>
         <?= carrega_itens_venda($data['data']['produtos_pedidos'] ?? []); ?>
         <?= onChangeTotal(); ?>
+        <?= atualiza_total_subtotal_exclusao() ?>
         <?= excluir_item_venda($id_venda); ?>
     </div>

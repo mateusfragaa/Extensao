@@ -78,14 +78,12 @@ class Venda extends ControllerMain
         }
     }
 
-    public function insert()
+    // teste
+    public function carregaValorExclusao()
     {
-        $idGerado = $this->model->insert($_POST);
-        if ($idGerado) {
-            Redirect::page('venda/',['msgSucesso' => 'Sucesso ao inserir registro, nova venda']);
-        }else {
-            Redirect::page('venda/', ['msgError' => 'Erro ao inserir registro, verifique se os dados estão corretos!']);
-        }
+        $data = json_decode(file_get_contents('php://input'), true);
+        $venda = $this->serviceVenda->getVenda($data['pedido_id']);
+        echo json_encode($venda);
     }
 
     // =====================================================================
@@ -141,6 +139,7 @@ class Venda extends ControllerMain
         $data['pessoas'] = $this->serviceVenda->listaPessoa('pes_nome');
         $data['info_venda'] = $this->serviceVenda->getVenda($id_pedido);
         $data['status_venda'] = $this->serviceVenda->getStatusVenda();
+        $data['id_venda'] = $id_pedido;
         $data['acao_venda'] = $action;
         
 
