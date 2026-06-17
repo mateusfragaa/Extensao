@@ -11,7 +11,7 @@ class Pessoa extends ControllerMain
 {
     public function __construct()
     {
-        $this->loadHelper('formHelper');
+        // formHelper já carregado globalmente pelo ControllerMain
         return parent::__construct();
     }
 
@@ -33,7 +33,7 @@ class Pessoa extends ControllerMain
 
         $this->view(
             'admin/listaPessoa',
-            ['pessoas' => $this->model->filtroListagem($_POST)],
+            ['pessoas' => $this->model->filtroListagem($this->request->getPost())],
             $isAjax ? null : 'sistema'
         );
     }
@@ -58,10 +58,10 @@ class Pessoa extends ControllerMain
     /** Insere nova pessoa — limpa máscaras antes de salvar. */
     public function insert($action = null, $id = null)
     {
-        unset($_POST['PES_ID']);
-        $_POST = $this->limparMascaras($_POST);
+        $post = $this->limparMascaras($this->request->getPost());
+        unset($post['PES_ID']);
 
-        $idGerado = $this->model->insert($_POST);
+        $idGerado = $this->model->insert($post);
 
         if ($idGerado) {
             Redirect::page('pessoa/', ['msgSucesso' => 'Cadastro realizado com sucesso! (ID: ' . $idGerado . ')']);
@@ -74,20 +74,20 @@ class Pessoa extends ControllerMain
     /** Atualiza pessoa existente — limpa máscaras antes de salvar. */
     public function update($action = null, $id = null)
     {
-        $_POST = $this->limparMascaras($_POST);
+        $post = $this->limparMascaras($this->request->getPost());
 
-        if ($this->model->update($_POST)) {
+        if ($this->model->update($post)) {
             Redirect::page('pessoa/', ['msgSucesso' => 'Registro atualizado com sucesso.']);
         } else {
             $msgError = Session::get('msgError') ?: 'Erro ao atualizar. Verifique os dados informados.';
-            Redirect::page('pessoa/formPessoa/update/' . $_POST['PES_ID'], ['msgError' => $msgError]);
+            Redirect::page('pessoa/formPessoa/update/' . $post['PES_ID'], ['msgError' => $msgError]);
         }
     }
 
     /** Exclui pessoa. */
     public function delete($action = null, $id = null)
     {
-        if ($this->model->delete($_POST)) {
+        if ($this->model->delete($this->request->getPost())) {
             Redirect::page('pessoa/', ['msgSucesso' => 'Registro excluído com sucesso.']);
         } else {
             Redirect::page('pessoa/', ['msgError' => 'Erro ao excluir. Verifique se há vínculos com outros dados.']);
@@ -298,7 +298,8 @@ class Pessoa extends ControllerMain
     private function limparMascaras(array $dados): array
     {
         // Remove campos que não existem na tabela
-        unset($dados['csrf_token'], $dados['sem_numero']);
+        // Nota: csrf_token já é removido automaticamente por $this->request->getPost()
+        unset($dados['sem_numero']);
 
         // CPF: 000.000.000-00 → 00000000000 (11 dígitos)
         // CNPJ: 00.000.000/0000-00 → 00000000000000 (14 dígitos)

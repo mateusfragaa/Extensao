@@ -19,7 +19,7 @@ class PessoaModel extends ModelMain
     public $validationRules = [
         'PES_NOME' => [
             'label' => 'Nome Completo / Razão Social',
-            'rules' => 'required|min:3|max:45'
+            'rules' => 'required|min:3|max:100'
         ],
         'CPF_CNPJ' => [
             'label' => 'CPF / CNPJ',

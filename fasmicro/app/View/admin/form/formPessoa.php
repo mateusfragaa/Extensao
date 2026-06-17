@@ -43,10 +43,10 @@ $errors      = \Core\Library\Session::get('formErrors');
                     class="form-control <?= isset($errors['PES_NOME']) ? 'is-invalid' : '' ?>"
                     placeholder="Digite o nome completo"
                     value="<?= htmlspecialchars(setValue('PES_NOME')) ?>"
-                    maxlength="45"
+                    maxlength="100"
                     <?= $action_form === 'view' ? 'disabled' : '' ?>>
                 <?php if (isset($errors['PES_NOME'])): ?><div class="invalid-feedback"><?= $errors['PES_NOME'] ?></div><?php endif; ?>
-            </div>
+            </div> 
 
             <!-- ── CPF / CNPJ ─────────────────────────────────────── -->
             <div class="col-md-4">

@@ -3,6 +3,7 @@
 namespace Core\Library;
 
 use Core\Library\Csrf;
+use Core\Library\Redirect;
 use Core\Library\Request;
 
 class ControllerMain
@@ -10,22 +11,20 @@ class ControllerMain
     protected $controller;
     protected $method;
     protected $action;
-    protected $request;        // ← agora é uma instância de Request
+    protected $request;
     protected $template;
 
     public $model;
 
     use RequestTrait;
+    use ModelLoaderTrait;   // ← padrão do professor (loadModel extraído para trait)
 
     /**
      * __construct
-     * CORREÇÃO: $this->request não era instanciado → getHttpMethod() explodia em null.
      */
     public function __construct()
     {
-        // Instancia o objeto Request ANTES de qualquer uso de $this->request
-        $this->request = new Request();
-
+        $this->request      = new Request();
         $aParametros        = Self::getRotaParametros();
         $this->controller   = $aParametros['controller'];
         $this->method       = $aParametros['method'];
@@ -45,23 +44,34 @@ class ControllerMain
             }
         }
 
-        // Carregamento do model padrão do controller
+        // Carregamento de helpers globais (padrão do professor)
+        $this->loadHelper(['url', 'data', 'formHelper']);
+
+        // Carregamento do model default do controller
         $this->model = $this->loadModel($this->controller);
 
-        // Carregamento de helpers globais
-        $this->loadHelper(['url', 'data']);
+        // Verificação de autenticação
+        // NOTA: O login do projeto de extensão ainda não implementa sessão userId.
+        // Quando o grupo implementar a autenticação real, basta remover o Auth
+        // e HomeSistema da lista CONTROLLER_AUTH em Constants.php.
+        if (!in_array($this->controller, CONTROLLER_AUTH)) {
+            if (!Session::get('userId')) {
+                return Redirect::page('Home/viewErros', ['msgError' => 'Para acessar o sistema, faça login primeiro.']);
+            }
+        }
     }
 
     /**
-     * loadModel
-     * CORREÇÃO: namespace era 'App\\model\\' (minúsculo) — em Linux isso não resolve.
+     * validaNivelAcesso
+     * Redireciona se o nível do usuário logado for maior que o mínimo exigido.
+     * Níveis: 1 = Super Admin, 11 = Admin, 21 = Usuário comum.
+     *
+     * @param int $nivelMinimo
      */
-    public function loadModel(string $nomeModel)
+    public function validaNivelAcesso(int $nivelMinimo = 20): void
     {
-        $pathModel = 'App\\Model\\' . $nomeModel . 'Model';
-
-        if (class_exists($pathModel)) {
-            return new $pathModel();
+        if ((int) Session::get('userNivel') > $nivelMinimo) {
+            Redirect::page('Home/viewErros', ['msgError' => 'Você não possui permissão para acessar esta funcionalidade.']);
         }
     }
 

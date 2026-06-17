@@ -96,6 +96,10 @@ ALTER TABLE `tb_pessoa`
 -- 2. TELEFONE - Modificando o campo para aceitar números de telefone com DDD e 9 dígitos, além de permitir valores nulos.
 ALTER TABLE `tb_pessoa`
     MODIFY `TELEFONE` varchar(15) DEFAULT NULL;
+-- 3 PES_NOME - Modificando o campo para aceitar até 100 caracteres, permitindo nomes mais longos.
+ALTER TABLE `tb_pessoa`
+    MODIFY `PES_NOME` varchar(100) DEFAULT NULL;  
+  
 
 
 -- Exportação de dados foi desmarcado.

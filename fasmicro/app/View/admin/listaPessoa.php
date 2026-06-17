@@ -1,4 +1,5 @@
 <?php
+
 use Core\Library\Csrf;
 ?>
 <div class="container py-4">
@@ -32,8 +33,8 @@ use Core\Library\Csrf;
                 <div class="col-md-4">
                     <select id="ordemPessoa" name="ordemPessoa" class="form-select">
                         <option value="PES_NOME" <?= (($_POST['ordemPessoa'] ?? '') === 'PES_NOME') ? 'selected' : '' ?>>Ordem Alfabética</option>
-                        <option value="CIDADE"   <?= (($_POST['ordemPessoa'] ?? '') === 'CIDADE')   ? 'selected' : '' ?>>Por Cidade</option>
-                        <option value="UF"       <?= (($_POST['ordemPessoa'] ?? '') === 'UF')       ? 'selected' : '' ?>>Por UF</option>
+                        <option value="CIDADE" <?= (($_POST['ordemPessoa'] ?? '') === 'CIDADE')   ? 'selected' : '' ?>>Por Cidade</option>
+                        <option value="UF" <?= (($_POST['ordemPessoa'] ?? '') === 'UF')       ? 'selected' : '' ?>>Por UF</option>
                     </select>
                 </div>
             </form>
@@ -60,10 +61,13 @@ use Core\Library\Csrf;
                                 <td class="text-muted fw-bold">#<?= str_pad($p['PES_ID'], 3, '0', STR_PAD_LEFT) ?></td>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <div class="avatar-placeholder me-3">
+                                        <div class="avatar-placeholder me-3 ">
                                             <?= strtoupper(substr($p['PES_NOME'], 0, 2)) ?>
                                         </div>
-                                        <span class="fw-bold"><?= htmlspecialchars($p['PES_NOME']) ?></span>
+                                        <span class="fw-bold">
+                                            <?= htmlspecialchars(strlen($p['PES_NOME']) > 30 ? substr($p['PES_NOME'], 0, 40)
+                                                . '...' : $p['PES_NOME']) ?>
+                                        </span>
                                     </div>
                                 </td>
                                 <td>
@@ -86,7 +90,7 @@ use Core\Library\Csrf;
                                 </td>
                                 <td><?= htmlspecialchars(($p['CIDADE'] ?? '') . '/' . ($p['UF'] ?? '')) ?></td>
                                 <td class="text-end">
-                                    <a href="/pessoa/formPessoa/view/<?= $p['PES_ID'] ?>"   class="btn btn-sm btn-light border" title="Visualizar"><i class="bi bi-eye text-primary"></i></a>
+                                    <a href="/pessoa/formPessoa/view/<?= $p['PES_ID'] ?>" class="btn btn-sm btn-light border" title="Visualizar"><i class="bi bi-eye text-primary"></i></a>
                                     <a href="/pessoa/formPessoa/update/<?= $p['PES_ID'] ?>" class="btn btn-sm btn-light border" title="Editar"><i class="bi bi-pencil"></i></a>
                                     <a href="/pessoa/formPessoa/delete/<?= $p['PES_ID'] ?>" class="btn btn-sm btn-light border text-danger" title="Excluir"><i class="bi bi-trash"></i></a>
                                 </td>
@@ -110,45 +114,47 @@ use Core\Library\Csrf;
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const formFiltro      = document.getElementById('formFiltroPessoa');
-    const inputBusca      = document.getElementById('filtroNomePessoa');
-    const selectOrdem     = document.getElementById('ordemPessoa');
-    const tabelaContainer = document.querySelector('.card.overflow-hidden');
-    let timeoutBusca      = null;
+    document.addEventListener('DOMContentLoaded', function() {
+        const formFiltro = document.getElementById('formFiltroPessoa');
+        const inputBusca = document.getElementById('filtroNomePessoa');
+        const selectOrdem = document.getElementById('ordemPessoa');
+        const tabelaContainer = document.querySelector('.card.overflow-hidden');
+        let timeoutBusca = null;
 
-    function executarFiltro() {
-        const formData = new FormData(formFiltro);
-        tabelaContainer.style.opacity = '0.5';
+        function executarFiltro() {
+            const formData = new FormData(formFiltro);
+            tabelaContainer.style.opacity = '0.5';
 
-        fetch(formFiltro.action, {
-            method: 'POST',
-            body: formData,
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(r => r.text())
-        .then(html => {
-            const doc       = new DOMParser().parseFromString(html, 'text/html');
-            const novaTab   = doc.querySelector('.card.overflow-hidden');
-            if (novaTab) tabelaContainer.innerHTML = novaTab.innerHTML;
-            tabelaContainer.style.opacity = '1';
-        })
-        .catch(err => {
-            console.error('Erro ao filtrar:', err);
-            tabelaContainer.style.opacity = '1';
+            fetch(formFiltro.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(r => r.text())
+                .then(html => {
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    const novaTab = doc.querySelector('.card.overflow-hidden');
+                    if (novaTab) tabelaContainer.innerHTML = novaTab.innerHTML;
+                    tabelaContainer.style.opacity = '1';
+                })
+                .catch(err => {
+                    console.error('Erro ao filtrar:', err);
+                    tabelaContainer.style.opacity = '1';
+                });
+        }
+
+        inputBusca.addEventListener('input', function() {
+            clearTimeout(timeoutBusca);
+            timeoutBusca = setTimeout(executarFiltro, 300);
         });
-    }
 
-    inputBusca.addEventListener('input', function () {
-        clearTimeout(timeoutBusca);
-        timeoutBusca = setTimeout(executarFiltro, 300);
+        selectOrdem.addEventListener('change', executarFiltro);
+
+        formFiltro.addEventListener('submit', function(e) {
+            e.preventDefault();
+            executarFiltro();
+        });
     });
-
-    selectOrdem.addEventListener('change', executarFiltro);
-
-    formFiltro.addEventListener('submit', function (e) {
-        e.preventDefault();
-        executarFiltro();
-    });
-});
 </script>

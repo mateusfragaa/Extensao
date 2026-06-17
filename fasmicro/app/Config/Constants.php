@@ -11,8 +11,21 @@ defined("DEFAULT_METHOD") || define("DEFAULT_METHOD", "index");
 
 // Controllers autorizados a executar sem autenticação
 defined("CONTROLLER_AUTH") || define("CONTROLLER_AUTH", [
+    // Controllers públicos (sem login)
     "Home",
-    "Login"
+    "Auth",
+    // TODO: Quando o grupo implementar a autenticação real (setando Session::set('userId')
+    // no controller de login), remover os controllers abaixo para exigir login no sistema.
+    "HomeSistema",
+    "Pessoa",
+    "Usuario",
+    "Produto",
+    "Categoria",
+    "Venda",
+    "Recebimento",
+    "Pagamento",
+    "TipoDocumento",
+    "Teste",
 ]);
 
 // Tamanho máximo para upload de arquivos (5 mega bytes)
