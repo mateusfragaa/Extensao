@@ -165,7 +165,7 @@ CREATE TABLE IF NOT EXISTS `tb_recebimento_item` (
 
 -- Copiando estrutura para tabela extensao.tb_tipo_documento
 CREATE TABLE IF NOT EXISTS `tb_tipo_documento` (
-  `TDC_ID` int(10) unsigned NOT NULL,
+  `TDC_ID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `TDC_DESCRICAO` varchar(45) NOT NULL,
   `TDC_STATUS` tinyint(3) unsigned NOT NULL DEFAULT 1 COMMENT '1 = ATIVO; 0 = INATIVO',
   PRIMARY KEY (`TDC_ID`),
@@ -173,6 +173,10 @@ CREATE TABLE IF NOT EXISTS `tb_tipo_documento` (
   UNIQUE KEY `TDC_DESCRICAO_UNIQUE` (`TDC_DESCRICAO`)
 );
 
+ALTER TABLE `tb_tipo_documento`
+    ADD COLUMN `TDC_OBSERVACAO` varchar(255) DEFAULT NULL
+        COMMENT 'Informações adicionais sobre o tipo de documento'
+    AFTER `TDC_STATUS`;
 -- Exportação de dados foi desmarcado.
 
 -- Copiando estrutura para tabela extensao.tb_usuario

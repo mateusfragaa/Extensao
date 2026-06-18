@@ -16,7 +16,7 @@ use Core\Library\Csrf;
     <div class="card card-custom mb-4">
         <div class="card-body p-3">
             <?php exibeAlerta(); ?>
-            <form id="formFiltroPessoa" class="row g-2" action="/pessoa/filtroListagemPessoa" method="POST">
+            <form id="formFiltroPessoa" class="row g-2" action="/pessoa/filtroListagemPessoa" data-filtro="true" data-tabela="tabelaContainer" method="POST">
                 <?= Csrf::getHiddenField() ?>
                 <div class="col-md-8">
                     <div class="input-group">
@@ -41,7 +41,7 @@ use Core\Library\Csrf;
         </div>
     </div>
 
-    <div class="card card-custom overflow-hidden">
+    <div class="card card-custom overflow-hidden" id="tabelaContainer">
         <div class="table-responsive">
             <table class="table table-custom m-0">
                 <thead>
@@ -113,48 +113,4 @@ use Core\Library\Csrf;
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const formFiltro = document.getElementById('formFiltroPessoa');
-        const inputBusca = document.getElementById('filtroNomePessoa');
-        const selectOrdem = document.getElementById('ordemPessoa');
-        const tabelaContainer = document.querySelector('.card.overflow-hidden');
-        let timeoutBusca = null;
-
-        function executarFiltro() {
-            const formData = new FormData(formFiltro);
-            tabelaContainer.style.opacity = '0.5';
-
-            fetch(formFiltro.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(r => r.text())
-                .then(html => {
-                    const doc = new DOMParser().parseFromString(html, 'text/html');
-                    const novaTab = doc.querySelector('.card.overflow-hidden');
-                    if (novaTab) tabelaContainer.innerHTML = novaTab.innerHTML;
-                    tabelaContainer.style.opacity = '1';
-                })
-                .catch(err => {
-                    console.error('Erro ao filtrar:', err);
-                    tabelaContainer.style.opacity = '1';
-                });
-        }
-
-        inputBusca.addEventListener('input', function() {
-            clearTimeout(timeoutBusca);
-            timeoutBusca = setTimeout(executarFiltro, 300);
-        });
-
-        selectOrdem.addEventListener('change', executarFiltro);
-
-        formFiltro.addEventListener('submit', function(e) {
-            e.preventDefault();
-            executarFiltro();
-        });
-    });
-</script>
+<script src="/assests/js/filtroLista.js"></script>
