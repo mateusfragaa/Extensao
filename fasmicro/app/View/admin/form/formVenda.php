@@ -4,7 +4,7 @@ $pessoas = (isset($data['data']['pessoas'])) ? $data['data']['pessoas'] : [];
 $info_venda = (isset($data['data']['info_venda'])) ? $data['data']['info_venda'] : [];
 $status_venda = (isset($data['data']['status_venda'])) ? $data['data']['status_venda'] : [];
 $produtos_pedido = (isset($data['data']['produtos_pedidos'])) ? $data['data']['produtos_pedidos'] : [];
-$id_venda =  isset($data['data']['id_venda']) ? $data['data']['id_venda'] : $produtos_pedido[0]['PEVI_ID'];
+$id_venda =  isset($data['data']['id_venda']) ? $data['data']['id_venda'] : $produtos_pedido[0]['PEVI_VENDA_ID'];
 $acao_venda = $data['data']['acao_venda'] ?? '';
 
 var_dump($produtos_pedido);

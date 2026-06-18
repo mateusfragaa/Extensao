@@ -89,7 +89,7 @@ class VendaModel extends ModelMain
             ':desconto' => number_format($desconto, 2, '.', ','),
             ':venda' => $venda
         ]);
-        $pdo = $this->db->dbSelect('select pev_total from tb_pedido_venda where pev_id = :venda', [':venda' => $venda]);
+        $pdo = $this->db->dbSelect('select PEV_TOTAL from tb_pedido_venda where pev_id = :venda', [':venda' => $venda]);
         return $this->db->dbBuscaArray($pdo);
     }
 }

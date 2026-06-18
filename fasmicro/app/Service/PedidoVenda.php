@@ -33,10 +33,16 @@ class PedidoVenda
     }
 
     public function calcularTotal($acrescimo, $desconto, $venda)
-    {
+    {   
         // Lógica de validação
-        // $pedido_venda = $this->vendaModel->getVenda($venda);
+        $pedido_venda = $this->vendaModel->getVenda($venda);
         // Desconto não pode maior que o valor total da venda
+        if ($desconto > $pedido_venda['PEV_TOTAL']) {
+            // var_dump($acrescimo,$desconto,$venda);
+            // die();
+            Session::set('msgError', 'O Desconto não pode ser maior que o valor da venda.');
+            return $pedido_venda;
+        }
         // Não pode dar acrescimo se o valor da venda estiver zerado
         if (empty($acrescimo)) $acrescimo = 0;
         if (empty($desconto)) $desconto = 0;

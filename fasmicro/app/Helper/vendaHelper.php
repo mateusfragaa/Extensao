@@ -148,6 +148,7 @@ if (!function_exists('carrega_itens_venda')) {
     }
 }
 
+// Atuliza os valores com acrescimo e desconto em tempo real
 if (!function_exists('onChangeTotal')) {
 
     function onChangeTotal()
@@ -183,8 +184,7 @@ if (!function_exists('onChangeTotal')) {
             async function atualizaValor() {
                 const dados = await calcularValor();
                 // receber o total e atualiza-ló
-                console.log(dados.pev_total);
-                spanTotal.innerHTML = 'Total: R$ ' + parseFloat(dados.pev_total).toLocaleString('pt-BR');
+                spanTotal.innerHTML = 'Total: R$ ' + parseFloat(dados.PEV_TOTAL).toLocaleString('pt-BR');
             }
 
             desconto.addEventListener('input', atualizaValor);
@@ -266,7 +266,7 @@ if (!function_exists('onChangeTotal')) {
 //     JS;
 // }
 
-
+// Exclui itens na venda
 if(!function_exists('excluir_item_venda')){
     function excluir_item_venda($id_venda)
     {
@@ -304,6 +304,7 @@ if(!function_exists('excluir_item_venda')){
     }
 }
 
+// Atualiza os valores em tela  quando um item e excluido 
 if(!function_exists('atualiza_total_subtotal_exclusao')){
     function atualiza_total_subtotal_exclusao()
     {
