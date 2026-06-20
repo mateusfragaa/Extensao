@@ -161,7 +161,7 @@ if (!function_exists('onChangeTotal')) {
             const inputTotal = document.getElementById("venda_total_input");
             const spanTotal = document.getElementById("venda_total_span");
             const venda = document.getElementById("venda_id");
-        
+
             async function calcularValor() {
                 const resposta = await fetch('http://fasmicro/Venda/calculaTotalVenda',
                     {
@@ -184,6 +184,9 @@ if (!function_exists('onChangeTotal')) {
             async function atualizaValor() {
                 const dados = await calcularValor();
                 // receber o total e atualiza-ló
+                console.log(desconto.value);
+                console.log(acrescimo.value);
+                console.log(dados);
                 spanTotal.innerHTML = 'Total: R$ ' + parseFloat(dados.PEV_TOTAL).toLocaleString('pt-BR');
             }
 

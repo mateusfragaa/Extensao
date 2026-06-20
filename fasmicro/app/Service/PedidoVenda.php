@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Service;
 
 use App\Model\PessoaModel;
@@ -7,7 +8,7 @@ use App\Model\VendaItemModel;
 use App\Model\ProdutoModel;
 use Core\Library\Session;
 
-class PedidoVenda 
+class PedidoVenda
 {
     private $vendaModel;
     private $vendaItemModel;
@@ -22,18 +23,65 @@ class PedidoVenda
         $this->pessoaModel = new PessoaModel();
     }
 
+    public function criarPedido() {
+        return $this->vendaModel->criarPedido();
+    }
+
     public function comecarPedidoVenda($post)
     {
-        // Vai somente criar e adicionar os itens iniciais do pedido e retornar os itens
-        $id_pedido_criado = $this->vendaModel->criarPedido();
-        Session::set('id_pedido_editando', $id_pedido_criado);
-        
-        $this->addProdutoPedido($id_pedido_criado, $post);
-        return $this->select_produto_venda($id_pedido_criado);
+        $resultado = $this->validaProdutosSelecionados($post);
+        var_dump($_SESSION);
+        if (count($resultado) > 0) {
+             $id_pedido_criado = Session::get('id_pedido_editando');
+
+            if (
+                !$id_pedido_criado ||
+                empty($this->vendaModel->getVenda($id_pedido_criado))
+            ) {
+                // Session::destroy('id_pedido_editando');
+
+                $id_pedido_criado = $this->criarPedido();
+
+                Session::set(
+                    'id_pedido_editando',
+                    $id_pedido_criado
+                );
+            }
+
+            $this->addProdutoPedido($id_pedido_criado, $resultado);
+            // return $this->select_produto_venda($id_pedido_criado);
+            return $id_pedido_criado;
+        }
+        return [];
+        // return [];
+    }
+
+    public function validarPedidoSessao()
+    {
+        $idPedido = Session::get('id_pedido_editando');
+
+        var_dump('ID DA SESSÃO:', $idPedido);
+
+        if (!$idPedido) {
+            var_dump('Nenhum pedido na sessão.');
+            die();
+        }
+
+        $pedido = $this->vendaModel->getVenda($idPedido);
+
+        var_dump('PEDIDO ENCONTRADO:', $pedido);
+
+        if (!$pedido) {
+            var_dump('O pedido da sessão NÃO existe no banco.');
+        } else {
+            var_dump('O pedido da sessão EXISTE no banco.');
+        }
+
+        die();
     }
 
     public function calcularTotal($acrescimo, $desconto, $venda)
-    {   
+    {
         // Lógica de validação
         $pedido_venda = $this->vendaModel->getVenda($venda);
         // Desconto não pode maior que o valor total da venda
@@ -41,7 +89,7 @@ class PedidoVenda
             // var_dump($acrescimo,$desconto,$venda);
             // die();
             Session::set('msgError', 'O Desconto não pode ser maior que o valor da venda.');
-            return $pedido_venda;
+            return $pedido_venda['PEV_TOTAL'];
         }
         // Não pode dar acrescimo se o valor da venda estiver zerado
         if (empty($acrescimo)) $acrescimo = 0;
@@ -60,7 +108,7 @@ class PedidoVenda
         return $this->vendaModel->getVenda($id);
     }
 
-    public function updateVenda($post,$id_pedido)
+    public function updateVenda($post, $id_pedido)
     {
         $post = [
             'PEV_ID' => $id_pedido,
@@ -68,14 +116,13 @@ class PedidoVenda
             'pev_cliente_id' => $post['cliente_venda'],
             'pev_status' => $post['status_venda']
         ];
-    
+
         return $this->vendaModel->update($post);
     }
 
     public function apagarVendaEItens($id_pedido)
     {
         return $this->vendaModel->delete(['PEV_ID' => $id_pedido]);
-        
     }
 
     public function select_produto_venda($id)
@@ -94,22 +141,48 @@ class PedidoVenda
         return $this->produtoModel->lista($ordem);
     }
 
-    public function addProdutoPedido($id, $post)
+    public function addProdutoPedido($id_pedido, $post_produtos)
     {
-        // Vai receber o id do pedido e os produtos e gravar no banco de dados
+        $produtos_erro_inserir = [];
+
+        $resultado = match (isset($post_produtos['produto'])) {
+            true => $this->validaProdutosSelecionados($post_produtos),
+            false => $post_produtos
+        };
+        if (count($resultado) > 0) {
+            foreach ($resultado as $key => $value) {
+                if ($this->vendaItemModel->addProdutoPedido($id_pedido, $value) <= 0){
+                    array_push($produtos_erro_inserir, $value['prd_id']);
+                };
+            };
+        }
+
+        if (count($produtos_erro_inserir) > 0) {
+            $produtos = $this->produtoModel->getProdutosIds($produtos_erro_inserir);
+            $descricao = array_map(function($p){
+                return $p['PRD_DESCRICAO'];
+            }, $produtos);
+            Session::set("msgError", "Erro ao inserir o(s) produto(s) : " . implode(', ', $descricao));
+        }
+    }
+
+    public function validaProdutosSelecionados($post_produtos)
+    {
+        
         $resultado = [];
-        foreach ($post['produto'] as $produtoId => $dados) {
-            if (!isset($dados['selecionado'])) {
+        foreach ($post_produtos['produto'] as $produtoId => $dados) {
+            if (!isset($dados['selecionado']) || intval($dados['qtd']) <= 0) {
                 continue;
             }
+
             $resultado[] = [
                 'prd_id' => (int) $produtoId,
                 'qtd' => (int) $dados['qtd'],
                 'valorVenda' => (float) $dados['valorVenda']
             ];
-
-            $this->vendaItemModel->addProdutoPedido($id, $resultado);
         }
+
+        return $resultado;
     }
 
     public function listaPessoa($ordem)

@@ -445,6 +445,7 @@ class Database
      */
     public function where($condition, $params = "")
     {
+
         return $this->whereHaving($condition, $params);
     }
 
@@ -635,12 +636,11 @@ class Database
         $query = $this->connect()->prepare($cSql, [PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL]);
         $rscDados = $query->execute($this->params);
         
-        // var_dump($query);
-        // die();
-
         self::dbClear();
 
         if ($tipoRetorno == "all") {
+            // var_dump($query);
+            // die();
             return $this->dbBuscaArrayAll($query);
         } elseif ($tipoRetorno == "first") {
             return $this->dbBuscaArray($query);
@@ -711,12 +711,11 @@ class Database
             $conexao = $this->connect();
             $query = $conexao->prepare($sql);
             $query->execute($data);
-
             $rs = $conexao->lastInsertId();
-
+            
             self::dbClear();
-
-        } catch (\Exception $err) {
+            
+            } catch (\Exception $err) {
             Session::set("msgError","Erro ao inserir dados na base de dados: " . $err->getMessage());
             $rs = 0;
         }

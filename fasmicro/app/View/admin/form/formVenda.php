@@ -4,10 +4,11 @@ $pessoas = (isset($data['data']['pessoas'])) ? $data['data']['pessoas'] : [];
 $info_venda = (isset($data['data']['info_venda'])) ? $data['data']['info_venda'] : [];
 $status_venda = (isset($data['data']['status_venda'])) ? $data['data']['status_venda'] : [];
 $produtos_pedido = (isset($data['data']['produtos_pedidos'])) ? $data['data']['produtos_pedidos'] : [];
-$id_venda =  isset($data['data']['id_venda']) ? $data['data']['id_venda'] : $produtos_pedido[0]['PEVI_VENDA_ID'];
+$id_venda =  $data['data']['id_venda'] ?? $produtos_pedido[0]['PEVI_VENDA_ID'] ?? 0;
+$action_form = $data['data']['action_form'] ?? 'formVenda';
+$action_form_modal = $data['data']['action_form_modal'] ?? 'inicioVenda/insert';
 $acao_venda = $data['data']['acao_venda'] ?? '';
-
-var_dump($produtos_pedido);
+// var_dump($produtos);
 ?>
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -22,7 +23,7 @@ var_dump($produtos_pedido);
     <div class="row g-4">
         <div class="col-lg-5">
             <div class="card card-custom p-4">
-                <form class="row g-3" method="post" action="/venda/<?= $data['data']['action_form'] ?>/form/<?= $id_venda ?>">
+                <form class="row g-3" method="post" action="/venda/<?= $action_form ?>/form/<?= $id_venda ?>">
                     <div class="col-12">
                         <label class="form-label small fw-bold">Cliente</label>
                         <select class="form-select bg-light border-0" name="cliente_venda">
@@ -58,14 +59,14 @@ var_dump($produtos_pedido);
                     <div class="col-6">
                         <?php if (count($info_venda) > 0 ) : ?>
                             <label class="form-label small fw-bold">Acréscimo</label>
-                            <input type="number" class="form-control bg-light border-0" placeholder="0,00" min="0" name="acrescimo_venda" id="acrescimo_venda"
+                            <input type="number" class="form-control bg-light border-0" step="0,01" min="0" name="acrescimo_venda" id="acrescimo_venda"
                                 value="<?= $info_venda['PEV_ACRESCIMO'] ?? '' ?>">
                         <?php endif; ?>
                     </div>
                     <div class="col-6">
                         <?php if (count($info_venda) > 0) : ?>
                             <label class="form-label small fw-bold">Desconto</label>
-                            <input type="number" class="form-control bg-light border-0" placeholder="0,00" min="0" name="desconto_venda" id="desconto_venda"
+                            <input type="number" class="form-control bg-light border-0" step="0,01" min="0" name="desconto_venda" id="desconto_venda"
                                 value="<?= $info_venda['PEV_DESCONTO'] ?? '' ?>">
                         <?php endif; ?>
                     </div>
@@ -85,7 +86,7 @@ var_dump($produtos_pedido);
                         </div>
                         <input type="hidden" name="venda_id" value="<?= $id_venda ?>" id="venda_id">
                     </div>
-                    <?php if ((count($data['data']['produtos_pedidos']) > 0 || $acao_venda == 'update' || $acao_venda == 'delete')  && ($acao_venda != 'insert' || $acao_venda != 'view')) : ?>
+                    <?php if ((count($produtos_pedido) > 0 || $acao_venda == 'update' || $acao_venda == 'delete')  && ($acao_venda != 'insert' || $acao_venda != 'view')) : ?>
                         <button type="submit" class="btn btn-primary-custom w-100 py-2 mt-3">Salvar Pedido</button>
                     <?php else: ?>
                         <p class="text-center text-muted">Acrescente algum item para iniciar o pedido.</p>
@@ -130,7 +131,7 @@ var_dump($produtos_pedido);
                 </div>
                 <div class="d-flex flex-row gap-2 mt-2">
                     <!-- <a href="/faturarVenda/" class="btn btn-primary w-100 py-2">Faturar Pedido</a> -->
-                    <?php if (count($data['data']['produtos_pedidos']) > 0 && $acao_venda == 'update' || $acao_venda == 'insert') : ?>
+                    <?php if (count($produtos_pedido) > 0 && $acao_venda == 'update' || $acao_venda == 'insert') : ?>
                         <a href="/faturarVenda/<?= $action ?? 'faturar' ?>/<?= $id_venda ?>" class="btn btn-primary w-100 py-2">Faturar Pedido</a>
                         <button type="button" class="btn btn-danger w-100 py-2" id="excluir_produto">Excluir Produto</button>
                     <?php endif; ?>
@@ -185,8 +186,7 @@ var_dump($produtos_pedido);
                     </form>
                 </div>
 
-                <form action="/venda/<?= $data['data']['action_form_modal'] ?? "inicioVenda/modal" ?>/<?= $id_venda
-                                                                                                        ?>"
+                <form action="/venda/<?= $action_form_modal ?>/<?= $id_venda ?>"
                     method="post" id="form_escolha_prd_modal_venda">
                     <div class="table-responsive tabela-scroll">
                         <table class="table table-custom m-0">

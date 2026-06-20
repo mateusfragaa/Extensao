@@ -50,4 +50,12 @@ class ProdutoModel extends ModelMain
         $pdo = $this->db->dbSelect($sql, $params);
         return $this->db->dbBuscaArrayAll($pdo);
     }
+
+    public function getProdutosIds($ids)
+    {
+            return $this->db
+                ->select('tb_produto.PRD_DESCRICAO')
+                ->whereIn('PRD_ID', $ids)
+                ->findAll();
+    }
 }

@@ -91,22 +91,32 @@ class Venda extends ControllerMain
     public function inicioVenda($action)
     {   
         $data = [];
-        $data['produtos_pedidos'] = $this->serviceVenda->comecarPedidoVenda($_POST);
+
         $data['produtos'] = $this->serviceVenda->listaProduto('prd_descricao');
         $data['pessoas'] = $this->serviceVenda->listaPessoa('pes_nome');
-        $data['info_venda'] = $this->serviceVenda->getVenda(Session::getDestroy('id_pedido_editando'));
         $data['status_venda'] = $this->serviceVenda->getStatusVenda();
-        $data['action_form_modal'] = '/formVenda/update';
-        $data['action_form'] = 'update';
-        $data['acao_venda'] = $action;
 
-        $this->view(
-            'admin/form/formVenda',
-            [
-                "data" => $data
-            ],
-            'sistema'
-        );   
+        // $produtos_do_pedido = $this->serviceVenda->comecarPedidoVenda($_POST);
+        $this->serviceVenda->comecarPedidoVenda($_POST);
+        // if (count($produtos_do_pedido) > 0) {
+            // $data['produtos_pedidos'] = $produtos_do_pedido;
+            // $data['info_venda'] = $this->serviceVenda->getVenda(Session::get('id_pedido_editando'));
+            // $data['action_form_modal'] = '/formVenda/update';
+            // $data['action_form'] = 'update';
+            // session_destroy();
+        // }
+
+    // $data['acao_venda'] = $action;
+
+    // $this->view(
+    //     'admin/form/formVenda',
+    //     [
+    //         "data" => $data
+    //     ],
+    //     'sistema'
+    // );   
+
+        Redirect::page("venda/formVenda/update/".Session::get('id_pedido_editando'));
     }
 
     // =====================================================================
