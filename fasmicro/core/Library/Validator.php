@@ -131,23 +131,34 @@ class Validator
     // ══════════════════════════════════════════════════════════════════
     private static function validarCNPJ(string $cnpj): bool
     {
-        // Rejeita sequências repetidas (00.000.000/0000-00 etc.)
-        if (preg_match('/^(\d)\1{13}$/', $cnpj)) return false;
+        // CNPJ 2.0 (IN RFB 2.229/2024) — vigência: julho/2026
+        // Retrocompatível: aceita numérico (legado) e alfanumérico (novo).
+        // 14 chars: posições 1-12 alfanuméricas (A-Z + 0-9), 13-14 numéricas (DVs).
 
-        $calcDigito = function (string $base) use ($cnpj): bool {
-            $tamanho = strlen($base);
-            $soma    = 0;
-            $pos     = $tamanho - 7;
-            for ($i = $tamanho; $i >= 1; $i--) {
-                $soma += $base[$tamanho - $i] * $pos--;
+        $cnpj = strtoupper(trim($cnpj));
+
+        if (strlen($cnpj) !== 14) return false;
+        if (!preg_match('/^[A-Z0-9]{12}[0-9]{2}$/', $cnpj)) return false;
+
+        // Rejeita sequências de um único caractere repetido
+        if (preg_match('/^(.)\\1{13}$/', $cnpj)) return false;
+
+        // ASCII - 48: '0'=0 ... '9'=9 | 'A'=17 ... 'Z'=42
+        $vals = array_map(fn($c) => ord($c) - 48, str_split($cnpj));
+
+        $calcDV = function (int $tam) use ($vals): int {
+            $soma = 0;
+            $pos  = $tam - 7;
+            for ($i = $tam; $i >= 1; $i--) {
+                $soma += $vals[$tam - $i] * $pos--;
                 if ($pos < 2) $pos = 9;
             }
-            $resultado = $soma % 11 < 2 ? 0 : 11 - $soma % 11;
-            return $resultado == $cnpj[$tamanho];
+            $r = $soma % 11;
+            return $r < 2 ? 0 : 11 - $r;
         };
 
-        return $calcDigito(substr($cnpj, 0, 12))
-            && $calcDigito(substr($cnpj, 0, 13));
+        return $calcDV(12) === $vals[12]
+            && $calcDV(13) === $vals[13];
     }
 
     // ══════════════════════════════════════════════════════════════════

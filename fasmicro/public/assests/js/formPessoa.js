@@ -81,13 +81,23 @@
             if (labelNome) labelNome.innerHTML = 'Razão Social <span class="text-danger">*</span>';
             if (inputNome) inputNome.placeholder = 'Digite a razão social';
             if (labelDoc)  labelDoc.innerHTML  = 'CNPJ <span class="text-danger">*</span>';
-            if (inputDoc)  { inputDoc.placeholder = '00.000.000/0000-00'; inputDoc.maxLength = 18; }
+            if (inputDoc) {
+                inputDoc.placeholder = '00.000.000/0000-00';
+                inputDoc.maxLength   = 18;
+                // CNPJ 2.0 aceita letras — libera teclado alfanumérico
+                inputDoc.setAttribute('inputmode', 'text');
+            }
             if (blocoDataset) blocoDataset.style.display = 'block';
         } else {
             if (labelNome) labelNome.innerHTML = 'Nome Completo <span class="text-danger">*</span>';
             if (inputNome) inputNome.placeholder = 'Digite o nome completo';
             if (labelDoc)  labelDoc.innerHTML  = 'CPF <span class="text-danger">*</span>';
-            if (inputDoc)  { inputDoc.placeholder = '000.000.000-00'; inputDoc.maxLength = 14; }
+            if (inputDoc) {
+                inputDoc.placeholder = '000.000.000-00';
+                inputDoc.maxLength   = 14;
+                // CPF é só numérico
+                inputDoc.setAttribute('inputmode', 'numeric');
+            }
             if (blocoDataset) blocoDataset.style.display = 'none';
         }
     }
@@ -109,18 +119,25 @@
 
     // ── Máscara CPF / CNPJ ────────────────────────────────────────
     function mascararDoc(v, tipo) {
-        v = v.replace(/\D/g, '');
         if (tipo === 'F') {
-            v = v.substring(0, 11);
+            // CPF: apenas dígitos — 000.000.000-00
+            v = v.replace(/\D/g, '').substring(0, 11);
             v = v.replace(/(\d{3})(\d)/, '$1.$2');
             v = v.replace(/(\d{3})(\d)/, '$1.$2');
             v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
         } else {
-            v = v.substring(0, 14);
-            v = v.replace(/^(\d{2})(\d)/, '$1.$2');
-            v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
-            v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
-            v = v.replace(/(\d{4})(\d)/, '$1-$2');
+            // CNPJ 2.0: aceita A-Z e 0-9 — formato XX.XXX.XXX/XXXX-XX
+            // Limpa tudo que não é alfanumérico e deixa só 14 chars
+            v = v.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 14);
+            // Aplica separadores progressivamente da esquerda para direita
+            var r = '';
+            for (var k = 0; k < v.length; k++) {
+                if (k === 2 || k === 5) r += '.';
+                else if (k === 8)       r += '/';
+                else if (k === 12)      r += '-';
+                r += v[k];
+            }
+            v = r;
         }
         return v;
     }
@@ -128,8 +145,11 @@
     if (inputDoc && selectTipo) {
         inputDoc.addEventListener('input', function (e) {
             e.target.value = mascararDoc(e.target.value, selectTipo.value);
-            var digits  = e.target.value.replace(/\D/g, '');
             var tipo    = selectTipo.value;
+            // Para CNPJ: mantém letras+dígitos; para CPF: só dígitos
+            var digits  = tipo === 'J'
+                ? e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '')
+                : e.target.value.replace(/\D/g, '');
             var completo = (tipo === 'F' && digits.length === 11) || (tipo === 'J' && digits.length === 14);
             if (completo) validarDocumento(digits, tipo);
             if (!completo) {
@@ -142,8 +162,11 @@
         });
 
         inputDoc.addEventListener('blur', function () {
-            var digits = this.value.replace(/\D/g, '');
-            if (digits.length > 0) validarDocumento(digits, selectTipo.value);
+            var tipo   = selectTipo.value;
+            var digits = tipo === 'J'
+                ? this.value.toUpperCase().replace(/[^A-Z0-9]/g, '')
+                : this.value.replace(/\D/g, '');
+            if (digits.length > 0) validarDocumento(digits, tipo);
         });
     }
 
@@ -183,13 +206,25 @@
     }
 
     function _validarCNPJ(cnpj) {
-        if (cnpj.length !== 14 || /^(\d)\1+$/.test(cnpj)) return false;
-        function calc(tam) {
+        // CNPJ 2.0 (IN RFB 2.229/2024) — retrocompatível com formato numérico legado
+        cnpj = cnpj.toUpperCase();
+        if (cnpj.length !== 14) return false;
+        if (!/^[A-Z0-9]{12}[0-9]{2}$/.test(cnpj)) return false;
+        if (/^(.)\1{13}$/.test(cnpj)) return false; // rejeita repetição única
+
+        // Valor de cada char: código ASCII - 48 (A=17, B=18... Z=42 | 0=0... 9=9)
+        var vals = cnpj.split('').map(function(c) { return c.charCodeAt(0) - 48; });
+
+        function calcDV(tam) {
             var soma = 0, pos = tam - 7;
-            for (var k = tam; k >= 1; k--) { soma += parseInt(cnpj[tam-k]) * pos--; if (pos < 2) pos = 9; }
-            var r = soma % 11; return r < 2 ? 0 : 11 - r;
+            for (var i = tam; i >= 1; i--) {
+                soma += vals[tam - i] * pos--;
+                if (pos < 2) pos = 9;
+            }
+            var r = soma % 11;
+            return r < 2 ? 0 : 11 - r;
         }
-        return calc(12) === parseInt(cnpj[12]) && calc(13) === parseInt(cnpj[13]);
+        return calcDV(12) === vals[12] && calcDV(13) === vals[13];
     }
 
     // ── Máscara Telefone ──────────────────────────────────────────
@@ -258,7 +293,7 @@
             var tipo = selectTipo ? selectTipo.value : 'F';
 
             if (tipo === 'J') {
-                var cnpjRaw = inputDoc ? inputDoc.value.replace(/\D/g, '') : '';
+                var cnpjRaw = inputDoc ? inputDoc.value.toUpperCase().replace(/[^A-Z0-9]/g, '') : '';
                 if (cnpjRaw.length !== 14) { toast('Preencha o CNPJ completo (14 dígitos) antes de verificar.', 'warning'); if (inputDoc) inputDoc.focus(); return; }
                 var dataset    = selDataset ? selDataset.value : 'receita';
                 var csrfToken  = (document.querySelector('input[name="csrf_token"]') || {}).value || '';
@@ -360,3 +395,4 @@
     }
 
 })();
+

@@ -55,14 +55,19 @@ $errors      = \Core\Library\Session::get('formErrors');
                     <input type="text" name="CPF_CNPJ" id="cpf_cnpj"
                         class="form-control <?= isset($errors['CPF_CNPJ']) ? 'is-invalid' : '' ?>"
                         placeholder="000.000.000-00"
+                        inputmode="numeric"
+                        autocomplete="off"
                         value="<?php
-                            $rawDoc = preg_replace('/\D/', '', setValue('CPF_CNPJ'));
-                            if (strlen($rawDoc) === 11) {
-                                echo preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $rawDoc);
+                            $rawDoc = strtoupper(trim(setValue('CPF_CNPJ')));
+                            $rawDocDigits = preg_replace('/\D/', '', $rawDoc);
+                            if (strlen($rawDocDigits) === 11) {
+                                // CPF — sempre numérico
+                                echo preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $rawDocDigits);
                             } elseif (strlen($rawDoc) === 14) {
-                                echo preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $rawDoc);
+                                // CNPJ 2.0 — pode ter letras: XX.XXX.XXX/XXXX-XX
+                                echo preg_replace('/^(.{2})(.{3})(.{3})(.{4})(.{2})$/', '$1.$2.$3/$4-$5', $rawDoc);
                             } else {
-                                echo htmlspecialchars(setValue('CPF_CNPJ'));
+                                echo htmlspecialchars($rawDoc);
                             }
                         ?>"
                         maxlength="18"
@@ -223,6 +228,10 @@ $errors      = \Core\Library\Session::get('formErrors');
 
 <?php \Core\Library\Session::destroy('formErrors'); ?>
 
-<script src="/assests/js/formPessoa.js"></script>
+<?php
+    $jsPath = __DIR__ . '/../../../../public/assests/js/formPessoa.js';
+    $jsVer  = file_exists($jsPath) ? filemtime($jsPath) : time();
+?>
+<script src="/assests/js/formPessoa.js?v=<?= $jsVer ?>"></script>
 
 <?php \Core\Library\Session::destroy('formErrors'); ?>
