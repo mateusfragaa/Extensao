@@ -3,8 +3,6 @@
 namespace App\Model;
 
 use Core\Library\ModelMain;
-use Exception;
-use Override;
 
 class VendaModel extends ModelMain
 {

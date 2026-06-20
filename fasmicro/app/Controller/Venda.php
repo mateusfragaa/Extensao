@@ -96,27 +96,8 @@ class Venda extends ControllerMain
         $data['pessoas'] = $this->serviceVenda->listaPessoa('pes_nome');
         $data['status_venda'] = $this->serviceVenda->getStatusVenda();
 
-        // $produtos_do_pedido = $this->serviceVenda->comecarPedidoVenda($_POST);
         $this->serviceVenda->comecarPedidoVenda($_POST);
-        // if (count($produtos_do_pedido) > 0) {
-            // $data['produtos_pedidos'] = $produtos_do_pedido;
-            // $data['info_venda'] = $this->serviceVenda->getVenda(Session::get('id_pedido_editando'));
-            // $data['action_form_modal'] = '/formVenda/update';
-            // $data['action_form'] = 'update';
-            // session_destroy();
-        // }
-
-    // $data['acao_venda'] = $action;
-
-    // $this->view(
-    //     'admin/form/formVenda',
-    //     [
-    //         "data" => $data
-    //     ],
-    //     'sistema'
-    // );   
-
-        Redirect::page("venda/formVenda/update/".Session::get('id_pedido_editando'));
+        Redirect::page("venda/formVenda/update/". Session::getDestroy('id_pedido_editando'));
     }
 
     // =====================================================================
@@ -129,7 +110,6 @@ class Venda extends ControllerMain
     // =====================================================================
     public function editandoVenda($action = '', $id_pedido = 0)
     {
-        // var_dump($action,$id_pedido);
         $data = [];
         if ($action == 'update' && $_SERVER['REQUEST_METHOD'] == 'POST') {
             $this->serviceVenda->addProdutoPedido($id_pedido, $_POST);
@@ -138,9 +118,9 @@ class Venda extends ControllerMain
         $data['action_form'] = 'update';
         if ($action == 'insert') {
             $data['action_form_modal'] = 'inicioVenda/insert';
-        }elseif($action == 'update') { // olhar aqui caso não adicione mais
+        }elseif($action == 'update') {
             $data['action_form_modal'] = '/formVenda/update';
-        }elseif($action == 'delete') { // olhar aqui caso não adicione mais
+        }elseif($action == 'delete') {
             $data['action_form'] = 'delete';
         }
 

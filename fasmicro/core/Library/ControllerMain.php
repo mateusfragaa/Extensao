@@ -50,6 +50,21 @@ class ControllerMain
     }
 
     /**
+     * loadService
+     *
+     * @param string $nomeService
+     * @return void|object
+     */
+    public function loadService(string $nomeService)
+    {
+        $pathService = 'App\Service\\' . $nomeService . "Service";
+
+        if (class_exists($pathService)) {
+            return new $pathService();
+        }
+    }
+
+    /**
      * view
      * 
      * Exemplo: $this->view("admin/listaProduto", ['titulo' => 'Lista de Produtos'])
