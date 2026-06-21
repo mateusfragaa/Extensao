@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use Core\Library\ControllerMain;
-use Core\Library\Csrf;
 use Core\Library\Redirect;
 use Core\Library\Session;
 
@@ -327,42 +326,6 @@ class Pessoa extends ControllerMain
         }
 
         return $resposta !== false ? $resposta : null;
-    }
-
-    // ══════════════════════════════════════════════════════════════════
-    // AJAX — Validação CPF via HTML capturado do popup da Receita Federal
-    // ══════════════════════════════════════════════════════════════════
-
-    public function validarReceitaAjax()
-    {
-        header('Content-Type: application/json');
-
-        $htmlRaw = $_POST['html_receita'] ?? null;
-
-        if (!$htmlRaw) {
-            echo json_encode(['sucesso' => false, 'mensagem' => 'Nenhum HTML recebido.']);
-            exit;
-        }
-
-        libxml_use_internal_errors(true);
-        $dom = new \DOMDocument();
-        $dom->loadHTML(mb_convert_encoding($htmlRaw, 'HTML-ENTITIES', 'UTF-8'));
-        $xpath = new \DOMXPath($dom);
-        libxml_clear_errors();
-
-        $qNome = $xpath->query("//span[@class='clConteudoDados'][contains(text(), 'Nome:')]/b");
-        $qSit  = $xpath->query("//span[@class='clConteudoDados'][contains(text(), 'Situação Cadastral:')]/b");
-
-        $nome     = $qNome->length > 0 ? trim($qNome->item(0)->nodeValue) : null;
-        $situacao = $qSit->length  > 0 ? trim($qSit->item(0)->nodeValue)  : 'REGULAR';
-
-        if (!$nome) {
-            echo json_encode(['sucesso' => false, 'mensagem' => 'Não foi possível extrair o nome. Conclua a consulta no site da Receita antes de fechar.']);
-            exit;
-        }
-
-        echo json_encode(['sucesso' => true, 'nome' => $nome, 'situacao' => $situacao]);
-        exit;
     }
 
     // ══════════════════════════════════════════════════════════════════

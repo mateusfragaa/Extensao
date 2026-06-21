@@ -64,18 +64,22 @@ class Validator
                         //            o CNPJ realmente existe e está ATIVO.
                         // -------------------------------------------------------
                         case 'cpf_cnpj':
-                            $val  = preg_replace('/\D/', '', $data[$ruleKey]);
                             $tipo = $data['TIPO_PESSOA'] ?? 'F';
 
                             if ($tipo === 'F') {
-                                // ── CPF: valida dígitos verificadores ────────
+                                // ── CPF: sempre numérico ──────────────────────
+                                $val = preg_replace('/\D/', '', $data[$ruleKey]);
+
                                 if (strlen($val) !== 11) {
                                     $errors[$ruleKey] = "O <b>CPF</b> deve ter 11 dígitos.";
                                 } elseif (!self::validarCPF($val)) {
                                     $errors[$ruleKey] = "O <b>CPF</b> informado é inválido.";
                                 }
                             } else {
-                                // ── CNPJ: valida apenas dígitos verificadores ─
+                                // ── CNPJ 2.0: alfanumérico (A-Z + 0-9) ────────
+                                // Mantém letras — remover apenas a máscara (pontos, barra, traço)
+                                $val = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $data[$ruleKey]));
+
                                 // A consulta à Receita Federal NÃO bloqueia o save.
                                 // Verificação de situação cadastral é feita pelo
                                 // usuário via botão Verificar antes de salvar.

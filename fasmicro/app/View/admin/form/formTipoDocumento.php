@@ -58,9 +58,6 @@ $isReadOnly     = $action_form === 'view' ? 'disabled' : '';
                         Inativo
                     </option>
                 </select>
-                <?php if (isset($errors['TDC_STATUS'])): ?>
-                    <div class="invalid-feedback"><?= $errors['TDC_STATUS'] ?></div>
-                <?php endif; ?>
             </div>
 
             <!-- ── Observação ─────────────────────────────────────── -->

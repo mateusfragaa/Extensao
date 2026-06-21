@@ -139,9 +139,4 @@ class TipoDocumentoModel extends ModelMain
 
         Session::set('msgError', 'Erro ao processar a operação. Tente novamente.');
     }
-
-    protected function handleDatabaseError(\Exception $e): void
-    {
-        $this->substituirMsgErrorAmigavel();
-    }
 }

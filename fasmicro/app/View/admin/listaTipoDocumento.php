@@ -17,7 +17,7 @@ use Core\Library\Csrf;
             <?php exibeAlerta(); ?>
             <form id="formFiltroTipo" class="row g-2" action="/tipoDocumento/filtroListagemTipoDocumento" data-filtro="true" data-tabela="tabelaContainer" method="POST">
                 <?= Csrf::getHiddenField() ?>
-                <div class="col-md-7">
+                <div class="col-md-8">
                     <div class="input-group">
                         <span class="input-group-text bg-white border-end-0">
                             <i class="bi bi-search text-muted"></i>
@@ -29,15 +29,12 @@ use Core\Library\Csrf;
                             autocomplete="off">
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <select id="filtroStatus" name="filtroStatus" class="form-select">
                         <option value="">Todos os status</option>
                         <option value="1" <?= (($_POST['filtroStatus'] ?? '') === '1') ? 'selected' : '' ?>>Ativo</option>
                         <option value="0" <?= (($_POST['filtroStatus'] ?? '') === '0') ? 'selected' : '' ?>>Inativo</option>
                     </select>
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-outline-primary w-100">Filtrar</button>
                 </div>
             </form>
         </div>
