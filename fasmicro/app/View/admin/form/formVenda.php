@@ -57,7 +57,7 @@ $acao_venda = $data['data']['acao_venda'] ?? '';
                         </select>
                     </div>
                     <div class="col-6">
-                        <?php if (count($info_venda) > 0 ) : ?>
+                        <?php if (count($info_venda) > 0) : ?>
                             <label class="form-label small fw-bold">Acréscimo</label>
                             <input type="number" class="form-control bg-light border-0" step="0,01" min="0" name="acrescimo_venda" id="acrescimo_venda"
                                 value="<?= $info_venda['PEV_ACRESCIMO'] ?? '' ?>">
@@ -130,9 +130,10 @@ $acao_venda = $data['data']['acao_venda'] ?? '';
                     </table>
                 </div>
                 <div class="d-flex flex-row gap-2 mt-2">
-                    <!-- <a href="/faturarVenda/" class="btn btn-primary w-100 py-2">Faturar Pedido</a> -->
+                    <?php if (count($produtos_pedido) > 0 && $acao_venda == 'update') : ?>
+                        <a href="/faturarVenda/formFaturar/<?= $acao_venda ?>/<?= $id_venda ?>" class="btn btn-primary w-100 py-2">Faturar Pedido</a>
+                    <?php endif; ?>
                     <?php if (count($produtos_pedido) > 0 && $acao_venda == 'update' || $acao_venda == 'insert') : ?>
-                        <a href="/faturarVenda/<?= $action ?? 'faturar' ?>/<?= $id_venda ?>" class="btn btn-primary w-100 py-2">Faturar Pedido</a>
                         <button type="button" class="btn btn-danger w-100 py-2" id="excluir_produto">Excluir Produto</button>
                     <?php endif; ?>
                 </div>

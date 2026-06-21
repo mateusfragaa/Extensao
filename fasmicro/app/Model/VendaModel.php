@@ -90,4 +90,22 @@ class VendaModel extends ModelMain
         $pdo = $this->db->dbSelect('select PEV_TOTAL from tb_pedido_venda where pev_id = :venda', [':venda' => $venda]);
         return $this->db->dbBuscaArray($pdo);
     }
+
+    public function buscarDadosCompletosVenda($id_venda)
+    {
+        return $this->db
+                ->select('
+                    PEV_ID,
+                    PEV_DATA_VENDA,
+                    PEV_STATUS,
+                    PEV_ACRESCIMO,
+                    PEV_DESCONTO,
+                    P.PES_NOME,
+                    PEV_SUB_TOTAL,
+                    PEV_TOTAL
+                ')
+                ->join('TB_PESSOA P','P.PES_ID = TB_PEDIDO_VENDA.PEV_CLIENTE_ID')
+                ->where('PEV_ID',$id_venda)
+                ->first();
+    }
 }

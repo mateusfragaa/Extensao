@@ -133,7 +133,7 @@ class Database
     */
     public function beginTransaction()
     {
-        return $this->conexao->beginTransaction();
+        $this->conexao->beginTransaction();
     }
 
     public function commit()
@@ -634,13 +634,13 @@ class Database
     {
         $cSql = "SELECT {$this->select} FROM {$this->table} {$this->join} {$this->where} {$this->groupBy} {$this->orderBy}";
         $query = $this->connect()->prepare($cSql, [PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL]);
+        // var_dump($query);
+        // die();
         $rscDados = $query->execute($this->params);
         
         self::dbClear();
 
         if ($tipoRetorno == "all") {
-            // var_dump($query);
-            // die();
             return $this->dbBuscaArrayAll($query);
         } elseif ($tipoRetorno == "first") {
             return $this->dbBuscaArray($query);

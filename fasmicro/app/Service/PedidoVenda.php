@@ -56,30 +56,6 @@ class PedidoVenda
         // return [];
     }
 
-    public function validarPedidoSessao()
-    {
-        $idPedido = Session::get('id_pedido_editando');
-
-        var_dump('ID DA SESSÃO:', $idPedido);
-
-        if (!$idPedido) {
-            var_dump('Nenhum pedido na sessão.');
-            die();
-        }
-
-        $pedido = $this->vendaModel->getVenda($idPedido);
-
-        var_dump('PEDIDO ENCONTRADO:', $pedido);
-
-        if (!$pedido) {
-            var_dump('O pedido da sessão NÃO existe no banco.');
-        } else {
-            var_dump('O pedido da sessão EXISTE no banco.');
-        }
-
-        die();
-    }
-
     public function calcularTotal($acrescimo, $desconto, $venda)
     {
         // Lógica de validação

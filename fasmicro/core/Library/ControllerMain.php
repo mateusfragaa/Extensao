@@ -9,7 +9,7 @@ class ControllerMain
     protected $action;
     protected $request;
     protected $template;
-    
+
     public $model;
 
     use RequestTrait;
@@ -93,7 +93,6 @@ class ControllerMain
 
         foreach ($nomeHelper as $value) {
             $pathHelpCore = PATHAPP . "core" . DIRECTORY_SEPARATOR . "Helper" . DIRECTORY_SEPARATOR . "{$value}.php";
-
             if (file_exists($pathHelpCore)) {
                 require_once $pathHelpCore;
             } else {

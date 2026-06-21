@@ -15,4 +15,17 @@ class RecebimentoModel extends ModelMain
         'C' => 'Cancelado',
     ];
 
+    public function gravar_recebimento($forma_pagamento,$quantidade,$valor, $id_pedido)
+    {
+        $pdo = $this->db->dbSelect('call sp_gravar_recebimento(:forma,:quantidade,:valor,:id_pedido)',
+        [
+            ':forma' => $forma_pagamento,
+            ':quantidade' => $quantidade,
+            ':valor' => $valor
+        ]);
+
+        $mensagem = $this->db->dbBuscaArrayAll($pdo);
+        var_dump($mensagem);
+        die();
+    }
 }
