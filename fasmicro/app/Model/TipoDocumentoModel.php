@@ -19,9 +19,10 @@ class TipoDocumentoModel extends ModelMain
             'label' => 'Descrição',
             'rules' => 'required|max:45'
         ],
-        // TDC_STATUS não entra na validação: empty("0") é true em PHP,
-        // então a regra 'required' rejeitaria o valor Inativo (0).
-        // O campo é um select com valores fixos (0/1) — não precisa validação extra.
+        'TDC_STATUS' => [
+            'label' => 'Status',
+            'rules' => 'required|in:0,1'
+        ],
     ];
 
     // ──────────────────────────────────────────────────────────────────
