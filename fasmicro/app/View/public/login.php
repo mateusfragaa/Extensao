@@ -24,7 +24,7 @@
             <div class="mb-3">
                 <div class="d-flex justify-content-between align-items-center mb-1">
                     <label for="password" class="form-label m-0">Senha</label>
-                    <a href="#" class="forgot-password">Esqueceu a senha?</a>
+                    <a href="/auth/formEsqueciSenha" class="forgot-password">Esqueceu a senha?</a>
                 </div>
                 <div class="input-group">
                     <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-lock"></i></span>

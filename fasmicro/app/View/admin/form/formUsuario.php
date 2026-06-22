@@ -55,6 +55,7 @@ $isEdit = isset($usuario['USU_ID']) && $usuario['USU_ID'] > 0;
             <div class="col-md-4">
                 <label class="form-label">Status da Conta</label>
                 <select name="USU_STATUS" class="form-select">
+                    <option selected disabled>Selecione o status...</option>
                     <option value="ativo">Ativo</option>
                     <option value="inativo">Inativo</option>
                 </select>
@@ -76,14 +77,14 @@ $isEdit = isset($usuario['USU_ID']) && $usuario['USU_ID'] > 0;
                 </div>
             </div>
 
-            <div class="col-12">
+            <!-- <div class="col-12">
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="resetPass">
                     <label class="form-check-label text-muted small" for="resetPass">
                         Exigir alteração de senha no primeiro login
                     </label>
                 </div>
-            </div>
+            </div> -->
 
             <div class="col-12 d-flex justify-content-end gap-2 mt-4">
                 <a type="button" class="btn btn-light border px-4" href="\Usuario\">

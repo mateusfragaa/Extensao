@@ -183,7 +183,7 @@ class ControllerMain
     {
 
         // --- Proteção CSRF ---
-        if (CSRF_ENABLE && $_SERVER["REQUEST_METHOD"] === "POST") {
+        if (CSRF_PROTECTION && $_SERVER["REQUEST_METHOD"] === "POST") {
             $currentUrl = $_SERVER["REQUEST_URI"];
             $isExcepted = false;
             foreach (CSRF_EXCEPT_URLS as $exceptUrl) {

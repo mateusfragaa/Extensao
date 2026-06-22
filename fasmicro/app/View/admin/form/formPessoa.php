@@ -17,7 +17,7 @@ $errors = Core\Library\Session::get('formErrors');
         <?php echo exibeAlerta(); ?>
 
         <form class="row g-4" action="pessoa/<?= $action_form ?>" method="POST">
-
+            <?= csrfField() ?>
             <?php if ($action_form !== 'insert'): ?>
                 <input type="hidden" name="PES_ID" value="<?= setValue('PES_ID') ?>">
             <?php endif; ?>

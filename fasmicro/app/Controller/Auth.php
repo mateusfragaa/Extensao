@@ -69,4 +69,106 @@ class Auth extends ControllerMain
         header("Location: /auth/formLogin");
         exit;
     }
+
+    public function formEsqueciSenha()
+    {
+        $this->view('public/esqueciSenha', [], 'login');
+    }
+
+    public function esqueciSenha()
+    {
+        $post  = $this->getRotaParametros()['post'];
+        $email = trim($post['USU_EMAIL'] ?? '');
+
+        $msgPadrao = 'Se o e-mail informado estiver cadastrado em nosso sistema, '
+            . 'você receberá em instantes uma mensagem com instruções para redefinir sua senha.';
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            \Core\Library\Session::set('msgError', 'Informe um e-mail válido.');
+            header("Location: /auth/formEsqueciSenha");
+            exit;
+        }
+
+        $userModel = $this->loadModel('Usuario');
+        $usuario   = $userModel->buscarPorEmail($email);
+
+        if ($usuario) {
+            $token = $userModel->gerarTokenRecuperacao((int) $usuario['USU_ID']);
+            $link  = rtrim(baseUrl(), '/') . '/auth/formResetSenha/' . $token;
+
+            $corpo = '<p>Olá, ' . htmlspecialchars($usuario['USU_NOME'], ENT_QUOTES, 'UTF-8') . '!</p>'
+                . '<p>Recebemos uma solicitação para redefinir a senha da sua conta.</p>'
+                . '<p><a href="' . $link . '" target="_blank">Clique aqui para criar uma nova senha</a></p>'
+                . '<p>Este link é válido por 1 hora. Se você não solicitou a redefinição, apenas ignore este e-mail.</p>';
+
+            \Core\Library\Mailer::enviar($usuario['USU_EMAIL'], $usuario['USU_NOME'], 'Recuperação de senha', $corpo);
+        }
+
+        \Core\Library\Session::set('msgSucesso', $msgPadrao);
+        header("Location: /auth/formLogin");
+        exit;
+    }
+
+    public function formResetSenha($token = '')
+    {
+        if (empty($token)) {
+            \Core\Library\Session::set('msgError', 'Link de recuperação inválido.');
+            header("Location: /auth/formLogin");
+            exit;
+        }
+
+        $userModel = $this->loadModel('Usuario');
+        $usuario   = $userModel->buscarPorTokenValido($token);
+
+        if (empty($usuario)) {
+            \Core\Library\Session::set('msgError', 'Este link de recuperação é inválido ou já expirou. Solicite um novo.');
+            header("Location: /auth/formEsqueciSenha");
+            exit;
+        }
+
+        $this->view('public/resetSenha', ['token' => $token], 'login');
+    }
+
+    public function resetSenha()
+    {
+        $post      = $this->getRotaParametros()['post'];
+        $token     = $post['token'] ?? '';
+        $senha     = $post['USU_SENHA'] ?? '';
+        $confirmar = $post['CONFIRMAR_SENHA'] ?? '';
+
+        if (empty($token)) {
+            \Core\Library\Session::set('msgError', 'Link de recuperação inválido.');
+            header("Location: /auth/formLogin");
+            exit;
+        }
+
+        $userModel = $this->loadModel('Usuario');
+        $usuario   = $userModel->buscarPorTokenValido($token);
+
+        if (empty($usuario)) {
+            \Core\Library\Session::set('msgError', 'Este link de recuperação é inválido ou já expirou. Solicite um novo.');
+            header("Location: /auth/formEsqueciSenha");
+            exit;
+        }
+
+        if ($senha !== $confirmar) {
+            \Core\Library\Session::set('msgError', 'As senhas não conferem!');
+            header("Location: /auth/formResetSenha/" . $token);
+            exit;
+        }
+
+        $erroForca = \App\Config\PasswordConfig::validar($senha);
+        if ($erroForca !== true) {
+            \Core\Library\Session::set('msgError', $erroForca);
+            header("Location: /auth/formResetSenha/" . $token);
+            exit;
+        }
+
+        $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
+        $userModel->redefinirSenha((int) $usuario['USU_ID'], $senhaHash);
+
+        \Core\Library\Session::set('msgSucesso', 'Senha redefinida com sucesso! Faça login com sua nova senha.');
+        header("Location: /auth/formLogin");
+        exit;
+    }
 }

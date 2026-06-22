@@ -8,7 +8,7 @@ trait RequestTrait
     public function post(bool $filterCsrf = true): array {
         $postData = $_POST;
 
-        if ($filterCsrf && CSRF_ENABLE && isset($postData[CSRF_TOKEN_NAME])) {
+        if ($filterCsrf && CSRF_PROTECTION && isset($postData[CSRF_TOKEN_NAME])) {
             unset($postData[CSRF_TOKEN_NAME]);
         }
 

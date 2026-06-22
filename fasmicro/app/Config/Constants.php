@@ -60,7 +60,7 @@ defined("PERMISSOES") || define("PERMISSOES", [
 
 // --- CONFIGURAÇÕES DE PROTEÇÃO CSRF ---
 // Ativa ou desativa a proteção globalmente
-defined("CSRF_ENABLE") || define("CSRF_ENABLE", true);
+defined("CSRF_PROTECTION") || define("CSRF_PROTECTION", true);
 
 // Nome do campo que aparecerá no formulário e na sessão
 defined("CSRF_TOKEN_NAME") || define("CSRF_TOKEN_NAME", "csrf_token");

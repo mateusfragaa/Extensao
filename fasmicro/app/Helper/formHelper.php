@@ -10,7 +10,7 @@ use Core\Library\Csrf;
  * @return string
  */
 function csrfField(): string {
-    if (!CSRF_ENABLE) {
+    if (!CSRF_PROTECTION) {
         return "";
     }
     $token = Csrf::getToken();
