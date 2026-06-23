@@ -186,7 +186,7 @@ class ControllerMain
         if (CSRF_PROTECTION && $_SERVER["REQUEST_METHOD"] === "POST") {
             $currentUrl = $_SERVER["REQUEST_URI"];
             $isExcepted = false;
-            foreach (CSRF_EXCEPT_URLS as $exceptUrl) {
+            foreach (CSRF_EXCLUDE_URIS as $exceptUrl) {
                 if (strpos($currentUrl, $exceptUrl) !== false) {
                     $isExcepted = true;
                     break;
@@ -194,7 +194,7 @@ class ControllerMain
             }
 
             if (!$isExcepted) {
-                if (!\Core\Library\Csrf::validateToken()) {
+                if (!\Core\Library\Csrf::validate($_POST[\CSRF_TOKEN_NAME] ?? null)) {
                     // vamos usar a sessão e voltar
                     \Core\Library\Session::set('msgError', 'Sessão expirada ou token inválido. Por favor, tente novamente.');
 

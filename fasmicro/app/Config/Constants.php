@@ -19,6 +19,41 @@ defined("CONTROLLER_AUTH") || define("CONTROLLER_AUTH", [
 // Tamanho máximo para upload de arquivos (5 mega bytes)
 defined('FILE_MAXSIZE') || define('FILE_MAXSIZE', 5);
 
+// Versão padrão da API (usada quando a URL não especifica versão)
+defined('API_VERSION') || define('API_VERSION', 1);
+
+// Definição de permissões por nível
+defined("PERMISSOES") || define("PERMISSOES", [
+    "admin"      => ["Usuario", "Pessoa", "Produto", "Venda", "Pagamento", "Recebimento", "HomeSistema"],
+    "vendedor"   => ["Pessoa", "Produto", "Recebimento", "Venda", "HomeSistema"],
+    //"financeiro" => ["Pagamento", "Recebimento", "HomeSistema"]
+]);
+
+// ---------------------------------------------------------------------------
+// Proteção CSRF
+// ---------------------------------------------------------------------------
+
+// Ativa/desativa a proteção CSRF nas rotas web (true = ativo)
+defined('CSRF_PROTECTION')   || define('CSRF_PROTECTION',   true);
+
+// Nome do campo hidden e da chave de sessão que armazena o token
+defined('CSRF_TOKEN_NAME')   || define('CSRF_TOKEN_NAME',   'csrf_token');
+
+// Nome do header HTTP aceito em requisições AJAX (ex: fetch/axios)
+defined('CSRF_HEADER_NAME')  || define('CSRF_HEADER_NAME',  'X-CSRF-Token');
+
+// Tempo de vida do token em segundos (padrão: 2 horas)
+defined('CSRF_EXPIRE')       || define('CSRF_EXPIRE',        7200);
+
+// true = gera novo token após cada validação bem-sucedida (mais seguro,
+// mas pode quebrar abas concorrentes); false = token estável por sessão/TTL
+defined('CSRF_REGENERATE')   || define('CSRF_REGENERATE',    false);
+
+// URIs que ficam fora da validação CSRF (array de prefixos/substrings)
+defined('CSRF_EXCLUDE_URIS') || define('CSRF_EXCLUDE_URIS', []);
+
+// ---------------------------------------------------------------------------
+
 // Arquivos aceitos em Uploads
 defined('FILE_ALLOWEDTYPES') || define('FILE_ALLOWEDTYPES', [
     'image/jpg', 
@@ -50,28 +85,3 @@ defined('FILE_ALLOWEDTYPES') || define('FILE_ALLOWEDTYPES', [
     'application/json',
     'application/xml'
 ]);
-
-// Definição de permissões por nível
-defined("PERMISSOES") || define("PERMISSOES", [
-    "admin"      => ["Usuario", "Pessoa", "Produto", "Venda", "Pagamento", "Recebimento", "HomeSistema"],
-    "vendedor"   => ["Pessoa", "Produto", "Recebimento", "Venda", "HomeSistema"],
-    //"financeiro" => ["Pagamento", "Recebimento", "HomeSistema"]
-]);
-
-// --- CONFIGURAÇÕES DE PROTEÇÃO CSRF ---
-// Ativa ou desativa a proteção globalmente
-defined("CSRF_PROTECTION") || define("CSRF_PROTECTION", true);
-
-// Nome do campo que aparecerá no formulário e na sessão
-defined("CSRF_TOKEN_NAME") || define("CSRF_TOKEN_NAME", "csrf_token");
-
-// Tempo de expiração do token (2 horas em segundos)
-defined("CSRF_EXPIRE") || define("CSRF_EXPIRE", 7200);
-
-// URLs que NÃO precisam de proteção (ex: APIs externas ou Webhooks)
-defined("CSRF_EXCEPT_URLS") || define("CSRF_EXCEPT_URLS", [
-    "/api/externa",
-    "/notificacao/webhook"
-]);
-
-

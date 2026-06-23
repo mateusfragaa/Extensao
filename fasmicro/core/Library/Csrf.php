@@ -1,58 +1,112 @@
 <?php
+
 namespace Core\Library;
 
-class Csrf {
+/**
+ * Proteção CSRF via Synchronizer Token Pattern.
+ *
+ * Gera um token criptograficamente seguro, armazena na sessão e o valida
+ * em toda requisição que muta estado (POST/PUT/PATCH/DELETE).
+ * O token também fica disponível como header X-CSRF-Token para chamadas AJAX.
+ */
+class Csrf
+{
+    private const SESSION_KEY      = 'csrf_token';
+    private const SESSION_TIME_KEY = 'csrf_token_time';
+
     /**
-     * Gera um novo token CSRF e o armazena na sessão com um tempo de expiração.
-     * Se um token já existe e é válido, ele é retornado. Caso contrário, um novo é gerado.
-     * @return string O token CSRF gerado ou existente.
+     * Gera um novo token e o armazena na sessão com timestamp.
      */
-    public static function generateToken() {
-        if (isset($_SESSION[CSRF_TOKEN_NAME]) && $_SESSION[CSRF_TOKEN_NAME]["expire"] > time()) {
-            return $_SESSION[CSRF_TOKEN_NAME]["token"];
-        }
+    public static function generate(): string
+    {
         $token = bin2hex(random_bytes(32));
-        $_SESSION[CSRF_TOKEN_NAME] = [
-            'token' => $token,
-            'expire' => time() + CSRF_EXPIRE
-        ];
+        Session::set(self::SESSION_KEY, $token);
+        Session::set(self::SESSION_TIME_KEY, time());
         return $token;
     }
 
     /**
-     * Retorna o token CSRF atual da sessão.
-     * Se não houver um token válido, um novo é gerado.
-     * @return string O token CSRF atual.
+     * Retorna o token atual. Gera um novo se ausente ou expirado.
      */
-    public static function getToken() {
-        return self::generateToken();
+    public static function getToken(): string
+    {
+        $token = Session::get(self::SESSION_KEY);
+        $time  = Session::get(self::SESSION_TIME_KEY);
+
+        if (!$token || !$time || (time() - (int) $time) > (int) CSRF_EXPIRE) {
+            return self::generate();
+        }
+
+        return $token;
     }
 
     /**
-     * Valida o token CSRF enviado na requisição POST.
-     * @return bool True se o token for válido e não expirado, false caso contrário.
+     * Retorna o nome do campo/cookie configurado (CSRF_TOKEN_NAME).
      */
-    public static function validateToken() {
-        if (!isset($_POST[CSRF_TOKEN_NAME]) || !isset($_SESSION[CSRF_TOKEN_NAME])) {
-            return false; // Token não presente na requisição ou na sessão
+    public static function getTokenName(): string
+    {
+        return CSRF_TOKEN_NAME;
+    }
+
+    /**
+     * Retorna o HTML do campo hidden pronto para inserção em formulários.
+     */
+    public static function getHiddenField(): string
+    {
+        $name  = htmlspecialchars(self::getTokenName(), ENT_QUOTES, 'UTF-8');
+        $value = htmlspecialchars(self::getToken(), ENT_QUOTES, 'UTF-8');
+        return '<input type="hidden" name="' . $name . '" value="' . $value . '">';
+    }
+
+    /**
+     * Valida o token recebido contra o token armazenado na sessão.
+     *
+     * Usa hash_equals() para comparação em tempo constante, prevenindo
+     * timing attacks. Retorna false se ausente, expirado ou não confere.
+     */
+    public static function validate(?string $token): bool
+    {
+        $stored     = Session::get(self::SESSION_KEY);
+        $storedTime = Session::get(self::SESSION_TIME_KEY);
+
+        $valid = $stored
+            && $storedTime
+            && (time() - (int) $storedTime) <= (int) CSRF_EXPIRE
+            && $token !== null
+            && $token !== ''
+            && hash_equals($stored, $token);
+
+        if (!$valid) {
+            return false;
         }
 
-        $postedToken = $_POST[CSRF_TOKEN_NAME];
-        $sessionTokenData = $_SESSION[CSRF_TOKEN_NAME];
-
-        // Verifica se o token expirou
-        if ($sessionTokenData['expire'] <= time()) {
-            unset($_SESSION[CSRF_TOKEN_NAME]); // Remove o token expirado
-            return false; // Token expirado
+        if (CSRF_REGENERATE) {
+            self::generate();
         }
 
-        // Compara o token enviado com o token da sessão de forma segura
-        if (!hash_equals($sessionTokenData['token'], $postedToken)) {
-            return false; // Token inválido
-        }
-
-        // Token válido, remove-o da sessão para evitar reuso (proteção one-time token)
-        unset($_SESSION[CSRF_TOKEN_NAME]);
         return true;
+    }
+
+    /**
+     * Verifica se a URI atual está na lista de exclusão CSRF_EXCLUDE_URIS.
+     */
+    public static function isExcluded(): bool
+    {
+        $excludes = CSRF_EXCLUDE_URIS;
+
+        if (empty($excludes)) {
+            return false;
+        }
+
+        $uri = $_SERVER['REQUEST_URI'] ?? '';
+
+        foreach ($excludes as $pattern) {
+            $pattern = trim($pattern);
+            if ($pattern !== '' && strpos($uri, $pattern) !== false) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
