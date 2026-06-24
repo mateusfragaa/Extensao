@@ -75,7 +75,12 @@ class VendaModel extends ModelMain
     public function getVenda($id)
     {
         $pdo = $this->db->dbSelect('select * from tb_pedido_venda where pev_id = :venda', [':venda' => $id]);
-        return $this->db->dbBuscaArray($pdo);;
+        return $this->db->dbBuscaArray($pdo);
+    }
+
+    public function deletar_venda($id_pedido)
+    {
+        return $this->db->dbDelete("DELETE FROM {$this->table} WHERE PEV_ID = :PEV_ID", [':PEV_ID' => $id_pedido]);
     }
 
     public function updateValorTotal($acrescimo, $desconto, $venda)
@@ -107,5 +112,29 @@ class VendaModel extends ModelMain
                 ->join('TB_PESSOA P','P.PES_ID = TB_PEDIDO_VENDA.PEV_CLIENTE_ID')
                 ->where('PEV_ID',$id_venda)
                 ->first();
+    }
+
+    public function finalizar_venda($id_pedido)
+    {
+        $pdo = $this->db->dbSelect(
+            'call sp_finalizar_venda(:id_pedido)',
+            [
+                ':id_pedido' => $id_pedido
+            ]
+        );
+
+        return  $this->db->dbBuscaArrayAll($pdo);
+    }
+
+    public function cancelar_venda($id_pedido)
+    {
+        $pdo = $this->db->dbSelect(
+            'call sp_cancelar_venda(:id_pedido)',
+            [
+                ':id_pedido' => $id_pedido
+            ]
+        );
+
+        return  $this->db->dbBuscaArrayAll($pdo);
     }
 }

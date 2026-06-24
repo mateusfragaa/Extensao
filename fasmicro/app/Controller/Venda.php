@@ -53,6 +53,7 @@ class Venda extends ControllerMain
     // Prepara o formulário da esquerda do formVenda.php (devo usar na tabela da grid)
     public function formVenda($acao,$id_pedido)
     { 
+        
         $this->editandoVenda($acao, $id_pedido);
     }
     // =====================================================================
@@ -70,7 +71,7 @@ class Venda extends ControllerMain
     }
 
     public function delete($acao, $id)
-    {
+    {   
         if ($this->serviceVenda->apagarVendaEItens($id)) {
             Redirect::page("venda/", ['msgSucesso' => 'Sucesso ao apagar o registro']);
         } else {
@@ -78,7 +79,11 @@ class Venda extends ControllerMain
         }
     }
 
-    // teste
+    public function cancelar($acao, $id)
+    {
+        $this->serviceVenda->cancelar_venda($id);
+    }
+
     public function carregaValorExclusao()
     {
         $data = json_decode(file_get_contents('php://input'), true);
@@ -116,11 +121,14 @@ class Venda extends ControllerMain
         }
         
         $data['action_form'] = 'update';
-        if ($action == 'insert') {
+        if ($action == 'insert') {      
             $data['action_form_modal'] = 'inicioVenda/insert';
         }elseif($action == 'update') {
             $data['action_form_modal'] = '/formVenda/update';
-        }elseif($action == 'delete') {
+        }elseif($action == 'cancelar'){
+            $data['action_form'] = 'cancelar';
+        }
+        elseif($action == 'delete') {
             $data['action_form'] = 'delete';
         }
 
@@ -132,7 +140,6 @@ class Venda extends ControllerMain
         $data['id_venda'] = $id_pedido;
         $data['acao_venda'] = $action;
         
-
         $this->view(
             'admin/form/formVenda',
             [

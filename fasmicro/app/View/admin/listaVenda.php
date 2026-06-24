@@ -77,6 +77,7 @@ $status_vendas = isset($data['data']['status_venda']) ? $data['data']['status_ve
                             <td class="fw-bold">R$ <?= number_format($venda['PEV_TOTAL'], 2, ',', '.') ?></td>
                             <td><span class="badge-status status-concluida"><?= $status_vendas[$venda['PEV_STATUS']] ?></span></td>
                             <td class="text-end">
+                                <a href="/venda/formVenda/cancelar/<?= $venda['PEV_ID'] ?>" class="btn btn-sm btn-light border" title="Cencelar"><i class="bi bi-x text-warning"></i></a>
                                 <a href="/venda/formVenda/view/<?= $venda['PEV_ID'] ?>" class="btn btn-sm btn-light border" title="View"><i class="bi bi-eye text-primary"></i></a>
                                 <a class="btn btn-sm btn-light border me-1" title="Editar" href="/venda/formVenda/update/<?= $venda['PEV_ID'] ?>">
                                     <i class="bi bi-pencil "></i>

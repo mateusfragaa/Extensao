@@ -229,7 +229,6 @@ class Database
     public function dbDelete($sql, $params=null)
     {
         $query=$this->connect()->prepare($sql);
-        
         try {
             
             $query->execute($params);
@@ -392,7 +391,6 @@ class Database
         }
 
         if (gettype($condition) == "string") {
-
             $aKey = explode(" ", $condition);
 
             if (count($aKey) > 1) {
@@ -763,9 +761,8 @@ class Database
 
             $query  = $this->connect()->prepare($sql);
             $query->execute($this->params);
-            // var_dump($query, $this->params);
-            // die();
             $rs = $query->rowCount();
+            
             self::dbClear();
 
         } catch (\Exception $err) {

@@ -6,6 +6,7 @@ use App\Model\PessoaModel;
 use App\Model\VendaModel;
 use App\Model\VendaItemModel;
 use App\Model\ProdutoModel;
+use Core\Library\Redirect;
 use Core\Library\Session;
 
 class PedidoVenda
@@ -98,7 +99,14 @@ class PedidoVenda
 
     public function apagarVendaEItens($id_pedido)
     {
-        return $this->vendaModel->delete(['PEV_ID' => $id_pedido]);
+        if (
+            isset($this->getVenda($id_pedido)['PEV_STATUS']) && 
+            $this->getVenda($id_pedido)['PEV_STATUS'] == 'F' || 
+            isset($this->getVenda($id_pedido)['PEV_STATUS']) &&
+            $this->getVenda($id_pedido)['PEV_STATUS'] == 'C') {
+            return false;
+        }
+        return $this->vendaModel->deletar_venda($id_pedido);
     }
 
     public function select_produto_venda($id)
@@ -114,7 +122,7 @@ class PedidoVenda
 
     public function listaProduto($ordem)
     {
-        return $this->produtoModel->lista($ordem);
+        return $this->produtoModel->listagem_produtos($ordem);
     }
 
     public function addProdutoPedido($id_pedido, $post_produtos)
@@ -128,16 +136,19 @@ class PedidoVenda
 
         if (count($resultado) > 0) {
             foreach ($resultado as $key => $value) {
-                // Criar função tem_estoque() caso tenha vai entrar no if e add caso não
-                //tenha vai ser inserido o id no produto_erro 
-                if ($this->vendaItemModel->addProdutoPedido($id_pedido, $value) <= 0){
-                    array_push($produtos_erro_inserir, $value['prd_id']);
-                };
-            };
+
+                if ($this->produtoModel->tem_estoque($value['prd_id'],$value['qtd'])){
+                    $this->vendaItemModel->addProdutoPedido($id_pedido, $value);
+                    continue;
+                }
+                array_push($produtos_erro_inserir, $value['prd_id']);
+            }
         }
 
         if (count($produtos_erro_inserir) > 0) {
             $produtos = $this->produtoModel->getProdutosIds($produtos_erro_inserir);
+            var_dump($produtos);
+            die('erro ao inseir');
             $descricao = array_map(function($p){
                 return $p['PRD_DESCRICAO'];
             }, $produtos);
@@ -167,6 +178,20 @@ class PedidoVenda
     public function listaPessoa($ordem)
     {
         return $this->pessoaModel->lista($ordem);
+    }
+
+    public function cancelar_venda($id_pedido)
+    {
+        $mensagem = $this->vendaModel->cancelar_venda($id_pedido);
+        if (!$mensagem[0]['sucesso']) {
+            Session::set('msgError', $mensagem[0]['mensagem']);
+            Redirect::page("Venda/");
+            exit;
+        }
+
+        Session::set('msgSucesso', $mensagem[0]['mensagem']);
+        Redirect::page("Venda/");
+        exit;
     }
 }
 

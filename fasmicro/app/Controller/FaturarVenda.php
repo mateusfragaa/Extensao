@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use Core\Library\ControllerMain;
+use Core\Library\Redirect;
 use Core\Library\Session;
 
 class FaturarVenda extends ControllerMain
@@ -17,17 +18,26 @@ class FaturarVenda extends ControllerMain
 
     public function formFaturar($acao, $id_pedido)
     {
+        $data = [];
+        $data['recebimentos'] = $this->serviceFaturar->busca_recebimento_venda($id_pedido);
         
         switch ($acao) {
             case 'insert':
-                $this->receber($_POST,$id_pedido);
+                $data['recebimentos'] = $this->serviceFaturar->gravarRecebimento($_POST, $id_pedido);
+                break;
+            case 'delete':
+                $data['recebimentos'] = $this->serviceFaturar->excluir_recebimento($_POST, $id_pedido);
+                break;
+            case 'finalizar':
+                $data['recebimentos'] = $this->serviceFaturar->finalizar_venda($id_pedido);
                 break;
         }
         
         
-        $data = [];
+
         $data['info_venda'] = $this->serviceFaturar->dadosVenda($id_pedido);
         $data['formas_pagamento'] = $this->serviceFaturar->listaDocumento();
+
         $this->view(
             'admin/form/formFinalizacaoVenda',
             [
@@ -36,10 +46,5 @@ class FaturarVenda extends ControllerMain
             'sistema'
         );
     }
-
-    public function receber($post, $id_pedido) {
-        $this->serviceFaturar->gravarRecebimento($post, $id_pedido);
-    }
-
 
 }

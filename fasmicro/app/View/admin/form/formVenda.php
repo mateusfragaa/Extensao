@@ -86,7 +86,13 @@ $acao_venda = $data['data']['acao_venda'] ?? '';
                         </div>
                         <input type="hidden" name="venda_id" value="<?= $id_venda ?>" id="venda_id">
                     </div>
-                    <?php if ((count($produtos_pedido) > 0 || $acao_venda == 'update' || $acao_venda == 'delete')  && ($acao_venda != 'insert' || $acao_venda != 'view')) : ?>
+                    <?php if (
+                            (count($produtos_pedido) > 0 ||
+                            $acao_venda == 'update' ||
+                            $acao_venda == 'delete' || 
+                            $acao_venda == 'cancelar')  && 
+                            ($acao_venda != 'insert' && $acao_venda != 'view')
+                    ) : ?>
                         <button type="submit" class="btn btn-primary-custom w-100 py-2 mt-3">Salvar Pedido</button>
                     <?php else: ?>
                         <p class="text-center text-muted">Acrescente algum item para iniciar o pedido.</p>
@@ -104,7 +110,7 @@ $acao_venda = $data['data']['acao_venda'] ?? '';
                             <p class="text-muted h4">Número do Pedido <?= $id_venda ?></p>
                         <?php endif; ?>
                     </div>
-                    <?php if ($acao_venda != 'delete' && $acao_venda != 'view') : ?>
+                    <?php if ($acao_venda != 'delete' && $acao_venda != 'view' && $acao_venda != 'cancelar') : ?>
                         <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#exampleModal">
                             Incluir Produto
                         </button>
