@@ -1,64 +1,89 @@
-<div class="container">
+<?php
+use Core\Library\Csrf;
+
+$action_form    = formDadosInput($data, 'tipoDocumento');
+$errors         = \Core\Library\Session::get('formErrors');
+$isReadOnly     = $action_form === 'view' ? 'disabled' : '';
+?>
+<div class="container py-5">
     <div class="d-flex align-items-center mb-4">
-        <a href="/tipoDocumento/" class="btn btn-light border me-3"><i class="bi bi-arrow-left"></i></a>
+        <a href="/tipoDocumento/" class="btn btn-light border me-3">
+            <i class="bi bi-arrow-left"></i>
+        </a>
         <div>
-            <h4 class="fw-bold m-0">Cadastrar Tipo de Documento</h4>
-            <p class="text-muted small m-0">Configure uma nova forma de pagamento ou cobrança.</p>
+            <h4 class="fw-bold m-0">Tipo de Documento <?= formSubTitulo($action_form) ?></h4>
+            <p class="text-muted small m-0">Configure formas de pagamento e tipos de cobrança.</p>
         </div>
     </div>
 
-    <div class="card card-custom">
-        <form class="row g-3">
+    <div class="card card-custom p-4">
+        <?php echo exibeAlerta(); ?>
+
+        <form class="row g-4" action="/tipoDocumento/<?= $action_form ?>" method="POST">
+
+            <?= Csrf::getHiddenField() ?>
+
+            <?php if ($action_form !== 'insert'): ?>
+                <input type="hidden" name="TDC_ID" value="<?= setValue('TDC_ID') ?>">
+            <?php endif; ?>
+
+            <!-- ── Descrição ───────────────────────────────────────── -->
             <div class="col-md-8">
-                <label class="form-label">Nome do Documento / Forma de Pagamento</label>
-                <input type="text" class="form-control" placeholder="Ex: Cartão de Crédito Visa">
+                <label class="form-label">
+                    Descrição <span class="text-danger">*</span>
+                </label>
+                <input type="text" name="TDC_DESCRICAO"
+                    class="form-control <?= isset($errors['TDC_DESCRICAO']) ? 'is-invalid' : '' ?>"
+                    placeholder="Ex: Cartão de Crédito, Boleto, PIX..."
+                    value="<?= htmlspecialchars(setValue('TDC_DESCRICAO')) ?>"
+                    maxlength="45"
+                    <?= $isReadOnly ?>>
+                <?php if (isset($errors['TDC_DESCRICAO'])): ?>
+                    <div class="invalid-feedback"><?= $errors['TDC_DESCRICAO'] ?></div>
+                <?php endif; ?>
             </div>
 
+            <!-- ── Status ─────────────────────────────────────────── -->
             <div class="col-md-4">
-                <label class="form-label">Sigla/Abreviatura</label>
-                <input type="text" class="form-control" placeholder="Ex: CC">
-            </div>
-
-            <div class="col-md-6">
-                <label class="form-label">Tipo de Fluxo</label>
-                <select class="form-select">
-                    <option selected>Selecione...</option>
-                    <option>Dinheiro (Imediato)</option>
-                    <option>Bancário (Compensação)</option>
-                    <option>Crédito (Prazo)</option>
-                    <option>Débito (Imediato)</option>
+                <label class="form-label">
+                    Status <span class="text-danger">*</span>
+                </label>
+                <select name="TDC_STATUS"
+                        class="form-select <?= isset($errors['TDC_STATUS']) ? 'is-invalid' : '' ?>"
+                        <?= $isReadOnly ?>>
+                    <option value="1" <?= (setValue('TDC_STATUS', '1') === '1') ? 'selected' : '' ?>>
+                        Ativo
+                    </option>
+                    <option value="0" <?= (setValue('TDC_STATUS') === '0') ? 'selected' : '' ?>>
+                        Inativo
+                    </option>
                 </select>
             </div>
 
-            <div class="col-md-6">
-                <label class="form-label">Status</label>
-                <select class="form-select">
-                    <option value="ativo">Ativo (Disponível no PDV/Vendas)</option>
-                    <option value="inativo">Inativo</option>
-                </select>
+            <!-- ── Observação ─────────────────────────────────────── -->
+            <div class="col-12">
+                <label class="form-label">Observação</label>
+                <textarea name="TDC_OBSERVACAO"
+                    class="form-control"
+                    placeholder="Informações adicionais sobre este tipo de documento (opcional)..."
+                    rows="3"
+                    maxlength="255"
+                    <?= $isReadOnly ?>><?= htmlspecialchars(setValue('TDC_OBSERVACAO')) ?></textarea>
+                <div class="form-text">Máximo 255 caracteres.</div>
             </div>
 
-            <div class="col-12 mt-4 border-top pt-3">
-                <div class="form-check form-switch mb-2">
-                    <input class="form-check-input" type="checkbox" id="permiteParcelas">
-                    <label class="form-check-label text-muted" for="permiteParcelas">Permitir parcelamento com este
-                        documento</label>
-                </div>
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="geraTaxa">
-                    <label class="form-check-label text-muted" for="geraTaxa">Calcular taxa de operadora
-                        automaticamente</label>
-                </div>
-            </div>
-
+            <!-- ── Botões ─────────────────────────────────────────── -->
             <div class="col-12 d-flex justify-content-end gap-2 mt-4">
-                <a type="button" class="btn btn-light border" href="#">
-                    Cancelar
-                </a>
-                <button type="submit" class="btn btn-primary-custom">
-                    Salvar Tipo de Documento
-                </button>
+                <a class="btn btn-light border px-4" href="/tipoDocumento/">Cancelar</a>
+                <?php if ($action_form !== 'view'): ?>
+                    <button type="submit" class="btn btn-primary px-5">
+                        <?= $action_form === 'delete' ? 'Confirmar Exclusão' : 'Salvar' ?>
+                    </button>
+                <?php endif; ?>
             </div>
+
         </form>
     </div>
 </div>
+
+<?php \Core\Library\Session::destroy('formErrors'); ?>

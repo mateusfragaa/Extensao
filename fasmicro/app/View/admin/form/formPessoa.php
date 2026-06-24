@@ -1,151 +1,237 @@
 <?php
+use Core\Library\Csrf;
+
 $action_form = formDadosInput($data, 'pessoa');
-$errors = Core\Library\Session::get('formErrors');
+$errors      = \Core\Library\Session::get('formErrors');
 ?>
 <div class="container py-5">
     <div class="d-flex align-items-center mb-4">
-        <a href="/pessoa/" class="btn btn-light border me-3">
-            <i class="bi bi-arrow-left"></i>
-        </a>
+        <a href="/pessoa/" class="btn btn-light border me-3"><i class="bi bi-arrow-left"></i></a>
         <div>
-            <h4 class="fw-bold m-0">Cadastrar Cliente <?= formSubTitulo($action_form) ?></h4>
-            <p class="text-muted small m-0">Adicione um novo cliente ou contato ao sistema.</p>
+            <h4 class="fw-bold m-0">Cadastro de Pessoa <?= formSubTitulo($action_form) ?></h4>
+            <p class="text-muted small m-0">Pessoa Física (CPF) ou Pessoa Jurídica (CNPJ).</p>
         </div>
     </div>
 
     <div class="card card-custom p-4">
         <?php echo exibeAlerta(); ?>
 
+<<<<<<< HEAD
         <form class="row g-4" action="pessoa/<?= $action_form ?>" method="POST">
             <?= csrfField() ?>
+=======
+        <form class="row g-4" action="/pessoa/<?= $action_form ?>" method="POST">
+
+            <?= Csrf::getHiddenField() ?>
+
+>>>>>>> feature/pessoa
             <?php if ($action_form !== 'insert'): ?>
                 <input type="hidden" name="PES_ID" value="<?= setValue('PES_ID') ?>">
             <?php endif; ?>
 
-
-
-            <div class="col-md-8">
-                <label class="form-label" id="label_nome_pfpj">Nome Completo / Razão Social</label>
-                <input type="text"
-                    name="PES_NOME"
-                    id="nome_pfpj"
-                    class="form-control <?= isset($errors['PES_NOME']) ? 'is-invalid' : '' ?>"
-                    placeholder="Digite o nome completo"
-                    value="<?= setValue('PES_NOME') ?>"
-                    <?= $action_form == 'view' ? 'disabled' : '' ?>>
-                <?php if (isset($errors['PES_NOME'])): ?>
-                    <div class="invalid-feedback"><?= $errors['PES_NOME'] ?></div>
-                <?php endif; ?>
+            <!-- ── Tipo de Pessoa ──────────────────────────────────── -->
+            <div class="col-md-3">
+                <label class="form-label">Tipo de Pessoa <span class="text-danger">*</span></label>
+                <select name="TIPO_PESSOA" id="tipo_pessoa"
+                        class="form-select <?= isset($errors['TIPO_PESSOA']) ? 'is-invalid' : '' ?>"
+                        <?= $action_form === 'view' ? 'disabled' : '' ?>>
+                    <option value="F" <?= (setValue('TIPO_PESSOA', 'F') === 'F') ? 'selected' : '' ?>>Pessoa Física</option>
+                    <option value="J" <?= (setValue('TIPO_PESSOA') === 'J')       ? 'selected' : '' ?>>Pessoa Jurídica</option>
+                </select>
+                <?php if (isset($errors['TIPO_PESSOA'])): ?><div class="invalid-feedback"><?= $errors['TIPO_PESSOA'] ?></div><?php endif; ?>
             </div>
 
+            <!-- ── Nome / Razão Social ─────────────────────────────── -->
+            <div class="col-md-9">
+                <label class="form-label" id="label_nome_pfpj">Nome Completo <span class="text-danger">*</span></label>
+                <input type="text" name="PES_NOME" id="nome_pfpj"
+                    class="form-control <?= isset($errors['PES_NOME']) ? 'is-invalid' : '' ?>"
+                    placeholder="Digite o nome completo"
+                    value="<?= htmlspecialchars(setValue('PES_NOME')) ?>"
+                    maxlength="100"
+                    <?= $action_form === 'view' ? 'disabled' : '' ?>>
+                <?php if (isset($errors['PES_NOME'])): ?><div class="invalid-feedback"><?= $errors['PES_NOME'] ?></div><?php endif; ?>
+            </div>
+
+            <!-- ── CPF / CNPJ ─────────────────────────────────────── -->
             <div class="col-md-4">
-                <label class="form-label" id="label_cpf_cnpj">CPF / CNPJ</label>
+                <label class="form-label" id="label_cpf_cnpj">CPF <span class="text-danger">*</span></label>
                 <div class="input-group">
                     <input type="text" name="CPF_CNPJ" id="cpf_cnpj"
                         class="form-control <?= isset($errors['CPF_CNPJ']) ? 'is-invalid' : '' ?>"
                         placeholder="000.000.000-00"
-                        value="<?= setValue('CPF_CNPJ') ?>"
-                        <?= $action_form == 'view' ? 'disabled' : '' ?>>
+                        inputmode="numeric"
+                        autocomplete="off"
+                        value="<?php
+                            $rawDoc = strtoupper(trim(setValue('CPF_CNPJ')));
+                            $rawDocDigits = preg_replace('/\D/', '', $rawDoc);
+                            if (strlen($rawDocDigits) === 11) {
+                                // CPF — sempre numérico
+                                echo preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $rawDocDigits);
+                            } elseif (strlen($rawDoc) === 14) {
+                                // CNPJ 2.0 — pode ter letras: XX.XXX.XXX/XXXX-XX
+                                echo preg_replace('/^(.{2})(.{3})(.{3})(.{4})(.{2})$/', '$1.$2.$3/$4-$5', $rawDoc);
+                            } else {
+                                echo htmlspecialchars($rawDoc);
+                            }
+                        ?>"
+                        maxlength="18"
+                        <?= $action_form === 'view' ? 'disabled' : '' ?>>
 
-                    <?php if ($action_form == 'insert' || $action_form == 'update'): ?>
-                        <button class="btn btn-outline-secondary" type="button" id="btn_validar_receita" title="Validar na Receita Federal">
-                            <i class="bi bi-shield-check text-success"></i> Verificar
+                    <?php if ($action_form === 'insert' || $action_form === 'update'): ?>
+                        <button class="btn btn-outline-secondary" type="button"
+                                id="btn_validar_receita" title="Verificar na Receita Federal">
+                            <i class="bi bi-shield-check text-success"></i>
+                            <span id="btn_verificar_label">Verificar</span>
                         </button>
                     <?php endif; ?>
+
+                    <?php if (isset($errors['CPF_CNPJ'])): ?>
+                        <div class="invalid-feedback"><?= $errors['CPF_CNPJ'] ?></div>
+                    <?php endif; ?>
                 </div>
-                <?php if (isset($errors['CPF_CNPJ'])): ?>
-                    <div class="invalid-feedback"><?= $errors['CPF_CNPJ'] ?></div>
-                <?php endif; ?>
+
+                <!-- Seletor de dataset (apenas para CNPJ) -->
+                <div id="bloco_dataset" class="mt-1" style="display:none;">
+                    <select id="sel_dataset" class="form-select form-select-sm">
+                        <option value="receita">Receita Federal</option>
+                        <option value="cno">CNO — Cadastro Nacional de Obras</option>
+                        <option value="rntrc">RNTRC — Transportadores</option>
+                    </select>
+                    <small class="text-muted">Selecione a fonte de consulta. Se não encontrar, tente outra.</small>
+                </div>
+                <small id="cpf_cnpj_fonte" class="text-muted"></small>
             </div>
 
+            <!-- ── E-mail ──────────────────────────────────────────── -->
             <div class="col-md-4">
-                <label class="form-label">E-mail</label>
-                <input type="email" name="EMAIL" class="form-control <?= isset($errors['EMAIL']) ? 'is-invalid' : '' ?>"
-                    placeholder="exemplo@email.com" value="<?= setValue('EMAIL') ?>"
-                    <?= $action_form == 'view' ? 'disabled' : '' ?>>
+                <label class="form-label">E-mail <span class="text-danger">*</span></label>
+                <input type="email" name="EMAIL"
+                    class="form-control <?= isset($errors['EMAIL']) ? 'is-invalid' : '' ?>"
+                    placeholder="exemplo@email.com"
+                    value="<?= htmlspecialchars(setValue('EMAIL')) ?>"
+                    maxlength="50"
+                    <?= $action_form === 'view' ? 'disabled' : '' ?>>
+                <?php if (isset($errors['EMAIL'])): ?><div class="invalid-feedback"><?= $errors['EMAIL'] ?></div><?php endif; ?>
             </div>
 
+            <!-- ── Telefone ────────────────────────────────────────── -->
             <div class="col-md-4">
                 <label class="form-label">Telefone / WhatsApp</label>
-                <input type="text" name="TELEFONE" class="form-control"
-                    placeholder="(00) 00000-0000" value="<?= setValue('TELEFONE') ?>"
-                    <?= $action_form == 'view' ? 'disabled' : '' ?>>
+                <input type="text" name="TELEFONE" id="input_telefone"
+                    class="form-control"
+                    placeholder="(00) 00000-0000"
+                    value="<?php
+                        $tel = preg_replace('/\D/', '', setValue('TELEFONE'));
+                        if (strlen($tel) === 11) {
+                            echo '(' . substr($tel,0,2) . ') ' . substr($tel,2,5) . '-' . substr($tel,7,4);
+                        } elseif (strlen($tel) === 10) {
+                            echo '(' . substr($tel,0,2) . ') ' . substr($tel,2,4) . '-' . substr($tel,6,4);
+                        } else {
+                            echo htmlspecialchars(setValue('TELEFONE'));
+                        }
+                    ?>"
+                    maxlength="15"
+                    <?= $action_form === 'view' ? 'disabled' : '' ?>>
             </div>
 
-            <div class="col-md-4">
-                <label class="form-label">Tipo de Pessoa</label>
-                <select name="TIPO_PESSOA" id="tipo_pessoa" class="form-select" <?= $action_form == 'view' ? 'disabled' : '' ?>>
-                    <option value="F" <?= (setValue('TIPO_PESSOA') == 'F') ? 'selected' : '' ?>>Pessoa Física</option>
-                    <option value="J" <?= (setValue('TIPO_PESSOA') == 'J') ? 'selected' : '' ?>>Pessoa Jurídica</option>
-                </select>
-            </div>
-
-            <!-- CEP -->
+            <!-- ── CEP ────────────────────────────────────────────── -->
             <div class="col-md-2">
                 <label class="form-label">CEP</label>
-                <input type="text" name="CEP" id="cep" class="form-control" placeholder="00000-000"
-                    value="<?= setValue('CEP') ?>" <?= $action_form == 'view' ? 'disabled' : '' ?> maxlength="9">
+                <input type="text" name="CEP" id="cep"
+                    class="form-control" placeholder="00000-000"
+                    value="<?php
+                        $cep = preg_replace('/\D/', '', setValue('CEP'));
+                        echo strlen($cep) === 8
+                            ? substr($cep,0,5) . '-' . substr($cep,5,3)
+                            : htmlspecialchars(setValue('CEP'));
+                    ?>"
+                    maxlength="9"
+                    <?= $action_form === 'view' ? 'disabled' : '' ?>>
                 <small id="cep_status" class="text-muted small"></small>
             </div>
 
-            <div class="col-md-8">
+            <!-- ── Endereço ───────────────────────────────────────── -->
+            <div class="col-md-7">
                 <label class="form-label">Endereço</label>
-                <input type="text" name="ENDERECO" id="endereco" class="form-control" placeholder="Rua, Av, Logradouro..."
-                    value="<?= setValue('ENDERECO') ?>" <?= $action_form == 'view' ? 'disabled' : '' ?>>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label">Número</label>
-                <div class="input-group">
-                    <input type="text" name="NUMERO" id="numero_casa" class="form-control" placeholder="123"
-                        value="<?= setValue('NUMERO') ?>" <?= $action_form == 'view' ? 'disabled' : '' ?>>
-                </div>
-                <div class="form-check mt-1">
-                    <input class="form-check-input" type="checkbox" id="sem_numero" <?= (setValue('NUMERO') == 'S/N') ? 'checked' : '' ?> <?= $action_form == 'view' ? 'disabled' : '' ?>>
-                    <label class="form-check-label small" for="sem_numero">
-                        Sem número
-                    </label>
-                </div>
+                <input type="text" name="ENDERECO" id="endereco"
+                    class="form-control" placeholder="Rua, Av., Logradouro..."
+                    value="<?= htmlspecialchars(setValue('ENDERECO')) ?>"
+                    maxlength="50"
+                    <?= $action_form === 'view' ? 'disabled' : '' ?>>
             </div>
 
-            <div class="col-md-5">
-                <label class="form-label">Cidade</label>
-                <input type="text" name="CIDADE" id="cidade" class="form-control" value="<?= setValue('CIDADE') ?>"
-                    <?= $action_form == 'view' ? 'disabled' : '' ?>>
+            <!-- ── Número ─────────────────────────────────────────── -->
+            <div class="col-md-3">
+                <label class="form-label">Número</label>
+                <input type="text" name="NUMERO" id="numero_casa"
+                    class="form-control" placeholder="123"
+                    value="<?= htmlspecialchars(setValue('NUMERO')) ?>"
+                    maxlength="6"
+                    <?= $action_form === 'view' ? 'disabled' : '' ?>>
+                <?php if ($action_form !== 'view'): ?>
+                    <div class="form-check mt-1">
+                        <input class="form-check-input" type="checkbox" id="sem_numero"
+                            <?= (setValue('NUMERO') === 'S/N') ? 'checked' : '' ?>>
+                        <label class="form-check-label small" for="sem_numero">Sem número</label>
+                    </div>
+                <?php endif; ?>
             </div>
+
+            <!-- ── Bairro ─────────────────────────────────────────── -->
             <div class="col-md-4">
                 <label class="form-label">Bairro</label>
-                <input type="text" name="BAIRRO" id="bairro" class="form-control" value="<?= setValue('BAIRRO') ?>"
-                    <?= $action_form == 'view' ? 'disabled' : '' ?>>
+                <input type="text" name="BAIRRO" id="bairro"
+                    class="form-control"
+                    value="<?= htmlspecialchars(setValue('BAIRRO')) ?>"
+                    maxlength="40"
+                    <?= $action_form === 'view' ? 'disabled' : '' ?>>
             </div>
+
+            <!-- ── Cidade ─────────────────────────────────────────── -->
+            <div class="col-md-5">
+                <label class="form-label">Cidade</label>
+                <input type="text" name="CIDADE" id="cidade"
+                    class="form-control"
+                    value="<?= htmlspecialchars(setValue('CIDADE')) ?>"
+                    maxlength="40"
+                    <?= $action_form === 'view' ? 'disabled' : '' ?>>
+            </div>
+
+            <!-- ── UF ─────────────────────────────────────────────── -->
             <div class="col-md-3">
                 <label class="form-label">UF</label>
-                <select name="UF" id="uf" class="form-select" <?= $action_form == 'view' ? 'disabled' : '' ?>>
+                <select name="UF" id="uf" class="form-select"
+                        <?= $action_form === 'view' ? 'disabled' : '' ?>>
                     <option value="">Selecione...</option>
                     <?php
-                    $ufs = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
-                    foreach ($ufs as $uf): ?>
-                        <option value="<?= $uf ?>" <?= (setValue('UF') == $uf) ? 'selected' : '' ?>><?= $uf ?></option>
+                    $ufs = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS',
+                            'MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC',
+                            'SP','SE','TO'];
+                    foreach ($ufs as $sigla): ?>
+                        <option value="<?= $sigla ?>" <?= (setValue('UF') === $sigla) ? 'selected' : '' ?>>
+                            <?= $sigla ?>
+                        </option>
                     <?php endforeach; ?>
                 </select>
             </div>
 
+            <!-- ── Botões ─────────────────────────────────────────── -->
             <div class="col-12 d-flex justify-content-end gap-2 mt-4">
-                <a type="button" class="btn btn-light border px-4" href="/pessoa/">Cancelar</a>
-                <?php if ($action_form != 'view'): ?>
-                    <button type="submit" class="btn btn-primary-custom px-5">
-                        <?= $action_form == 'delete' ? 'Confirmar Exclusão' : 'Salvar Cliente' ?>
+                <a class="btn btn-light border px-4" href="/pessoa/">Cancelar</a>
+                <?php if ($action_form !== 'view'): ?>
+                    <button type="submit" class="btn btn-primary px-5">
+                        <?= $action_form === 'delete' ? 'Confirmar Exclusão' : 'Salvar' ?>
                     </button>
                 <?php endif; ?>
             </div>
+
         </form>
     </div>
 </div>
 
-<script>
-    if (typeof initFormPessoa !== 'function') {
-        window.initFormPessoa = function() {
-            console.log('Inicializando comportamentos do formulário de pessoa...');
 
+<<<<<<< HEAD
             // CPF / CNPJ Dinâmico
             const selectTipo = document.getElementById('tipo_pessoa');
             const inputCPFCNPJ = document.getElementById('cpf_cnpj');
@@ -428,7 +514,14 @@ $errors = Core\Library\Session::get('formErrors');
     // inicialização
     initFormPessoa();
 </script>
+=======
+<?php \Core\Library\Session::destroy('formErrors'); ?>
+>>>>>>> feature/pessoa
 
 <?php
-Core\Library\Session::destroy('formErrors');
+    $jsPath = __DIR__ . '/../../../../public/assests/js/formPessoa.js';
+    $jsVer  = file_exists($jsPath) ? filemtime($jsPath) : time();
 ?>
+<script src="/assests/js/formPessoa.js?v=<?= $jsVer ?>"></script>
+
+<?php \Core\Library\Session::destroy('formErrors'); ?>

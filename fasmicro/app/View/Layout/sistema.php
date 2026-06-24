@@ -23,6 +23,21 @@
     <link rel="stylesheet" href="/assests/css/forms/formTipoDocumento.css">
     <link rel="stylesheet" href="/assests/css/forms/formPessoa.css">
     <link rel="stylesheet" href="/assests/css/forms/formUsuario.css">
+    <style>
+        /* Hamburger toggler visível em telas pequenas */
+        .navbar-toggler {
+            border-color: rgba(0,0,0,.2);
+        }
+        /* Em mobile: empilha nome e botão Sair dentro do collapse */
+        @media (max-width: 991.98px) {
+            .right-actions {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                padding: 0.5rem 0;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -33,11 +48,25 @@
                 <i class="bi bi-bar-chart-line-fill text-primary"></i> ERP System
             </a>
 
+<<<<<<< HEAD
             <pre>
 
 </pre>
 
             <div class="collapse navbar-collapse justify-content-center">
+=======
+            <!-- Botão hamburguer — aparece em telas < lg -->
+            <button class="navbar-toggler" type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#navbarMenu"
+                    aria-controls="navbarMenu"
+                    aria-expanded="false"
+                    aria-label="Abrir menu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse justify-content-center" id="navbarMenu">
+>>>>>>> feature/pessoa
                 <ul class="navbar-nav">
                     <?php if (temPermissao('Venda')): ?>
                         <li class="nav-item">
@@ -76,6 +105,7 @@
                             <i class="bi bi-file-earmark"></i> Tipo Documento
                         </a>
                     </li>
+<<<<<<< HEAD
 
                     <?php if (temPermissao('Pessoa')): ?>
                         <li class="nav-item">
@@ -92,10 +122,33 @@
                             </a>
                         </li>
                     <?php endif; ?>
+=======
+                    <li class="nav-item">
+                        <a class="nav-link" href="/pessoa">
+                            <i class="bi bi-people"></i> Pessoas
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/usuario">
+                            <i class="bi bi-person"></i> Usuários
+                        </a>
+                    </li>
+>>>>>>> feature/pessoa
                 </ul>
+                <!--mobaile  -->
+                <div class="right-actions d-lg-none mt-2">
+                    <div class="user-profile">
+                        <i class="bi bi-person-circle fs-5"></i>
+                        <span>Nome</span>
+                    </div>
+                    <a class="btn btn-danger btn-sm" href="/">
+                        <i class="bi bi-box-arrow-right"></i> Sair
+                    </a>
+                </div>
             </div>
 
-            <div class="right-actions">
+            <!-- desktop -->
+            <div class="right-actions d-none d-lg-flex">
                 <div class="user-profile">
                     <i class="bi bi-person-circle fs-5"></i>
                     <span><?= \Core\Library\Session::get('usuario_logado')['USU_NOME'] ?? '' ?></span>

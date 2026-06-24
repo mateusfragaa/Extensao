@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS `tb_pedido_venda_item` (
 
 -- Copiando estrutura para tabela extensao.tb_pessoa
 CREATE TABLE IF NOT EXISTS `tb_pessoa` (
-  `PES_ID` int(10) unsigned NOT NULL,
+  `PES_ID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `PES_NOME` varchar(45) NOT NULL,
   `CPF_CNPJ` varchar(14) DEFAULT NULL,
   `EMAIL` varchar(50) DEFAULT NULL,
@@ -89,6 +89,18 @@ CREATE TABLE IF NOT EXISTS `tb_pessoa` (
   UNIQUE KEY `CLI_ID_UNIQUE` (`PES_ID`),
   UNIQUE KEY `CPF_CNPJ` (`CPF_CNPJ`)
 );
+
+//Mudança feita para permitir auto incremento na tabela tb_pessoa, pois o mesmo estava desabilitado.
+ALTER TABLE `tb_pessoa`
+    MODIFY `PES_ID` int(10) unsigned NOT NULL AUTO_INCREMENT;
+-- 2. TELEFONE - Modificando o campo para aceitar números de telefone com DDD e 9 dígitos, além de permitir valores nulos.
+ALTER TABLE `tb_pessoa`
+    MODIFY `TELEFONE` varchar(15) DEFAULT NULL;
+-- 3 PES_NOME - Modificando o campo para aceitar até 100 caracteres, permitindo nomes mais longos.
+ALTER TABLE `tb_pessoa`
+    MODIFY `PES_NOME` varchar(100) DEFAULT NULL;  
+  
+
 
 -- Exportação de dados foi desmarcado.
 
@@ -153,13 +165,36 @@ CREATE TABLE IF NOT EXISTS `tb_recebimento_item` (
 
 -- Copiando estrutura para tabela extensao.tb_tipo_documento
 CREATE TABLE IF NOT EXISTS `tb_tipo_documento` (
-  `TDC_ID` int(10) unsigned NOT NULL,
+  `TDC_ID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `TDC_DESCRICAO` varchar(45) NOT NULL,
   `TDC_STATUS` tinyint(3) unsigned NOT NULL DEFAULT 1 COMMENT '1 = ATIVO; 0 = INATIVO',
   PRIMARY KEY (`TDC_ID`),
   UNIQUE KEY `TDC_ID_UNIQUE` (`TDC_ID`),
   UNIQUE KEY `TDC_DESCRICAO_UNIQUE` (`TDC_DESCRICAO`)
 );
+-- Mudança feita para permitir auto incremento na tabela tb_tipo_documento, pois o mesmo estava desabilitado.
+ALTER TABLE `tb_tipo_documento`
+    ADD COLUMN `TDC_OBSERVACAO` varchar(255) DEFAULT NULL
+        COMMENT 'Informações adicionais sobre o tipo de documento'
+    AFTER `TDC_STATUS`;
+
+-- povoamento
+INSERT INTO `tb_tipo_documento` (TDC_DESCRICAO, TDC_STATUS, TDC_OBSERVACAO) VALUES
+('CPF', 1, 'Documento de identificação fiscal do cidadão brasileiro'),
+('RG', 1, 'Registro Geral; documento de identidade civil'),
+('Comprovante de Residência', 1, 'Conta de água, luz, telefone ou contrato de aluguel'),
+('Contrato', 1, 'Contratos assinados entre partes; incluir versão e data quando aplicável'),
+('Laudo Médico', 1, 'Laudos emitidos por profissionais de saúde; anexar data e CRM do médico'),
+('Receita Médica', 1, 'Prescrição de medicamentos; válida conforme legislação vigente'),
+('Relatório', 1, 'Relatórios técnicos ou administrativos relacionados ao atendimento'),
+('Nota Fiscal', 1, 'Documento fiscal de venda ou prestação de serviço'),
+('Procuração', 1, 'Documento que outorga poderes a terceiros; verificar validade'),
+('Certidão de Nascimento', 1, 'Certidão civil de nascimento'),
+('Carteira de Trabalho', 0, 'Documento trabalhista; marcado como inativo por padrão'),
+('Passaporte', 1, 'Documento de viagem internacional'),
+('Comprovante de Pagamento', 1, 'Recibos, comprovantes bancários ou comprovantes de cartão'),
+('Declaração', 1, 'Declarações diversas emitidas por pessoa física ou jurídica'),
+('Documento de Identidade Estrangeiro', 1, 'Documento de identificação de estrangeiros (RNE, RNE digital, etc.)');
 
 -- Exportação de dados foi desmarcado.
 

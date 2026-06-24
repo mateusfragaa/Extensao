@@ -16,4 +16,8 @@ trait ModelLoaderTrait
 
         return class_exists($class) ? new $class() : null;
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> feature/pessoa

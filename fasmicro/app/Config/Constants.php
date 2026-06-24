@@ -11,9 +11,26 @@ defined("DEFAULT_METHOD") || define("DEFAULT_METHOD", "index");
 
 // Controllers autorizados a executar sem autenticação
 defined("CONTROLLER_AUTH") || define("CONTROLLER_AUTH", [
+    // Controllers públicos (sem login)
     "Home",
+<<<<<<< HEAD
     "Login",
     "Auth"
+=======
+    "Auth",
+    // TODO: Quando o grupo implementar a autenticação real (setando Session::set('userId')
+    // no controller de login), remover os controllers abaixo para exigir login no sistema.
+    "HomeSistema",
+    "Pessoa",
+    "Usuario",
+    "Produto",
+    "Categoria",
+    "Venda",
+    "Recebimento",
+    "Pagamento",
+    "TipoDocumento",
+    "Teste",
+>>>>>>> feature/pessoa
 ]);
 
 // Tamanho máximo para upload de arquivos (5 mega bytes)
@@ -22,6 +39,7 @@ defined('FILE_MAXSIZE') || define('FILE_MAXSIZE', 5);
 // Versão padrão da API (usada quando a URL não especifica versão)
 defined('API_VERSION') || define('API_VERSION', 1);
 
+<<<<<<< HEAD
 // Definição de permissões por nível
 defined("PERMISSOES") || define("PERMISSOES", [
     "admin"      => ["Usuario", "Pessoa", "Produto", "Venda", "Pagamento", "Recebimento", "HomeSistema"],
@@ -29,6 +47,8 @@ defined("PERMISSOES") || define("PERMISSOES", [
     //"financeiro" => ["Pagamento", "Recebimento", "HomeSistema"]
 ]);
 
+=======
+>>>>>>> feature/pessoa
 // ---------------------------------------------------------------------------
 // Proteção CSRF
 // ---------------------------------------------------------------------------

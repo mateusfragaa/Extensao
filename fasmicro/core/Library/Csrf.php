@@ -109,4 +109,8 @@ class Csrf
 
         return false;
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> feature/pessoa
