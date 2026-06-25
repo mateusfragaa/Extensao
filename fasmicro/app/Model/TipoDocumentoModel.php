@@ -13,7 +13,7 @@ class TipoDocumentoModel extends ModelMain
 
     public $titulo      = 'Tipo de Documento';
     public $listaStatus = [1 => 'Ativo', 0 => 'Inativo'];
-
+    public $parcela = [4];
     public $validationRules = [
         'TDC_DESCRICAO' => [
             'label' => 'Descrição',
@@ -24,6 +24,13 @@ class TipoDocumentoModel extends ModelMain
             'rules' => 'required|in:0,1'
         ],
     ];
+
+    
+
+    public function getParcela()
+    {
+        return $this->parcela;
+    }
 
     // ──────────────────────────────────────────────────────────────────
     // insert — remove PK e trata erro amigável após chamada ao Database
@@ -141,3 +148,4 @@ class TipoDocumentoModel extends ModelMain
         Session::set('msgError', 'Erro ao processar a operação. Tente novamente.');
     }
 }
+

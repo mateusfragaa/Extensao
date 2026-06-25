@@ -3,19 +3,28 @@
 namespace App\Model;
 
 use Core\Library\ModelMain;
-use Exception;
-use Override;
 
 class VendaModel extends ModelMain
 {
     protected $table = 'tb_pedido_venda';
     protected $primaryKey = "PEV_ID";
     public $validationRules = [];
+    public $status_venda = [
+        'A' => 'Aberta',
+        'F' => 'Faturada',
+        'C' => 'Cancelada',
+        'O' => 'Orçamento'
+    ];
+
+    public function getStatus()
+    {
+        return $this->status_venda;
+    }
 
     public function filtroListagem($dados)
     {
         extract($dados);
-        $sql = "select * from {$this->table}";
+        $sql = "select PEV_ID, PES.PES_NOME, PEV_DATA_VENDA, PEV_TOTAL, PEV_STATUS from {$this->table} inner join tb_pessoa pes on pes.pes_id = {$this->table}.pev_cliente_id ";
         $sqlparte = [];
         $params = [];
 
@@ -26,8 +35,7 @@ class VendaModel extends ModelMain
                 $sqlparte[] = "pev_id = :pev_id";
                 $params[':pev_id'] = $id_nome_cliente;
             } else {
-
-                $sqlparte[] = "pev_cliente_nome like :pev_cliente_nome";
+                $sqlparte[] = "pes.pes_nome like :pev_cliente_nome";
                 $params[':pev_cliente_nome'] = "%{$id_nome_cliente}%";
             }
         }
@@ -50,6 +58,14 @@ class VendaModel extends ModelMain
         return $this->db->dbBuscaArrayAll($pdo);
     }
 
+    public function listaVenda()
+    {
+        return $this->db
+        ->select('PEV_ID, PES.PES_NOME, PEV_DATA_VENDA, PEV_TOTAL, PEV_STATUS')
+        ->join('TB_PESSOA PES', 'PES.PES_ID = PEV_CLIENTE_ID')
+        ->findAll();
+    }
+
     public function criarPedido()
     {
         $id =  $this->db->dbInsert('insert into tb_pedido_venda(pev_cliente_id)values(:cliente)',['cliente' => 1]);
@@ -58,7 +74,13 @@ class VendaModel extends ModelMain
 
     public function getVenda($id)
     {
-        return $this->getById($id);
+        $pdo = $this->db->dbSelect('select * from tb_pedido_venda where pev_id = :venda', [':venda' => $id]);
+        return $this->db->dbBuscaArray($pdo);
+    }
+
+    public function deletar_venda($id_pedido)
+    {
+        return $this->db->dbDelete("DELETE FROM {$this->table} WHERE PEV_ID = :PEV_ID", [':PEV_ID' => $id_pedido]);
     }
 
     public function updateValorTotal($acrescimo, $desconto, $venda)
@@ -70,7 +92,49 @@ class VendaModel extends ModelMain
             ':desconto' => number_format($desconto, 2, '.', ','),
             ':venda' => $venda
         ]);
-        $pdo = $this->db->dbSelect('select pev_total from tb_pedido_venda where pev_id = :venda', [':venda' => $venda]);
+        $pdo = $this->db->dbSelect('select PEV_TOTAL from tb_pedido_venda where pev_id = :venda', [':venda' => $venda]);
         return $this->db->dbBuscaArray($pdo);
+    }
+
+    public function buscarDadosCompletosVenda($id_venda)
+    {
+        return $this->db
+                ->select('
+                    PEV_ID,
+                    PEV_DATA_VENDA,
+                    PEV_STATUS,
+                    PEV_ACRESCIMO,
+                    PEV_DESCONTO,
+                    P.PES_NOME,
+                    PEV_SUB_TOTAL,
+                    PEV_TOTAL
+                ')
+                ->join('TB_PESSOA P','P.PES_ID = TB_PEDIDO_VENDA.PEV_CLIENTE_ID')
+                ->where('PEV_ID',$id_venda)
+                ->first();
+    }
+
+    public function finalizar_venda($id_pedido)
+    {
+        $pdo = $this->db->dbSelect(
+            'call sp_finalizar_venda(:id_pedido)',
+            [
+                ':id_pedido' => $id_pedido
+            ]
+        );
+
+        return  $this->db->dbBuscaArrayAll($pdo);
+    }
+
+    public function cancelar_venda($id_pedido)
+    {
+        $pdo = $this->db->dbSelect(
+            'call sp_cancelar_venda(:id_pedido)',
+            [
+                ':id_pedido' => $id_pedido
+            ]
+        );
+
+        return  $this->db->dbBuscaArrayAll($pdo);
     }
 }

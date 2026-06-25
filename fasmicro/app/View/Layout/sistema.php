@@ -44,7 +44,7 @@
 
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container-fluid">
-            <a class="navbar-brand text-primary fw-bold" href="/">
+            <a class="navbar-brand text-primary fw-bold" href="/homeSistema/">
                 <i class="bi bi-bar-chart-line-fill text-primary"></i> ERP System
             </a>
 
@@ -142,7 +142,7 @@
     <main>
         <?= $content ?>
     </main>
-    
+
     <script src="/assests/bootstrap/js/teste.js"></script>
     <script src="/assests/bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>

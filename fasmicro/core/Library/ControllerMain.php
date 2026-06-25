@@ -87,6 +87,21 @@ class ControllerMain
     }
 
     /**
+     * loadService
+     *
+     * @param string $nomeService
+     * @return void|object
+     */
+    public function loadService(string $nomeService)
+    {
+        $pathService = 'App\Service\\' . $nomeService . "Service";
+
+        if (class_exists($pathService)) {
+            return new $pathService();
+        }
+    }
+
+    /**
      * view
      */
     public function view(string $view, array $data = [], ?string $layout = null)
@@ -104,8 +119,7 @@ class ControllerMain
         }
 
         foreach ($nomeHelper as $value) {
-            $pathHelpCore = PATHAPP . 'core' . DIRECTORY_SEPARATOR . 'Helper' . DIRECTORY_SEPARATOR . "{$value}.php";
-
+            $pathHelpCore = PATHAPP . "core" . DIRECTORY_SEPARATOR . "Helper" . DIRECTORY_SEPARATOR . "{$value}.php";
             if (file_exists($pathHelpCore)) {
                 require_once $pathHelpCore;
             } else {

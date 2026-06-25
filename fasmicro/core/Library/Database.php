@@ -259,7 +259,6 @@ class Database
     public function dbDelete($sql, $params=null)
     {
         $query=$this->connect()->prepare($sql);
-        
         try {
             
             $query->execute($params);
@@ -820,7 +819,6 @@ class Database
             $conexao = $this->connect();
             $query = $conexao->prepare($sql);
             $query->execute($data);
-
             $rs = $conexao->lastInsertId();
 
             $this->dbClear();
@@ -887,7 +885,6 @@ class Database
 
             $query  = $this->connect()->prepare($sql);
             $query->execute($this->params);
-
             $rs = $query->rowCount();
 
             $this->dbClear();

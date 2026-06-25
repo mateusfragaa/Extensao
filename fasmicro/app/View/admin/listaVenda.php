@@ -1,5 +1,6 @@
 <?php
-// var_dump($vendas);
+$vendas = isset($data['data']['vendas']) ? $data['data']['vendas'] : [];
+$status_vendas = isset($data['data']['status_venda']) ? $data['data']['status_venda'] : [];
 ?>
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -11,6 +12,8 @@
             <i class="bi bi-plus-lg me-2"></i> Nova Venda
         </a>
     </div>
+
+    <?= exibeAlerta() ?>
 
     <div class="card card-custom mb-4">
         <div class="card-body p-3">
@@ -69,16 +72,19 @@
                     <?php foreach ($vendas as $key => $venda) : ?>
                         <tr>
                             <td class="fw-bold text-primary">#<?= $venda['PEV_ID'] ?></td>
-                            <td class="fw-medium"><?= $venda['PEV_CLIENTE_ID'] ?></td>
+                            <td class="fw-medium"><?= $venda['PES_NOME'] ?></td>
                             <td class="text-muted"><?= $venda['PEV_DATA_VENDA'] ?></td>
                             <td class="fw-bold">R$ <?= number_format($venda['PEV_TOTAL'], 2, ',', '.') ?></td>
-                            <td><span class="badge-status status-concluida"><?= $venda['PEV_STATUS'] ?></span></td>
+                            <td><span class="badge-status status-concluida"><?= $status_vendas[$venda['PEV_STATUS']] ?></span></td>
                             <td class="text-end">
-                                <button class="btn btn-sm btn-light border" title="Editar"><i class="bi bi-eye text-primary"></i></button>
-                                <button class="btn btn-sm btn-light border me-1" title="Visualizar"><i
-                                        class="bi bi-pencil "></i></button>
-                                <button class="btn btn-sm btn-light border" title="Imprimir"><i
-                                        class="bi bi-trash text-danger"></i></button>
+                                <a href="/venda/formVenda/cancelar/<?= $venda['PEV_ID'] ?>" class="btn btn-sm btn-light border" title="Cencelar"><i class="bi bi-x text-warning"></i></a>
+                                <a href="/venda/formVenda/view/<?= $venda['PEV_ID'] ?>" class="btn btn-sm btn-light border" title="View"><i class="bi bi-eye text-primary"></i></a>
+                                <a class="btn btn-sm btn-light border me-1" title="Editar" href="/venda/formVenda/update/<?= $venda['PEV_ID'] ?>">
+                                    <i class="bi bi-pencil "></i>
+                                </a>
+                                <a class="btn btn-sm btn-light border" title="Excluir" href="/venda/formVenda/delete/<?= $venda['PEV_ID'] ?>">
+                                    <i class=" bi bi-trash text-danger"></i>
+                                </a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
