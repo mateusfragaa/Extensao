@@ -9,6 +9,7 @@ use Core\Library\Session;
 
 class PessoaModel extends ModelMain
 {
+<<<<<<< HEAD
     protected $table      = 'tb_pessoa';
     protected $primaryKey = 'PES_ID';
 
@@ -206,3 +207,9 @@ class PessoaModel extends ModelMain
     }
 }
 >>>>>>> feature/pessoa
+=======
+    protected $table = 'tb_pessoa';
+    protected $primaryKey = "PES_ID";
+    public $validationRules = [];
+}
+>>>>>>> feature/pedido_venda

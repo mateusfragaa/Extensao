@@ -3,6 +3,7 @@
 namespace App\Model;
 
 use Core\Library\ModelMain;
+<<<<<<< HEAD
 use Core\Library\Session;
 use Core\Library\Validator;
 
@@ -141,3 +142,19 @@ class TipoDocumentoModel extends ModelMain
         Session::set('msgError', 'Erro ao processar a operação. Tente novamente.');
     }
 }
+=======
+
+class TipoDocumentoModel extends ModelMain
+{
+    protected $table = 'tb_tipo_documento';
+    protected $primaryKey = "TDC_ID";
+    public $validationRules = [];
+    public $parcela = [4];
+
+    public function getParcela()
+    {
+        return $this->parcela;
+    }
+
+}
+>>>>>>> feature/pedido_venda

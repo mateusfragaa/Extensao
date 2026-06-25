@@ -95,6 +95,21 @@ class ControllerMain
     }
 
     /**
+     * loadService
+     *
+     * @param string $nomeService
+     * @return void|object
+     */
+    public function loadService(string $nomeService)
+    {
+        $pathService = 'App\Service\\' . $nomeService . "Service";
+
+        if (class_exists($pathService)) {
+            return new $pathService();
+        }
+    }
+
+    /**
      * view
      */
     public function view(string $view, array $data = [], ?string $layout = null)
@@ -112,8 +127,12 @@ class ControllerMain
         }
 
         foreach ($nomeHelper as $value) {
+<<<<<<< HEAD
             $pathHelpCore = PATHAPP . 'core' . DIRECTORY_SEPARATOR . 'Helper' . DIRECTORY_SEPARATOR . "{$value}.php";
 
+=======
+            $pathHelpCore = PATHAPP . "core" . DIRECTORY_SEPARATOR . "Helper" . DIRECTORY_SEPARATOR . "{$value}.php";
+>>>>>>> feature/pedido_venda
             if (file_exists($pathHelpCore)) {
                 require_once $pathHelpCore;
             } else {
@@ -124,6 +143,7 @@ class ControllerMain
             }
         }
     }
+<<<<<<< HEAD
 <<<<<<< HEAD
 
     private function checkPermission()
@@ -255,4 +275,6 @@ class ControllerMain
     }
 =======
 >>>>>>> feature/pessoa
+=======
+>>>>>>> feature/pedido_venda
 }

@@ -184,7 +184,7 @@ class Database
     */
     public function beginTransaction()
     {
-        return $this->conexao->beginTransaction();
+        $this->conexao->beginTransaction();
     }
 
     public function commit()
@@ -277,7 +277,6 @@ class Database
     public function dbDelete($sql, $params=null)
     {
         $query=$this->connect()->prepare($sql);
-        
         try {
             
             $query->execute($params);
@@ -470,8 +469,12 @@ class Database
             $target .= " {$operadorLogico} ";
         }
 
+<<<<<<< HEAD
         if (is_string($condition)) {
 
+=======
+        if (gettype($condition) == "string") {
+>>>>>>> feature/pedido_venda
             $aKey = explode(" ", $condition);
 
             if (count($aKey) > 1 && in_array(end($aKey), $operadores)) {
@@ -518,8 +521,14 @@ class Database
      */
     private function buildWhereIn($field, $params, $operadorLogico, $notIn)
     {
+<<<<<<< HEAD
         $placeholders = array_fill(0, count($params), "?");
         $this->params = array_merge($this->params, $params);
+=======
+
+        return $this->whereHaving($condition, $params);
+    }
+>>>>>>> feature/pedido_venda
 
         $clause = "{$field} " . ($notIn ? "NOT " : "") . "IN (" . implode(', ', $placeholders) . ")";
 
@@ -733,9 +742,9 @@ class Database
 <<<<<<< HEAD
         $cSql = "SELECT {$this->select} FROM {$this->table} {$this->join} {$this->where} {$this->groupBy} {$this->orderBy}";
         $query = $this->connect()->prepare($cSql, [PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL]);
-        $rscDados = $query->execute($this->params);
         // var_dump($query);
         // die();
+<<<<<<< HEAD
 =======
         // Query base sem ORDER BY e LIMIT (necessário para posicionar UNIONs antes deles)
         $baseQuery = "SELECT {$this->select} FROM {$this->table} {$this->join} {$this->where} {$this->groupBy} {$this->having}";
@@ -775,6 +784,11 @@ class Database
         $query->execute($allParams);
 
         $this->dbClear();
+=======
+        $rscDados = $query->execute($this->params);
+        
+        self::dbClear();
+>>>>>>> feature/pedido_venda
 
         if ($tipoRetorno == "all") {
             return $this->dbBuscaArrayAll($query);
@@ -850,12 +864,18 @@ class Database
             $conexao = $this->connect();
             $query = $conexao->prepare($sql);
             $query->execute($data);
-
             $rs = $conexao->lastInsertId();
+<<<<<<< HEAD
 
             $this->dbClear();
 
         } catch (\Exception $err) {
+=======
+            
+            self::dbClear();
+            
+            } catch (\Exception $err) {
+>>>>>>> feature/pedido_venda
             Session::set("msgError","Erro ao inserir dados na base de dados: " . $err->getMessage());
             $rs = 0;
         }
@@ -917,10 +937,14 @@ class Database
 
             $query  = $this->connect()->prepare($sql);
             $query->execute($this->params);
-
             $rs = $query->rowCount();
+<<<<<<< HEAD
 
             $this->dbClear();
+=======
+            
+            self::dbClear();
+>>>>>>> feature/pedido_venda
 
         } catch (\Exception $err) {
             Session::set("msgError", "Erro ao Excluir dados na base de dados: " . $err->getMessage());
