@@ -1,6 +1,0 @@
-[2026-06-22 18:35:24] app.ERROR: Falha ao enviar e-mail via PHPMailer: Invalid address:  (From): 
-[2026-06-22 18:54:46] app.ERROR: Falha ao enviar e-mail via PHPMailer: Invalid address:  (From): 
-[2026-06-22 19:16:46] app.ERROR: Falha ao enviar e-mail via PHPMailer: Invalid address:  (From): 
-[2026-06-22 19:38:07] app.ERROR: Falha ao enviar e-mail via PHPMailer: Invalid address:  (From): 
-[2026-06-22 19:48:31] app.ERROR: Falha ao enviar e-mail via PHPMailer: Invalid address:  (From): 
-[2026-06-22 19:53:07] app.ERROR: Falha ao enviar e-mail via PHPMailer: Invalid address:  (From): 
