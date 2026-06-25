@@ -11,6 +11,7 @@ defined("DEFAULT_METHOD") || define("DEFAULT_METHOD", "index");
 
 // Controllers autorizados a executar sem autenticação
 defined("CONTROLLER_AUTH") || define("CONTROLLER_AUTH", [
+    // Controllers públicos (sem login)
     "Home",
     "Login",
     "Auth"

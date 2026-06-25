@@ -64,29 +64,29 @@ class Validator
                         //            o CNPJ realmente existe e está ATIVO.
                         // -------------------------------------------------------
                         case 'cpf_cnpj':
-                            $val  = preg_replace('/\D/', '', $data[$ruleKey]);
                             $tipo = $data['TIPO_PESSOA'] ?? 'F';
 
                             if ($tipo === 'F') {
-                                // ── CPF ──────────────────────────────────────
+                                // ── CPF: sempre numérico ──────────────────────
+                                $val = preg_replace('/\D/', '', $data[$ruleKey]);
+
                                 if (strlen($val) !== 11) {
                                     $errors[$ruleKey] = "O <b>CPF</b> deve ter 11 dígitos.";
                                 } elseif (!self::validarCPF($val)) {
                                     $errors[$ruleKey] = "O <b>CPF</b> informado é inválido.";
                                 }
                             } else {
-                                // ── CNPJ ─────────────────────────────────────
+                                // ── CNPJ 2.0: alfanumérico (A-Z + 0-9) ────────
+                                // Mantém letras — remover apenas a máscara (pontos, barra, traço)
+                                $val = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $data[$ruleKey]));
+
+                                // A consulta à Receita Federal NÃO bloqueia o save.
+                                // Verificação de situação cadastral é feita pelo
+                                // usuário via botão Verificar antes de salvar.
                                 if (strlen($val) !== 14) {
                                     $errors[$ruleKey] = "O <b>CNPJ</b> deve ter 14 dígitos.";
                                 } elseif (!self::validarCNPJ($val)) {
                                     $errors[$ruleKey] = "O <b>CNPJ</b> informado é inválido (dígito verificador incorreto).";
-                                } else {
-                                    // Dígitos OK → consulta a Receita Federal
-                                    $resultadoReceita = self::consultarCNPJReceita($val);
-                                    if ($resultadoReceita !== true) {
-                                        // $resultadoReceita contém a mensagem de erro amigável
-                                        $errors[$ruleKey] = $resultadoReceita;
-                                    }
                                 }
                             }
                             break;
@@ -135,23 +135,34 @@ class Validator
     // ══════════════════════════════════════════════════════════════════
     private static function validarCNPJ(string $cnpj): bool
     {
-        // Rejeita sequências repetidas (00.000.000/0000-00 etc.)
-        if (preg_match('/^(\d)\1{13}$/', $cnpj)) return false;
+        // CNPJ 2.0 (IN RFB 2.229/2024) — vigência: julho/2026
+        // Retrocompatível: aceita numérico (legado) e alfanumérico (novo).
+        // 14 chars: posições 1-12 alfanuméricas (A-Z + 0-9), 13-14 numéricas (DVs).
 
-        $calcDigito = function (string $base) use ($cnpj): bool {
-            $tamanho = strlen($base);
-            $soma    = 0;
-            $pos     = $tamanho - 7;
-            for ($i = $tamanho; $i >= 1; $i--) {
-                $soma += $base[$tamanho - $i] * $pos--;
+        $cnpj = strtoupper(trim($cnpj));
+
+        if (strlen($cnpj) !== 14) return false;
+        if (!preg_match('/^[A-Z0-9]{12}[0-9]{2}$/', $cnpj)) return false;
+
+        // Rejeita sequências de um único caractere repetido
+        if (preg_match('/^(.)\\1{13}$/', $cnpj)) return false;
+
+        // ASCII - 48: '0'=0 ... '9'=9 | 'A'=17 ... 'Z'=42
+        $vals = array_map(fn($c) => ord($c) - 48, str_split($cnpj));
+
+        $calcDV = function (int $tam) use ($vals): int {
+            $soma = 0;
+            $pos  = $tam - 7;
+            for ($i = $tam; $i >= 1; $i--) {
+                $soma += $vals[$tam - $i] * $pos--;
                 if ($pos < 2) $pos = 9;
             }
-            $resultado = $soma % 11 < 2 ? 0 : 11 - $soma % 11;
-            return $resultado == $cnpj[$tamanho];
+            $r = $soma % 11;
+            return $r < 2 ? 0 : 11 - $r;
         };
 
-        return $calcDigito(substr($cnpj, 0, 12))
-            && $calcDigito(substr($cnpj, 0, 13));
+        return $calcDV(12) === $vals[12]
+            && $calcDV(13) === $vals[13];
     }
 
     // ══════════════════════════════════════════════════════════════════
