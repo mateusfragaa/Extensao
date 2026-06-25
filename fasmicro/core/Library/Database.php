@@ -180,24 +180,6 @@ class Database
     }
 
     /**
-     * Métodos para ter acesso as funcionalidades de transação
-    */
-    public function beginTransaction()
-    {
-        return $this->conexao->beginTransaction();
-    }
-
-    public function commit()
-    {
-        $this->conexao->commit();
-    }
-
-    public function rollBack()
-    {
-        $this->conexao->rollBack();
-    }
-
-    /**
      * Método select que retorna um array de objetos
     *   @param string $sql
     *   @param array $params

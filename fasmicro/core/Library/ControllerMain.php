@@ -44,7 +44,7 @@ class ControllerMain
                 $token     = $_POST[CSRF_TOKEN_NAME] ?? $_SERVER[$headerVar] ?? null;
                 if (!Csrf::validate($token)) {
                     http_response_code(419);
-                    return Redirect::page('Home/viewErros', ['msgError' => 'Token de segurança inválido. Recarregue a página e tente novamente.']);
+                    return Redirect::page('Login/', ['msgError' => 'Token de segurança inválido. Recarregue a página e tente novamente.']);
                 }
             }
         }
@@ -67,7 +67,7 @@ class ControllerMain
         // e HomeSistema da lista CONTROLLER_AUTH em Constants.php.
         if (!in_array($this->controller, CONTROLLER_AUTH)) {
             if (!Session::get('userId')) {
-                return Redirect::page('Home/viewErros', ['msgError' => 'Para acessar o sistema, faça login primeiro.']);
+                return Redirect::page('Login/', ['msgError' => 'Para acessar o sistema, faça login primeiro.']);
             }
         }
     }
@@ -82,7 +82,7 @@ class ControllerMain
     public function validaNivelAcesso(int $nivelMinimo = 20): void
     {
         if ((int) Session::get('userNivel') > $nivelMinimo) {
-            Redirect::page('Home/viewErros', ['msgError' => 'Você não possui permissão para acessar esta funcionalidade.']);
+            Redirect::page('Login/', ['msgError' => 'Você não possui permissão para acessar esta funcionalidade.']);
         }
     }
 

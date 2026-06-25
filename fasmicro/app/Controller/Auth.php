@@ -51,6 +51,8 @@ class Auth extends ControllerMain
         if (password_verify($senha, $usuario['USU_SENHA'])) {
             // Senha correta! Salvamos o usuário na sessão
             \Core\Library\Session::set('usuario_logado', $usuario);
+            \Core\Library\Session::set('userId', $usuario['USU_ID']);
+
 
             \Core\Library\Session::set('msgSucesso', 'Bem-vindo, ' . $usuario['USU_NOME']);
             header("Location: /homeSistema"); // Redireciona para a tela interna
