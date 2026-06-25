@@ -1,6 +1,6 @@
 <?php
 namespace Core\Library;
-
+require_once '../core/Helper/url.php';
 class Redirect
 {
     static public function page($caminho, $widt = [])

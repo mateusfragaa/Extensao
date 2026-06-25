@@ -82,6 +82,22 @@ class ModelMain
         }
     }
 
+    public function insert2($dados)
+    {
+        unset($dados['csrf_token']);
+        $dados[$this->primaryKey] = 0;
+        if (Validator::make($dados, $this->validationRules)) {
+            return false;
+        } else {
+                $idGerado = $this->db->insert($dados);
+                if ($idGerado > 0) {
+                    return $idGerado;
+                } else {
+                    return false;
+                }
+        }
+    }
+
     /**
      * Undocumented function
      *
@@ -105,6 +121,29 @@ class ModelMain
                 }
             } catch (\Exception $e) {
                 $this->handleDatabaseError($e);
+                return false;
+            }
+        }
+    }
+    /**
+     * Undocumented function
+     *
+     * @param array $dados
+     * @return bool
+     */
+    public function update2($dados)
+    {
+        unset($dados['csrf_token']);
+        if (Validator::make($dados, $this->validationRules)) {
+            return false;
+        } else {
+            if (
+                $this->db
+                ->where($this->primaryKey, $dados[$this->primaryKey])
+                ->update($dados) >= 0
+            ) {
+                return true;
+            } else {
                 return false;
             }
         }

@@ -12,12 +12,9 @@ class ProdutoModel extends ModelMain
         "prd_descricao" => [
             "label" => "Descrição",
             "rules" => "required|min:3|max:45"
-        ],
-        "prd_status" => [
-            "label" => "Status",
-            "rules" => "required"
         ]
     ];
+
 
     public function filtroListagem(array $post)
     {
@@ -81,4 +78,6 @@ class ProdutoModel extends ModelMain
         );
         return $this->db->dbBuscaArrayAll($pdo);
     }
+
+    
 }

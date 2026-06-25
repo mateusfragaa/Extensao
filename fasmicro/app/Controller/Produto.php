@@ -60,7 +60,7 @@ class Produto extends ControllerMain
                 break;
         }
 
-        if ($acao != 'cadastro') $data["produto"] = $this->model->getById($id);
+        if ($acao != 'insert') $data["produto"] = $this->model->getById($id);
 
         $this->view(
             'admin/form/formProduto',
@@ -73,7 +73,7 @@ class Produto extends ControllerMain
 
     public function update()
     {
-        if ($this->model->update($_POST)) {
+        if ($this->model->update2($_POST)) {
             Redirect::page("produto/", ['msgSucesso' => 'Sucesso ao atualizar o registro']);
         } else {
             Redirect::page("produto/", ['msgError' => 'Erro ao atualizar registro, verifique se os dados estão corretos!']);
@@ -91,11 +91,12 @@ class Produto extends ControllerMain
 
     public function insert()
     {
-        $idGerado = $this->model->insert($_POST);
+        $idGerado = $this->model->insert2($_POST);
+        
         if ($idGerado) {
             Redirect::page('produto/',['msgSucesso' => 'Sucesso ao inserir registro, novo produto : ' . $idGerado]);
         }else {
-            Redirect::page('produto/', ['msgError' => 'Erro ao inserir registro, verifique se os dados estão corretos!']);
+            Redirect::page('produto/');
         }
     }
 }

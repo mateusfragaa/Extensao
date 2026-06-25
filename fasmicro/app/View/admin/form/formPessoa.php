@@ -1,5 +1,4 @@
 <?php
-
 use Core\Library\Csrf;
 
 $action_form = formDadosInput($data, 'pessoa');
@@ -29,8 +28,8 @@ $errors      = \Core\Library\Session::get('formErrors');
             <div class="col-md-3">
                 <label class="form-label">Tipo de Pessoa <span class="text-danger">*</span></label>
                 <select name="TIPO_PESSOA" id="tipo_pessoa"
-                    class="form-select <?= isset($errors['TIPO_PESSOA']) ? 'is-invalid' : '' ?>"
-                    <?= $action_form === 'view' ? 'disabled' : '' ?>>
+                        class="form-select <?= isset($errors['TIPO_PESSOA']) ? 'is-invalid' : '' ?>"
+                        <?= $action_form === 'view' ? 'disabled' : '' ?>>
                     <option value="F" <?= (setValue('TIPO_PESSOA', 'F') === 'F') ? 'selected' : '' ?>>Pessoa Física</option>
                     <option value="J" <?= (setValue('TIPO_PESSOA') === 'J')       ? 'selected' : '' ?>>Pessoa Jurídica</option>
                 </select>
@@ -57,21 +56,21 @@ $errors      = \Core\Library\Session::get('formErrors');
                         class="form-control <?= isset($errors['CPF_CNPJ']) ? 'is-invalid' : '' ?>"
                         placeholder="000.000.000-00"
                         value="<?php
-                                $rawDoc = preg_replace('/\D/', '', setValue('CPF_CNPJ'));
-                                if (strlen($rawDoc) === 11) {
-                                    echo preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $rawDoc);
-                                } elseif (strlen($rawDoc) === 14) {
-                                    echo preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $rawDoc);
-                                } else {
-                                    echo htmlspecialchars(setValue('CPF_CNPJ'));
-                                }
-                                ?>"
+                            $rawDoc = preg_replace('/\D/', '', setValue('CPF_CNPJ'));
+                            if (strlen($rawDoc) === 11) {
+                                echo preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $rawDoc);
+                            } elseif (strlen($rawDoc) === 14) {
+                                echo preg_replace('/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/', '$1.$2.$3/$4-$5', $rawDoc);
+                            } else {
+                                echo htmlspecialchars(setValue('CPF_CNPJ'));
+                            }
+                        ?>"
                         maxlength="18"
                         <?= $action_form === 'view' ? 'disabled' : '' ?>>
 
                     <?php if ($action_form === 'insert' || $action_form === 'update'): ?>
                         <button class="btn btn-outline-secondary" type="button"
-                            id="btn_validar_receita" title="Verificar na Receita Federal">
+                                id="btn_validar_receita" title="Verificar na Receita Federal">
                             <i class="bi bi-shield-check text-success"></i>
                             <span id="btn_verificar_label">Verificar</span>
                         </button>
@@ -113,15 +112,15 @@ $errors      = \Core\Library\Session::get('formErrors');
                     class="form-control"
                     placeholder="(00) 00000-0000"
                     value="<?php
-                            $tel = preg_replace('/\D/', '', setValue('TELEFONE'));
-                            if (strlen($tel) === 11) {
-                                echo '(' . substr($tel, 0, 2) . ') ' . substr($tel, 2, 5) . '-' . substr($tel, 7, 4);
-                            } elseif (strlen($tel) === 10) {
-                                echo '(' . substr($tel, 0, 2) . ') ' . substr($tel, 2, 4) . '-' . substr($tel, 6, 4);
-                            } else {
-                                echo htmlspecialchars(setValue('TELEFONE'));
-                            }
-                            ?>"
+                        $tel = preg_replace('/\D/', '', setValue('TELEFONE'));
+                        if (strlen($tel) === 11) {
+                            echo '(' . substr($tel,0,2) . ') ' . substr($tel,2,5) . '-' . substr($tel,7,4);
+                        } elseif (strlen($tel) === 10) {
+                            echo '(' . substr($tel,0,2) . ') ' . substr($tel,2,4) . '-' . substr($tel,6,4);
+                        } else {
+                            echo htmlspecialchars(setValue('TELEFONE'));
+                        }
+                    ?>"
                     maxlength="15"
                     <?= $action_form === 'view' ? 'disabled' : '' ?>>
             </div>
@@ -132,11 +131,11 @@ $errors      = \Core\Library\Session::get('formErrors');
                 <input type="text" name="CEP" id="cep"
                     class="form-control" placeholder="00000-000"
                     value="<?php
-                            $cep = preg_replace('/\D/', '', setValue('CEP'));
-                            echo strlen($cep) === 8
-                                ? substr($cep, 0, 5) . '-' . substr($cep, 5, 3)
-                                : htmlspecialchars(setValue('CEP'));
-                            ?>"
+                        $cep = preg_replace('/\D/', '', setValue('CEP'));
+                        echo strlen($cep) === 8
+                            ? substr($cep,0,5) . '-' . substr($cep,5,3)
+                            : htmlspecialchars(setValue('CEP'));
+                    ?>"
                     maxlength="9"
                     <?= $action_form === 'view' ? 'disabled' : '' ?>>
                 <small id="cep_status" class="text-muted small"></small>
@@ -193,38 +192,12 @@ $errors      = \Core\Library\Session::get('formErrors');
             <div class="col-md-3">
                 <label class="form-label">UF</label>
                 <select name="UF" id="uf" class="form-select"
-                    <?= $action_form === 'view' ? 'disabled' : '' ?>>
+                        <?= $action_form === 'view' ? 'disabled' : '' ?>>
                     <option value="">Selecione...</option>
                     <?php
-                    $ufs = [
-                        'AC',
-                        'AL',
-                        'AP',
-                        'AM',
-                        'BA',
-                        'CE',
-                        'DF',
-                        'ES',
-                        'GO',
-                        'MA',
-                        'MT',
-                        'MS',
-                        'MG',
-                        'PA',
-                        'PB',
-                        'PR',
-                        'PE',
-                        'PI',
-                        'RJ',
-                        'RN',
-                        'RS',
-                        'RO',
-                        'RR',
-                        'SC',
-                        'SP',
-                        'SE',
-                        'TO'
-                    ];
+                    $ufs = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS',
+                            'MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC',
+                            'SP','SE','TO'];
                     foreach ($ufs as $sigla): ?>
                         <option value="<?= $sigla ?>" <?= (setValue('UF') === $sigla) ? 'selected' : '' ?>>
                             <?= $sigla ?>

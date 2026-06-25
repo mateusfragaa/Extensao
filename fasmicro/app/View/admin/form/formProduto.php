@@ -1,5 +1,9 @@
 <?php
+
+use Core\Library\Csrf;
+
 $action_form = formDadosInput($data, 'produto');
+
 ?>
 
 <div class="container py-5">
@@ -11,6 +15,7 @@ $action_form = formDadosInput($data, 'produto');
     </div>
     <div class="card card-custom p-4">
         <form class="row g-4" action="/produto/<?= $action_form ?>" method="post">
+            <?= Csrf::getHiddenField() ?>
             <input type="hidden" name="PRD_ID" id="id" value="<?= setValue('id', setValue('PRD_ID')) ?>">
             <div class="col-md-6">
                 <label class="form-label">Nome do Produto</label>
