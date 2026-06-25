@@ -45,7 +45,7 @@ class ControllerMain
         }
 
         // Carregamento de helpers
-        $this->loadHelper(['url', 'data', 'formHelper', 'jsHelper']);
+        $this->loadHelper(['url', 'data', 'formHelper', 'jsHelper', 'debugHelper']);
 
         // Carregamento de model default do controller
         $this->model        = $this->loadModel($this->controller);

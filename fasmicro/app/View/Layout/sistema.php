@@ -51,8 +51,8 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/pagamento">
-                            <i class="bi bi-credit-card"></i> Pagamentos
+                        <a class="nav-link" href="/despesa?status=A">
+                            <i class="bi bi-credit-card"></i> Despesas
                         </a>
                     </li>
                     <li class="nav-item">

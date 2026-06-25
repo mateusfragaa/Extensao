@@ -51,7 +51,7 @@ class ModelMain
         if ($id == 0) {
             return [];
         } else {
-            return $this->db->where("id", $id)->first();
+            return $this->db->where($this->primaryKey, $id)->first();
         }
     }
 
