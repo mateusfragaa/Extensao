@@ -24,16 +24,17 @@ class PedidoVenda
         $this->pessoaModel = new PessoaModel();
     }
 
-    public function criarPedido() {
+    public function criarPedido()
+    {
         return $this->vendaModel->criarPedido();
     }
 
     public function comecarPedidoVenda($post)
     {
         $resultado = $this->validaProdutosSelecionados($post);
-        var_dump($_SESSION);
+
         if (count($resultado) > 0) {
-             $id_pedido_criado = Session::get('id_pedido_editando');
+            $id_pedido_criado = Session::get('id_pedido_editando');
 
             if (
                 !$id_pedido_criado ||
@@ -50,11 +51,9 @@ class PedidoVenda
             }
 
             $this->addProdutoPedido($id_pedido_criado, $resultado);
-            // return $this->select_produto_venda($id_pedido_criado);
             return $id_pedido_criado;
         }
         return [];
-        // return [];
     }
 
     public function calcularTotal($acrescimo, $desconto, $venda)
@@ -63,8 +62,6 @@ class PedidoVenda
         $pedido_venda = $this->vendaModel->getVenda($venda);
         // Desconto não pode maior que o valor total da venda
         if ($desconto > $pedido_venda['PEV_TOTAL']) {
-            // var_dump($acrescimo,$desconto,$venda);
-            // die();
             Session::set('msgError', 'O Desconto não pode ser maior que o valor da venda.');
             return $pedido_venda['PEV_TOTAL'];
         }
@@ -99,13 +96,12 @@ class PedidoVenda
 
     public function apagarVendaEItens($id_pedido)
     {
-        if (
-            isset($this->getVenda($id_pedido)['PEV_STATUS']) && 
-            $this->getVenda($id_pedido)['PEV_STATUS'] == 'F' || 
-            isset($this->getVenda($id_pedido)['PEV_STATUS']) &&
-            $this->getVenda($id_pedido)['PEV_STATUS'] == 'C') {
+        $venda = $this->getVenda($id_pedido);
+
+        if (isset($venda['PEV_STATUS']) && in_array($venda['PEV_STATUS'], ['F', 'C'])) {
             return false;
         }
+
         return $this->vendaModel->deletar_venda($id_pedido);
     }
 
@@ -137,7 +133,7 @@ class PedidoVenda
         if (count($resultado) > 0) {
             foreach ($resultado as $key => $value) {
 
-                if ($this->produtoModel->tem_estoque($value['prd_id'],$value['qtd'])){
+                if ($this->produtoModel->tem_estoque($value['prd_id'], $value['qtd'])) {
                     $this->vendaItemModel->addProdutoPedido($id_pedido, $value);
                     continue;
                 }
@@ -147,9 +143,7 @@ class PedidoVenda
 
         if (count($produtos_erro_inserir) > 0) {
             $produtos = $this->produtoModel->getProdutosIds($produtos_erro_inserir);
-            var_dump($produtos);
-            die('erro ao inseir');
-            $descricao = array_map(function($p){
+            $descricao = array_map(function ($p) {
                 return $p['PRD_DESCRICAO'];
             }, $produtos);
             Session::set("msgError", "Erro ao inserir o(s) produto(s) : " . implode(', ', $descricao));
@@ -158,8 +152,12 @@ class PedidoVenda
 
     public function validaProdutosSelecionados($post_produtos)
     {
-        
         $resultado = [];
+
+        if (!isset($post_produtos['produto']) || !is_array($post_produtos['produto'])) {
+            return $resultado;
+        }
+
         foreach ($post_produtos['produto'] as $produtoId => $dados) {
             if (!isset($dados['selecionado']) || intval($dados['qtd']) <= 0) {
                 continue;
@@ -194,13 +192,3 @@ class PedidoVenda
         exit;
     }
 }
-
-/**
- * 'cliente_venda' => string 'Selecione o Cliente' (length=19)
-  'data_venda' => string '2026-06-19' (length=10)
-  'status_venda' => string 'C' (length=1)
-  'acrescimo_venda' => string '3' (length=1)
-  'desconto_venda' => string '2' (length=1)
-  'venda_sub_total' => string '' (length=0)
-  'venda_id' => string '336' (length=3)
- */

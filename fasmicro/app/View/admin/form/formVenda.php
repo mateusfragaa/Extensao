@@ -1,4 +1,7 @@
 <?php
+
+use Core\Library\Csrf;
+
 $produtos = (isset($data['data']['produtos'])) ? $data['data']['produtos'] : [];
 $pessoas = (isset($data['data']['pessoas'])) ? $data['data']['pessoas'] : [];
 $info_venda = (isset($data['data']['info_venda'])) ? $data['data']['info_venda'] : [];
@@ -24,6 +27,7 @@ $acao_venda = $data['data']['acao_venda'] ?? '';
         <div class="col-lg-5">
             <div class="card card-custom p-4">
                 <form class="row g-3" method="post" action="/venda/<?= $action_form ?>/form/<?= $id_venda ?>">
+                    <?= Csrf::getHiddenField() ?>
                     <div class="col-12">
                         <label class="form-label small fw-bold">Cliente</label>
                         <select class="form-select bg-light border-0" name="cliente_venda">
@@ -87,11 +91,11 @@ $acao_venda = $data['data']['acao_venda'] ?? '';
                         <input type="hidden" name="venda_id" value="<?= $id_venda ?>" id="venda_id">
                     </div>
                     <?php if (
-                            (count($produtos_pedido) > 0 ||
+                        (count($produtos_pedido) > 0 ||
                             $acao_venda == 'update' ||
-                            $acao_venda == 'delete' || 
-                            $acao_venda == 'cancelar')  && 
-                            ($acao_venda != 'insert' && $acao_venda != 'view')
+                            $acao_venda == 'delete' ||
+                            $acao_venda == 'cancelar')  &&
+                        ($acao_venda != 'insert' && $acao_venda != 'view')
                     ) : ?>
                         <button type="submit" class="btn btn-primary-custom w-100 py-2 mt-3">Salvar Pedido</button>
                     <?php else: ?>
@@ -161,6 +165,7 @@ $acao_venda = $data['data']['acao_venda'] ?? '';
                 <!-- Formulário pesquisa de produto -->
                 <div class="row mb-4">
                     <form class="d-flex gap-3" id="form_filtro_modal_venda">
+                        <?= Csrf::getHiddenField() ?>
                         <div class="col-md-4">
                             <label class="form-label small fw-bold text-muted">Pesquisar Produto</label>
                             <div class="input-group">
@@ -194,6 +199,7 @@ $acao_venda = $data['data']['acao_venda'] ?? '';
                 </div>
 
                 <form action="/venda/<?= $action_form_modal ?>/<?= $id_venda ?>"
+                    <?= Csrf::getHiddenField() ?>
                     method="post" id="form_escolha_prd_modal_venda">
                     <div class="table-responsive tabela-scroll">
                         <table class="table table-custom m-0">

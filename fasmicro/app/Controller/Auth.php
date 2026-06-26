@@ -65,6 +65,7 @@ class Auth extends ControllerMain
     public function logout()
     {
         \Core\Library\Session::destroy('usuario_logado');
+        \Core\Library\Session::destroy('userId');
         \Core\Library\Session::destroy('msgSucesso');
         \Core\Library\Session::destroy('msgError');
 

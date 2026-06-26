@@ -1,4 +1,6 @@
 <?php
+
+use Core\Library\Csrf;
 $vendas = isset($data['data']['vendas']) ? $data['data']['vendas'] : [];
 $status_vendas = isset($data['data']['status_venda']) ? $data['data']['status_venda'] : [];
 ?>
@@ -18,6 +20,7 @@ $status_vendas = isset($data['data']['status_venda']) ? $data['data']['status_ve
     <div class="card card-custom mb-4">
         <div class="card-body p-3">
             <form action="/venda/filtroListagemVenda" method="post">
+                <?= Csrf::getHiddenField() ?>
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label class="form-label small fw-bold text-muted">Buscar Venda</label>
@@ -53,8 +56,7 @@ $status_vendas = isset($data['data']['status_venda']) ? $data['data']['status_ve
             </form>
         </div>
     </div>
-    <script>
-    </script>
+    
     <div class="card card-custom overflow-hidden">
         <div class="table-responsive tabela-scroll">
             <table class="table table-custom m-0">
