@@ -84,13 +84,6 @@ class Venda extends ControllerMain
         $this->serviceVenda->cancelar_venda($id);
     }
 
-    public function carregaValorExclusao()
-    {
-        $data = json_decode(file_get_contents('php://input'), true);
-        $venda = $this->serviceVenda->getVenda($data['pedido_id']);
-        echo json_encode($venda);
-    }
-
     // =====================================================================
     // Formulário da direita
     public function inicioVenda($action)
@@ -106,10 +99,10 @@ class Venda extends ControllerMain
     }
 
     // =====================================================================
-    public function calculaTotalVenda() {
-        $data = json_decode(file_get_contents('php://input'), true);
-        $novoTotal = $this->serviceVenda->calcularTotal($data['acrescimo'], $data['desconto'], $data['venda']);
-        echo json_encode($novoTotal);
+    public function calculaTotalVenda($id_pedido)
+    {
+        $this->serviceVenda->calcularTotal($_POST['acrescimo'] ?? 0, $_POST['desconto'] ?? 0, $id_pedido);
+        Redirect::page("venda/formVenda/update/$id_pedido");
     }
 
     // =====================================================================
@@ -149,10 +142,19 @@ class Venda extends ControllerMain
         );
     }   
 
-    public function excluirProduto()
+    public function excluirProduto($id_pedido)
     {
-        $data = json_decode(file_get_contents('php://input'), true);
-        echo json_encode($this->serviceVenda->excluirProduto($data['produtos_excluir']));
+        $ids = $_POST['produtos_excluir'] ?? [];
+
+        if (count($ids) > 0) {
+            if ($this->serviceVenda->excluirProduto($ids)) {
+                Redirect::page("venda/formVenda/update/$id_pedido", ['msgSucesso' => 'Produto(s) excluído(s) com sucesso']);
+            } else {
+                Redirect::page("venda/formVenda/update/$id_pedido", ['msgError' => 'Erro ao excluir produto(s)']);
+            }
+        } else {
+            Redirect::page("venda/formVenda/update/$id_pedido", ['msgAlerta' => 'Nenhum produto selecionado para exclusão']);
+        }
     }
 }
 

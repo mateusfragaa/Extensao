@@ -60,35 +60,17 @@ $acao_venda = $data['data']['acao_venda'] ?? '';
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="col-6">
-                        <?php if (count($info_venda) > 0) : ?>
-                            <label class="form-label small fw-bold">Acréscimo</label>
-                            <input type="number" class="form-control bg-light border-0" step="0,01" min="0" name="acrescimo_venda" id="acrescimo_venda"
-                                value="<?= $info_venda['PEV_ACRESCIMO'] ?? '' ?>">
-                        <?php endif; ?>
-                    </div>
-                    <div class="col-6">
-                        <?php if (count($info_venda) > 0) : ?>
-                            <label class="form-label small fw-bold">Desconto</label>
-                            <input type="number" class="form-control bg-light border-0" step="0,01" min="0" name="desconto_venda" id="desconto_venda"
-                                value="<?= $info_venda['PEV_DESCONTO'] ?? '' ?>">
-                        <?php endif; ?>
-                    </div>
                     <div class="col-12 mt-4 p-3 bg-light rounded text-end">
                         <div class="small text-muted">
-                            <!-- E adicionado por meio do JS -->
-                            <span id="venda_sub_total_span">Subtotal: R$ 0,00</span>
-                            <input type="hidden" name="venda_sub_total" value="" id="venda_sub_total_input">
+                            <span>Subtotal: R$ <?= subtotal_itens_venda($produtos_pedido ?? []) ?></span>
                         </div>
                         <div class="fw-bold fs-4 text-primary">
-                            <span id="venda_total_span">
+                            <span>
                                 <?= isset($info_venda['PEV_TOTAL']) ?
                                     'Total: R$ ' . number_format($info_venda['PEV_TOTAL'], '2', ',', '.') :
-                                    'Total: R$ 0.00'  ?>
+                                    'Total: R$ 0,00'  ?>
                             </span>
-                            <!-- <input type="hidden" name="venda_total_input" id="venda_total_input" value=""> -->
                         </div>
-                        <input type="hidden" name="venda_id" value="<?= $id_venda ?>" id="venda_id">
                     </div>
                     <?php if (
                         (count($produtos_pedido) > 0 ||
@@ -102,6 +84,26 @@ $acao_venda = $data['data']['acao_venda'] ?? '';
                         <p class="text-center text-muted">Acrescente algum item para iniciar o pedido.</p>
                     <?php endif; ?>
                 </form>
+
+                <?php if (count($info_venda) > 0 && $acao_venda != 'delete' && $acao_venda != 'view' && $acao_venda != 'cancelar') : ?>
+                    <form class="row g-3 mt-2" method="post" action="/venda/calculaTotalVenda/<?= $id_venda ?>">
+                        <?= Csrf::getHiddenField() ?>
+                        <input type="hidden" name="venda" value="<?= $id_venda ?>">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Acréscimo</label>
+                            <input type="number" class="form-control bg-light border-0" step="0.01" min="0" name="acrescimo"
+                                value="<?= $info_venda['PEV_ACRESCIMO'] ?? '' ?>">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Desconto</label>
+                            <input type="number" class="form-control bg-light border-0" step="0.01" min="0" name="desconto"
+                                value="<?= $info_venda['PEV_DESCONTO'] ?? '' ?>">
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-outline-primary w-100">Recalcular Total</button>
+                        </div>
+                    </form>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -121,32 +123,35 @@ $acao_venda = $data['data']['acao_venda'] ?? '';
                     <?php endif; ?>
                 </div>
 
-                <div class="scroll-div">
-                    <table class="table align-middle m-0">
-                        <thead class="sticky-top bg-white border-bottom">
-                            <tr class="small text-muted">
-                                <th>Cód</th>
-                                <th>Descrição</th>
-                                <th>Qtd</th>
-                                <th>Preço Unitário</th>
-                                <th>Sub-Total</th>
-                            </tr>
-                        </thead>
-                        <tbody id="produtos_incluidos_venda">
-                            <tr>
-                                <!-- Preenchido com JavaScript -->
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="d-flex flex-row gap-2 mt-2">
-                    <?php if (count($produtos_pedido) > 0 && $acao_venda == 'update') : ?>
-                        <a href="/faturarVenda/formFaturar/<?= $acao_venda ?>/<?= $id_venda ?>" class="btn btn-primary w-100 py-2">Faturar Pedido</a>
-                    <?php endif; ?>
-                    <?php if (count($produtos_pedido) > 0 && $acao_venda == 'update' || $acao_venda == 'insert') : ?>
-                        <button type="button" class="btn btn-danger w-100 py-2" id="excluir_produto">Excluir Produto</button>
-                    <?php endif; ?>
-                </div>
+                <form method="post" action="/venda/excluirProduto/<?= $id_venda ?>">
+                    <?= Csrf::getHiddenField() ?>
+                    <input type="hidden" name="venda_id" value="<?= $id_venda ?>">
+                    <div class="scroll-div">
+                        <table class="table align-middle m-0">
+                            <thead class="sticky-top bg-white border-bottom">
+                                <tr class="small text-muted">
+                                    <th>Cód</th>
+                                    <th>Descrição</th>
+                                    <th>Qtd</th>
+                                    <th>Preço Unitário</th>
+                                    <th>Sub-Total</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="produtos_incluidos_venda">
+                                <?= linhas_itens_venda($produtos_pedido ?? []) ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex flex-row gap-2 mt-2">
+                        <?php if (count($produtos_pedido) > 0 && $acao_venda == 'update') : ?>
+                            <a href="/faturarVenda/formFaturar/<?= $acao_venda ?>/<?= $id_venda ?>" class="btn btn-primary w-100 py-2">Faturar Pedido</a>
+                        <?php endif; ?>
+                        <?php if (count($produtos_pedido) > 0 && $acao_venda == 'update' || $acao_venda == 'insert') : ?>
+                            <button type="submit" class="btn btn-danger w-100 py-2" id="excluir_produto">Excluir Produto</button>
+                        <?php endif; ?>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -199,8 +204,8 @@ $acao_venda = $data['data']['acao_venda'] ?? '';
                 </div>
 
                 <form action="/venda/<?= $action_form_modal ?>/<?= $id_venda ?>"
-                    <?= Csrf::getHiddenField() ?>
                     method="post" id="form_escolha_prd_modal_venda">
+                    <?= Csrf::getHiddenField() ?>
                     <div class="table-responsive tabela-scroll">
                         <table class="table table-custom m-0">
                             <thead>
@@ -289,8 +294,4 @@ $acao_venda = $data['data']['acao_venda'] ?? '';
             </div>
         </div>
         <?= jsFormHandler() ?>
-        <?= carrega_itens_venda($produtos_pedido ?? []); ?>
-        <?= onChangeTotal(); ?>
-        <?= atualiza_total_subtotal_exclusao() ?>
-        <?= excluir_item_venda($id_venda); ?>
     </div>
