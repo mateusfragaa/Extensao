@@ -11,14 +11,19 @@ class VendaItemModel extends ModelMain
     protected $primaryKey = "PEVI_ID";
     public $validationRules = [];
 
-    public function addProdutoPedido($id_pedido, $produto)
-    {   
-        return $this->db->insert([
-            'pevi_venda_id' => $id_pedido,
-            'pevi_prd_id' => $produto['prd_id'],
-            'pevi_quantidade' => $produto['qtd'],
-            'pevi_preco_unitario' => $produto['valorVenda']
-        ]);       
+    public function addProdutoPedido($id_pedido, $produto, $quantidade)
+    {
+        
+        $pdo = $this->db->dbSelect(
+            'call sp_add_produto_pedido(:id_pedido, :produto, :quantidade)',
+            [
+                ':id_pedido' => $id_pedido,
+                ':quantidade' => $quantidade,
+                ':produto' => $produto
+            ]
+        );
+
+        return  $this->db->dbBuscaArray($pdo);
     }
 
     public function select_produto_venda($id_pedido)

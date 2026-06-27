@@ -49,26 +49,25 @@ class ProdutoModel extends ModelMain
     }
 
     public function getProdutosIds($ids)
-    { 
+    {
+        if (empty($ids)) {
+            return [];
+        }
+
+        $placeholders = [];
+        $params = [];
+
+        foreach ($ids as $key => $id) {
+            $placeholder = ":PRD_ID_{$key}";
+            $placeholders[] = $placeholder;
+            $params[$placeholder] = $id;
+        }
+
         $pdo = $this->db->dbSelect(
-            "SELECT PRD_DESCRICAO FROM {$this->table} WHERE PRD_ID  in (:PRD_ID)",
-            [
-                ':PRD_ID' => $ids
-            ]
+            "SELECT PRD_DESCRICAO FROM {$this->table} WHERE PRD_ID IN (" . implode(',', $placeholders) . ")",
+            $params
         );
         return $this->db->dbBuscaArrayAll($pdo);
-    }
-
-    public function tem_estoque($id_produto, $qtd_produto)
-    {
-        $pdo = $this->db->dbSelect(
-            "SELECT PRD_ID FROM {$this->table} WHERE PRD_ID = :PRD_ID AND PRD_ESTOQUE >= :PRD_QTD", 
-            [
-                ':PRD_ID' => $id_produto,
-                ':PRD_QTD' => $qtd_produto
-            ]
-        );
-        return isset($this->db->dbBuscaArray($pdo)['PRD_ID']);
     }
 
     public function listagem_produtos($ordem) {

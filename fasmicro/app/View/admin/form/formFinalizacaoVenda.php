@@ -1,4 +1,7 @@
 <?php
+
+use Core\Library\Csrf;
+
 $info_venda = $data['data']['info_venda'] ?? [];
 $formas_pagamento = $data['data']['formas_pagamento'] ?? [];
 $recebimentos = $data['data']['recebimentos'] ?? [];
@@ -15,6 +18,7 @@ $recebimentos = $data['data']['recebimentos'] ?? [];
     <?= exibeAlerta() ?>
 
     <form action="/faturarVenda/formFaturar/delete/<?= $info_venda['PEV_ID'] ?>" method="post" id="form_deletar_recebimento">
+        <?= Csrf::getHiddenField() ?>
         <div class="row g-4 mb-4">
 
             <div class="col-md-4 d-flex flex-column gap-4">
@@ -157,9 +161,8 @@ $recebimentos = $data['data']['recebimentos'] ?? [];
                                 <div class="fw-bold fs-2 text-primary">R$ <?= number_format($info_venda['PEV_TOTAL'], 2, ',', '.') ?></div>
                             </div>
                             <div class="col-sm-4">
-                                <a class="btn btn-primary btn-lg w-100 py-3 fw-bold fs-6 shadow-sm" 
-                                    href="/faturarVenda/formFaturar/finalizar/<?= $info_venda['PEV_ID'] ?>"
-                                >
+                                <a class="btn btn-primary btn-lg w-100 py-3 fw-bold fs-6 shadow-sm"
+                                    href="/faturarVenda/formFaturar/finalizar/<?= $info_venda['PEV_ID'] ?>">
                                     <i class="bi bi-check-circle-fill me-2"></i> Confirmar e Faturar Venda
                                 </a>
                             </div>

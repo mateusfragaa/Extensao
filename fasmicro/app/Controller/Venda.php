@@ -84,8 +84,6 @@ class Venda extends ControllerMain
         $this->serviceVenda->cancelar_venda($id);
     }
 
-    // =====================================================================
-    // Formulário da direita
     public function inicioVenda($action)
     {   
         $data = [];
@@ -109,14 +107,21 @@ class Venda extends ControllerMain
     public function editandoVenda($action = '', $id_pedido = 0)
     {
         $data = [];
+
         if ($action == 'update' && $_SERVER['REQUEST_METHOD'] == 'POST') {
-            $this->serviceVenda->addProdutoPedido($id_pedido, $_POST);
+
+            $produtos = $this->serviceVenda->validaProdutosSelecionados($_POST);
+
+            if (!empty($produtos)) {
+                $this->serviceVenda->addProdutoPedido($id_pedido, $produtos);
+            }
         }
         
-        $data['action_form'] = 'update';
         if ($action == 'insert') {      
+            $data['action_form'] = 'update';
             $data['action_form_modal'] = 'inicioVenda/insert';
         }elseif($action == 'update') {
+            $data['action_form'] = 'update';
             $data['action_form_modal'] = '/formVenda/update';
         }elseif($action == 'cancelar'){
             $data['action_form'] = 'cancelar';
@@ -124,6 +129,8 @@ class Venda extends ControllerMain
         elseif($action == 'delete') {
             $data['action_form'] = 'delete';
         }
+
+        
 
         $data['produtos'] = $this->serviceVenda->listaProduto('prd_descricao');
         $data['produtos_pedidos'] = $this->serviceVenda->select_produto_venda($id_pedido);
@@ -147,7 +154,7 @@ class Venda extends ControllerMain
         $ids = $_POST['produtos_excluir'] ?? [];
 
         if (count($ids) > 0) {
-            if ($this->serviceVenda->excluirProduto($ids)) {
+            if ($this->serviceVenda->excluirProduto($ids, $id_pedido)) {
                 Redirect::page("venda/formVenda/update/$id_pedido", ['msgSucesso' => 'Produto(s) excluído(s) com sucesso']);
             } else {
                 Redirect::page("venda/formVenda/update/$id_pedido", ['msgError' => 'Erro ao excluir produto(s)']);

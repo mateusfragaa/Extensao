@@ -40,7 +40,6 @@ class PedidoVenda
                 !$id_pedido_criado ||
                 empty($this->vendaModel->getVenda($id_pedido_criado))
             ) {
-                // Session::destroy('id_pedido_editando');
 
                 $id_pedido_criado = $this->criarPedido();
 
@@ -58,6 +57,12 @@ class PedidoVenda
 
     public function calcularTotal($acrescimo, $desconto, $venda)
     {
+        $venda = $this->getVenda($venda);
+        if (isset($venda['PEV_STATUS']) && in_array($venda['PEV_STATUS'], ['F', 'C'])) {
+            Session::set('msgError', 'Não e possível aplicar desconto ou acréscimo em pedido faturado');
+            Redirect::page("faturarVenda/formFaturar/receber/".$venda['PEV_ID']);
+            exit;
+        }
         // Lógica de validação
         $pedido_venda = $this->vendaModel->getVenda($venda);
         // Desconto não pode maior que o valor total da venda
@@ -84,6 +89,11 @@ class PedidoVenda
 
     public function updateVenda($post, $id_pedido)
     {
+        $venda = $this->getVenda($id_pedido);
+        if (isset($venda['PEV_STATUS']) && in_array($venda['PEV_STATUS'], ['F', 'C'])) {
+            return false;
+        }
+
         $post = [
             'PEV_ID' => $id_pedido,
             'pev_data_venda' => $post['data_venda'],
@@ -110,9 +120,12 @@ class PedidoVenda
         return $this->vendaItemModel->select_produto_venda($id);
     }
 
-    public function excluirProduto($id_produtos)
+    public function excluirProduto($id_produtos, $id_pedido)
     {
-        // Lógica para apagar os produtos com base na sequencia venda item
+        $venda = $this->getVenda($id_pedido);
+        if (isset($venda['PEV_STATUS']) && in_array($venda['PEV_STATUS'], ['F', 'C'])) {
+            return false;
+        }
         return $this->vendaItemModel->apagarProdutoPedido($id_produtos);
     }
 
@@ -123,36 +136,25 @@ class PedidoVenda
 
     public function addProdutoPedido($id_pedido, $post_produtos)
     {
-        $produtos_erro_inserir = [];
 
-        $resultado = match (isset($post_produtos['produto'])) {
-            true => $this->validaProdutosSelecionados($post_produtos),
-            false => $post_produtos
-        };
-
-        if (count($resultado) > 0) {
-            foreach ($resultado as $key => $value) {
-
-                if ($this->produtoModel->tem_estoque($value['prd_id'], $value['qtd'])) {
-                    $this->vendaItemModel->addProdutoPedido($id_pedido, $value);
-                    continue;
-                }
-                array_push($produtos_erro_inserir, $value['prd_id']);
-            }
+        $venda = $this->getVenda($id_pedido);
+        if (isset($venda['PEV_STATUS']) && in_array($venda['PEV_STATUS'], ['F', 'C'])) {
+            return false;
         }
 
-        if (count($produtos_erro_inserir) > 0) {
-            $produtos = $this->produtoModel->getProdutosIds($produtos_erro_inserir);
-            $descricao = array_map(function ($p) {
-                return $p['PRD_DESCRICAO'];
-            }, $produtos);
-            Session::set("msgError", "Erro ao inserir o(s) produto(s) : " . implode(', ', $descricao));
+        foreach ($post_produtos as $key => $value) {
+            $mensagem = $this->vendaItemModel->addProdutoPedido($id_pedido, $value['prd_id'], $value['qtd']);
+            if (!$mensagem['sucesso']) {
+                Redirect::page("venda/formVenda/update/$id_pedido", [$mensagem['mensagem']]);
+                exit;
+            }
         }
     }
 
     public function validaProdutosSelecionados($post_produtos)
     {
         $resultado = [];
+        
 
         if (!isset($post_produtos['produto']) || !is_array($post_produtos['produto'])) {
             return $resultado;

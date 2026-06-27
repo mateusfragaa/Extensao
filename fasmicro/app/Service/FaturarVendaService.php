@@ -29,7 +29,15 @@ class FaturarVendaService{
     }
 
     public function gravarRecebimento($recebimento,$id_pedido)
-    {   
+    {
+
+        $venda = $this->vendaModel->getVenda($id_pedido);
+        if (isset($venda['PEV_STATUS']) && in_array($venda['PEV_STATUS'], ['F', 'C'])) {
+            Session::set('msgError', 'Não e possível adicionar mais recebimentos em um pedido faturado');
+            Redirect::page("faturarVenda/formFaturar/receber/$id_pedido");
+            exit;
+        }
+
         if (
             $recebimento['forma_pagamento'] <= 0 ||
             $recebimento['quantidade'] <= 0 || !is_numeric($recebimento['quantidade']) ||
@@ -56,6 +64,20 @@ class FaturarVendaService{
 
     public function excluir_recebimento($post,$id_pedido)
     {
+
+        $venda = $this->vendaModel->getVenda($id_pedido);
+        if (isset($venda['PEV_STATUS']) && in_array($venda['PEV_STATUS'], ['F', 'C'])) {
+            Session::set('msgError', 'Não e possível excluir o recebimento de pedido faturado');
+            Redirect::page("faturarVenda/formFaturar/receber/$id_pedido");
+            exit;
+        }
+
+        if (!isset($post['recebimentos_selecionados'])) {
+            Session::set('msgError', 'Selecione um recebimento para excluir');
+            Redirect::page("faturarVenda/formFaturar/receber/$id_pedido");
+            exit;
+        }
+
         if($this->recebimentoModel->apagar_recebimento($post['recebimentos_selecionados'])){
             Session::set('msgSucesso', 'Recebimento removido com sucesso!');
             Redirect::page("faturarVenda/formFaturar/receber/$id_pedido");
@@ -69,7 +91,7 @@ class FaturarVendaService{
     public function finalizar_venda($id_pedido)
     {
         $mensagem = $this->vendaModel->finalizar_venda($id_pedido);
-        var_dump($mensagem); die();
+        // var_dump($mensagem); die();
         if (!$mensagem[0]['sucesso']) {
             Session::set('msgError', $mensagem[0]['mensagem']);
             Redirect::page("faturarVenda/formFaturar/receber/$id_pedido");
