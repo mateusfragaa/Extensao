@@ -9,15 +9,15 @@ $rec_status = $data['data']['status_rec'] ?? [];
             <p class="text-muted small m-0">Gerencie contas recebidas com facilidade.</p>
         </div>
         <div>
-            <a class="btn btn-primary-custom shadow-sm" href="/recebimento/formRecebimento">
+            <a class="btn btn-primary-custom shadow-sm" href="/recebimento/formRecebimento/">
                 <i class="bi bi-plus-lg me-2"></i> Novo Recebimento
             </a>
-            <a class="btn btn-primary-custom shadow-sm" href="/recebimento/bordero">
+            <a class="btn btn-primary-custom shadow-sm" href="/baixarRecebimento/formBaixar">
                 <i class="bi bi-plus-lg me-2"></i> Baixar Recebimento
             </a>
         </div>
     </div>
-
+    <?= exibeAlerta() ?>
     <div class="row g-3 mb-4">
         <div class="col-md-4">
             <div class="card card-custom stat-card p-3 shadow-sm">
@@ -93,10 +93,14 @@ $rec_status = $data['data']['status_rec'] ?? [];
                             <td class="fw-bold">R$ <?= number_format($rec['REC_VALOR'], 2, ',', '.') ?></td>
                             <td><span class="badge-financeiro status-pago"><?= $rec_status[$rec['REC_STATUS']] ?></span></td>
                             <td class="text-end">
-                                <a href="/venda/formVenda/cancelar/" class="btn btn-sm btn-light border" title="Cencelar"><i class="bi bi-x text-warning"></i></a>
-                                <button class="btn btn-sm btn-light border" title="Editar"><i class="bi bi-eye text-primary"></i></button>
-                                <button class="btn btn-sm btn-light border"><i class="bi bi-pencil"></i></button>
-                                <button class="btn btn-sm btn-light border text-danger"><i class="bi bi-trash"></i></button>
+                                <a href="/Recebimento/formRecebimento/cancelar/<?= $rec['REC_ID'] ?>" class="btn btn-sm btn-light border" title="Cencelar"><i class="bi bi-x text-warning"></i></a>
+                                <a href="/Recebimento/formRecebimento/view/<?= $rec['REC_ID'] ?>" class="btn btn-sm btn-light border" title="View"><i class="bi bi-eye text-primary"></i></a>
+                                <a class="btn btn-sm btn-light border me-1" title="Editar" href="/Recebimento/formRecebimento/update/<?= $rec['REC_ID'] ?>">
+                                    <i class="bi bi-pencil "></i>
+                                </a>
+                                <a class="btn btn-sm btn-light border" title="Excluir" href="/Recebimento/formRecebimento/delete/<?= $rec['REC_ID'] ?>">
+                                    <i class=" bi bi-trash text-danger"></i>
+                                </a>
                             </td>
                         </tr>
                     <?php endforeach; ?>

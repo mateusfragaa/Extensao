@@ -4,6 +4,7 @@ namespace App\Model;
 
 use Core\Library\ModelMain;
 use Core\Library\Session;
+use Override;
 
 class RecebimentoModel extends ModelMain
 {
@@ -13,7 +14,7 @@ class RecebimentoModel extends ModelMain
     public $status_recebimento = [
         'A' => 'Aberto',
         'B' => 'Baixado',
-        'PB' => 'Parcialmente baixado',
+        'P' => 'Parcialmente baixado',
         'C' => 'Cancelado',
     ];
 
@@ -76,14 +77,38 @@ class RecebimentoModel extends ModelMain
                     TD.TDC_DESCRICAO
                 FROM
                     tb_recebimento R
-                inner join tb_pedido_venda V
-                    on r.REC_VENDA_ID = v.PEV_ID
                 INNER JOIN tb_pessoa P
-                    ON V.PEV_CLIENTE_ID = P.PES_ID
+                    ON R.REC_DEVEDOR_ID = P.PES_ID
                 INNER JOIN tb_tipo_documento TD
                     ON R.REC_TIPO_DOCUMENTO_ID = TD.TDC_ID
             ", []);
 
         return $this->db->dbBuscaArrayAll($pdo);
+    }
+
+    public function update_recebimento(array $dados)
+    {
+        return $this->db->dbUpdate(
+            "UPDATE tb_recebimento
+        SET
+            REC_VALOR = :rec_valor,
+            REC_STATUS = :rec_status,
+            REC_OBSERVACAO = :rec_observacao,
+            REC_DEVEDOR_ID = :rec_devedor_id,
+            REC_VENCIMENTO = :rec_vencimento,
+            REC_DATA_BAIXA = :rec_data_baixa,
+            REC_TIPO_DOCUMENTO_ID = :rec_tipo_documento_id
+        WHERE REC_ID = :rec_id",
+            [
+                ':rec_valor' => $dados['rec_valor'],
+                ':rec_status' => $dados['rec_status'],
+                ':rec_observacao' => $dados['rec_observacao'],
+                ':rec_devedor_id' => $dados['rec_devedor_id'],
+                ':rec_vencimento' => $dados['rec_vencimento'],
+                ':rec_data_baixa' => !empty($dados['rec_data_baixa']) ? $dados['rec_data_baixa'] : null,
+                ':rec_tipo_documento_id' => $dados['rec_tipo_documento_id'],
+                ':rec_id' => $dados['REC_ID']
+            ]
+        );
     }
 }

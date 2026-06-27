@@ -1,3 +1,7 @@
+<?php
+
+?>
+
 <div class="container-fluid p-4" style="max-height: 100vh; overflow-y: hidden;">
 
     <div class="d-flex justify-content-between align-items-center mb-3">

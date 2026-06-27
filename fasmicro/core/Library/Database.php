@@ -855,6 +855,8 @@ class Database
             $updData = array_merge(array_values($data), $this->params);
 
             $query  = $this->connect()->prepare($sql);
+            // var_dump($query, $data);
+            // die();
             $query->execute($updData);
 
             $rs = $query->rowCount();
