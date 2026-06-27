@@ -1,12 +1,21 @@
+<?php
+$recebimentos = $data['data']['recebimentos'] ?? [];
+$rec_status = $data['data']['status_rec'] ?? [];
+?>
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="fw-bold m-0">Contas a Receber</h4>
             <p class="text-muted small m-0">Gerencie contas recebidas com facilidade.</p>
         </div>
-        <a class="btn btn-primary-custom shadow-sm" href="/recebimento/formRecebimento">
-            <i class="bi bi-plus-lg me-2"></i> Novo Recebimento
-        </a>
+        <div>
+            <a class="btn btn-primary-custom shadow-sm" href="/recebimento/formRecebimento">
+                <i class="bi bi-plus-lg me-2"></i> Novo Recebimento
+            </a>
+            <a class="btn btn-primary-custom shadow-sm" href="/recebimento/bordero">
+                <i class="bi bi-plus-lg me-2"></i> Baixar Recebimento
+            </a>
+        </div>
     </div>
 
     <div class="row g-3 mb-4">
@@ -46,14 +55,14 @@
                     <label class="form-label small fw-bold text-muted">Status</label>
                     <select class="form-select">
                         <option selected>Todos os Status</option>
-                        <option>Pago</option>
-                        <option>Em aberto</option>
-                        <option>Atrasado</option>
+                        <?php foreach ($rec_status as $key => $status): ?>
+                            <option value="<?= $key ?>"><?= $status ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label small fw-bold text-muted">Vencimento</label>
-                    <input type="month" class="form-control" value="2026-03">
+                    <input type="date" class="form-control" value="2026-03">
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
                     <button class="btn btn-outline-primary w-100 fw-bold">Filtrar</button>
@@ -76,23 +85,26 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td class="text-muted">28/03/2026</td>
-                        <td class="fw-bold text-dark">Supermercado Silva</td>
-                        <td>Fatura #9982 - Venda de Produtos</td>
-                        <td class="fw-bold">R$ 2.400,00</td>
-                        <td><span class="badge-financeiro status-pago">Pago</span></td>
-                        <td class="text-end">
-                            <button class="btn btn-sm btn-light border" title="Editar"><i class="bi bi-eye text-primary"></i></button>
-                            <button class="btn btn-sm btn-light border"><i class="bi bi-pencil"></i></button>
-                            <button class="btn btn-sm btn-light border text-danger"><i class="bi bi-trash"></i></button>
-                        </td>
-                    </tr>
+                    <?php foreach ($recebimentos as $rec) : ?>
+                        <tr>
+                            <td class="text-muted"><?= $rec['REC_VENCIMENTO'] ?></td>
+                            <td class="fw-bold text-dark"><?= $rec['PES_NOME'] ?></td>
+                            <td><?= $rec['REC_OBSERVACAO'] ?></td>
+                            <td class="fw-bold">R$ <?= number_format($rec['REC_VALOR'], 2, ',', '.') ?></td>
+                            <td><span class="badge-financeiro status-pago"><?= $rec_status[$rec['REC_STATUS']] ?></span></td>
+                            <td class="text-end">
+                                <a href="/venda/formVenda/cancelar/" class="btn btn-sm btn-light border" title="Cencelar"><i class="bi bi-x text-warning"></i></a>
+                                <button class="btn btn-sm btn-light border" title="Editar"><i class="bi bi-eye text-primary"></i></button>
+                                <button class="btn btn-sm btn-light border"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-light border text-danger"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
         <div class="card-footer bg-white border-0 p-3 text-center border-top">
-            <small class="text-muted">Total de 3 registros encontrados</small>
+            <small class="text-muted">Total de <?= count($recebimentos) ?> registros encontrados</small>
         </div>
     </div>
 </div>

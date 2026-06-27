@@ -12,7 +12,7 @@
     require_once ".." . DIRECTORY_SEPARATOR . "vendor" . DIRECTORY_SEPARATOR . "autoload.php";
     require_once ".." . DIRECTORY_SEPARATOR . "app" . DIRECTORY_SEPARATOR . "Config" . DIRECTORY_SEPARATOR . "Constants.php";
 
-    var_dump($_SESSION);
+    // var_dump($_SESSION);
 
     // seta timezone da aplicação
     date_default_timezone_set(DEFAULT_TIME_ZONE);
