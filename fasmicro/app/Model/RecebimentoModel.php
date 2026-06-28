@@ -169,7 +169,11 @@ class RecebimentoModel extends ModelMain
         // Usamos CASE para somar valores dependendo do status e data
         $sql = "
         SELECT 
-            SUM(REC_VALOR) AS total_geral,
+            SUM(CASE
+        WHEN REC_STATUS NOT IN ('C', 'B')
+        THEN REC_VALOR_ABERTO
+        ELSE 0
+    END) AS total_geral,
             SUM(CASE 
                 WHEN REC_STATUS IN ('B', 'P') AND MONTH(REC_DATA_BAIXA) = MONTH(CURRENT_DATE()) 
                 THEN REC_VALOR_PAGO 
