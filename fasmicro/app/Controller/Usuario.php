@@ -9,7 +9,7 @@ class Usuario extends ControllerMain
     public function __construct()
     {
         parent::__construct(); // Chama o construtor do framework
-        $this->loadHelper('formHelper'); // Carrega as funções de alerta e formulário
+        $this->loadHelper(['formHelper', 'usuarioHelper']); // Carrega as funções de alerta e formulário
     }
 
 

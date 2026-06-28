@@ -7,19 +7,19 @@
         <a class="btn btn-primary-custom shadow-sm" href="/usuario/formUsuario">
             <i class="bi bi-person-plus-fill me-2"></i> Novo Usuário
         </a>
-        
+
     </div>
     <?php echo exibeAlerta(); ?>
     <div class="card card-custom mb-4">
 
         <div class="card-body p-3">
-            <form class="row g-2">
-                <div class="col-md-10">
+            <form class="row g-2" id="form_filtro_usuario">
+                <div class=" col-md-10">
                     <div class="input-group">
                         <span class="input-group-text bg-white border-end-0"><i
                                 class="bi bi-search text-muted"></i></span>
                         <input type="text" class="form-control border-start-0"
-                            placeholder="Buscar por nome ou login...">
+                            placeholder="Buscar por nome ou login..." id="filtro_nome">
                     </div>
                 </div>
                 <div class="col-md-2">
@@ -31,7 +31,7 @@
 
     <div class="card card-custom overflow-hidden">
         <div class="table-responsive">
-            <table class="table table-custom m-0">
+            <table class="table table-custom m-0" id="tabela_usuario">
                 <thead>
                     <tr>
                         <th style="width: 80px;">Cód.</th>
@@ -48,7 +48,9 @@
                         </tr>
                     <?php else: ?>
                         <?php foreach ($data['usuarios'] as $user): ?>
-                            <tr>
+                            <tr
+                                data-nome="<?= strtolower($user['USU_NOME']) ?>"
+                                data-login="<?= strtolower($user['USU_LOGIN']) ?>">
                                 <td class="text-muted fw-bold"><?= $user['USU_ID'] ?></td>
                                 <td>
                                     <div class="d-flex align-items-center">
@@ -83,3 +85,4 @@
         </div>
     </div>
 </div>
+<?= usuarioFiltro() ?>

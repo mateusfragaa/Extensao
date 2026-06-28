@@ -11,7 +11,7 @@ use Core\Library\Csrf;
             <i class="bi bi-plus-lg me-2"></i> Novo Tipo
         </a>
     </div>
-
+    <?= exibeAlerta() ?>
     <div class="card card-custom mb-4">
         <div class="card-body p-3">
             <?php exibeAlerta(); ?>
