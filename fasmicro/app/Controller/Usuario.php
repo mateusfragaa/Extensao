@@ -47,7 +47,6 @@ class Usuario extends ControllerMain
         $this->view('admin/form/formUsuario', ['usuario' => $dadosUsuario], 'sistema');
     }
 
-
     public function salvar()
     {
         $post = $this->getRotaParametros()['post'];
@@ -147,10 +146,7 @@ class Usuario extends ControllerMain
 
         exit;
     }
-
-
-
-
+    
     public function excluir($id)
     {
         $dados['USU_ID'] = $id;
