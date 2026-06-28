@@ -90,7 +90,8 @@ $metricas = $data['data']['metricas'] ?? [];
 
 
                             <td class="text-muted"><?= date('d/m/Y', strtotime($rec['REC_VENCIMENTO'])) ?></td>
-                            <td class="fw-bold text-dark"><?= $rec['PES_NOME'] ?></td>
+                            <td class="fw-bold text-dark">
+                                <?= strlen($rec['PES_NOME']) > 15 ? substr($rec['PES_NOME'], 0, 15) . '...' : $rec['PES_NOME'] ?></td>
                             <td><?= $rec['REC_OBSERVACAO'] ?></td>
                             <td class="fw-bold">R$ <?= number_format($rec['REC_VALOR'], 2, ',', '.') ?></td>
                             <td><span class="badge-financeiro status-pago"><?= $rec_status[$rec['REC_STATUS']] ?></span></td>

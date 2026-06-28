@@ -1,3 +1,6 @@
+<?php
+use Core\Library\Csrf;
+?>
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -17,6 +20,7 @@
         <div class="card-body p-4">
             <div class="row">
                 <form action="/produto/filtroListagemProduto" method="post" class="d-flex gap-3">
+                    <?= Csrf::getHiddenField() ?>
                     <div class="col-md-4">
                         <label class="form-label small fw-bold text-muted">Pesquisar Produto</label>
                         <div class="input-group">
