@@ -129,7 +129,7 @@ class Recebimento extends ControllerMain
         $idGerado = $this->model->insert2($post);
 
         if ($idGerado) {
-            Redirect::page('recebimento/formRecebimento/', ['msgSucesso' => 'Sucesso ao inserir registro, novo produto : ' . $idGerado]);
+            Redirect::page('recebimento/formRecebimento/', ['msgSucesso' => 'Sucesso ao inserir registro, novo recebimento : ' . $idGerado]);
         } else {
             Redirect::page('recebimento/', ['msgError' => 'Erro ao gravar recebimento']);
         }

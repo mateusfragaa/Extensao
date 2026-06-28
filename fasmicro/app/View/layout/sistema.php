@@ -26,8 +26,9 @@
     <style>
         /* Hamburger toggler visível em telas pequenas */
         .navbar-toggler {
-            border-color: rgba(0,0,0,.2);
+            border-color: rgba(0, 0, 0, .2);
         }
+
         /* Em mobile: empilha nome e botão Sair dentro do collapse */
         @media (max-width: 991.98px) {
             .right-actions {
@@ -50,11 +51,11 @@
 
             <!-- Botão hamburguer — aparece em telas < lg -->
             <button class="navbar-toggler" type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#navbarMenu"
-                    aria-controls="navbarMenu"
-                    aria-expanded="false"
-                    aria-label="Abrir menu">
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarMenu"
+                aria-controls="navbarMenu"
+                aria-expanded="false"
+                aria-label="Abrir menu">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
@@ -87,7 +88,7 @@
                     <?php if (temPermissao('Despesa') || temPermissao('Pagamento')): ?>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
+                                data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-credit-card"></i> Despesas
                             </a>
 
@@ -161,6 +162,7 @@
     </nav>
 
     <main>
+        <?= exibeAlerta() ?>
         <?= $content ?>
     </main>
 
