@@ -84,11 +84,32 @@
                         </li>
                     <?php endif; ?>
 
-                    <?php if (temPermissao('Pagamento')): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/pagamento">
-                                <i class="bi bi-credit-card"></i> Pagamentos
+                    <?php if (temPermissao('Despesa') || temPermissao('Pagamento')): ?>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-credit-card"></i> Despesas
                             </a>
+
+                            <ul class="dropdown-menu">
+
+                                <?php if (temPermissao('Despesa')): ?>
+                                    <li>
+                                        <a class="dropdown-item" href="/despesa?status=A">
+                                            <i class="bi bi-cash-stack"></i> Despesas
+                                        </a>
+                                    </li>
+                                <?php endif; ?>
+
+                                <?php if (temPermissao('Pagamento')): ?>
+                                    <li>
+                                        <a class="dropdown-item" href="/pagamento">
+                                            <i class="bi bi-wallet2"></i> Pagamentos
+                                        </a>
+                                    </li>
+                                <?php endif; ?>
+
+                            </ul>
                         </li>
                     <?php endif; ?>
 
