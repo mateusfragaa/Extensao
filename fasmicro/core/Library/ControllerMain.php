@@ -57,7 +57,7 @@ class ControllerMain
         $this->onConstruct();
 
         // Carregamento de helpers globais (padrão do professor)
-        $this->loadHelper(['url', 'data', 'formHelper']);
+        $this->loadHelper(['url', 'data', 'formHelper', 'debugHelper']);
 
         // Carregamento do model default do controller
         $this->model = $this->loadModel($this->controller);
