@@ -5,10 +5,9 @@ use Core\Library\Csrf;
 $pessoas = $data['data']['pessoas'] ?? [];
 $documentos = $data['data']['documentos'] ?? [];
 $recebimento = $data['data']['recebimento'] ?? [];
-$id = $data['data']['recebimento']['REC_ID'] ?? [];
+$id = $data['data']['recebimento']['REC_ID'] ?? 0;
 $status = $data['data']['status'] ?? [];
 $action = $data['data']['action'] ?? 'insert';
-var_dump("/recebimento/formRecebimento/<?= $action ?>/<?= $id ?>");
 ?>
 <div class="container py-5">
     <div class="d-flex align-items-center mb-4">
@@ -33,7 +32,8 @@ var_dump("/recebimento/formRecebimento/<?= $action ?>/<?= $id ?>");
                     <?php foreach ($pessoas as $pes): ?>
                         <option
                             value="<?= $pes['PES_ID'] ?>"
-                            <?= $pes['PES_ID'] == $recebimento['REC_DEVEDOR_ID'] ? 'selected' : '' ?>>
+                            <?= $pes['PES_ID'] == (isset($recebimento['REC_DEVEDOR_ID']) ? $recebimento['REC_DEVEDOR_ID'] : 0)
+                                ? 'selected' : '' ?>>
                             <?= $pes['PES_NOME'] ?>
                         </option>
                     <?php endforeach; ?>
@@ -41,28 +41,28 @@ var_dump("/recebimento/formRecebimento/<?= $action ?>/<?= $id ?>");
             </div>
             <div class="col-md-6">
                 <label class="form-label">Data criação</label>
-                <input type="text" class="form-control" value="<?= $recebimento['REC_CREATED_AT'] ?>" disabled>
+                <input type="text" class="form-control" value="<?= isset($recebimento['REC_CREATED_AT']) ? $recebimento['REC_CREATED_AT'] : '' ?>" disabled>
             </div>
 
             <div class="col-md-3">
                 <label class="form-label">Valor (R$)</label>
-                <input type="number" step="0.01" class="form-control" name="rec_valor" value="<?= $recebimento['REC_VALOR'] ?>">
+                <input type="number" step="0.01" class="form-control" name="rec_valor" value="<?= (isset($recebimento['REC_VALOR']) ? $recebimento['REC_VALOR'] : '') ?>">
             </div>
             <div class="col-md-3">
                 <label class="form-label">Data de Vencimento</label>
-                <input type="date" class="form-control" name="rec_vencimento" value="<?= $recebimento['REC_VENCIMENTO'] ?>">
+                <input type="date" class="form-control" name="rec_vencimento" value="<?= (isset($recebimento['REC_VENCIMENTO']) ? $recebimento['REC_VENCIMENTO'] : 0) ?>">
             </div>
             <div class="col-md-3">
                 <label class="form-label">Data de Recebimento</label>
-                <input type="date" class="form-control" name="rec_data_baixa" value="<?= $recebimento['REC_DATA_BAIXA'] ?>">
+                <input type="date" class="form-control" name="rec_data_baixa" value="<?= (isset($recebimento['REC_DATA_BAIXA']) ? $recebimento['REC_DATA_BAIXA'] : 0) ?>" disabled>
             </div>
             <div class="col-md-3">
                 <label class="form-label">Status</label>
-                <select class="form-select" name="rec_status">
+                <select class="form-select" name="rec_status" onmousedown="return false;" onkeydown="return false;">
                     <?php foreach ($status as $key => $descricao): ?>
                         <option
                             value="<?= $key ?>"
-                            <?= $key == $recebimento['REC_STATUS'] ? 'selected' : '' ?>>
+                            <?= $key == (isset($recebimento['REC_STATUS']) ? $recebimento['REC_STATUS'] : 0) ? 'selected' : '' ?>>
                             <?= $descricao ?>
                         </option>
                     <?php endforeach; ?>
@@ -75,7 +75,7 @@ var_dump("/recebimento/formRecebimento/<?= $action ?>/<?= $id ?>");
                     <?php foreach ($documentos as $key => $rec): ?>
                         <option
                             value="<?= $rec['TDC_ID'] ?>"
-                            <?= $rec['TDC_ID'] == $recebimento['REC_TIPO_DOCUMENTO_ID'] ? 'selected' : '' ?>>
+                            <?= $rec['TDC_ID'] == (isset($recebimento['REC_TIPO_DOCUMENTO']) ? $recebimento['REC_TIPO_DOCUMENTO'] : 0) ? 'selected' : '' ?>>
                             <?= $rec['TDC_DESCRICAO'] ?>
                         </option>
                     <?php endforeach; ?>

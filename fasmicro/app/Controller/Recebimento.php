@@ -10,7 +10,7 @@ class Recebimento extends ControllerMain
     private $recebimentoService;
     public function __construct()
     {
-        $this->loadHelper(['formHelper']);
+        $this->loadHelper(['formHelper','recebimentoHelper']);
         $this->recebimentoService = $this->loadService('recebimento');
         return parent::__construct();
     }
@@ -18,6 +18,7 @@ class Recebimento extends ControllerMain
     public function index()
     {
         $data = [];
+        $data['metricas'] = $this->recebimentoService->getMetricas();
         $data["recebimentos"] = $this->model->buscar_recebimento_completo();
         $data["status_rec"] = $this->model->getStatus();
 
@@ -54,8 +55,13 @@ class Recebimento extends ControllerMain
                     return;
                 }
                 break;
-            default:
-                $data["action"] = "view";
+            case 'cancelar':
+                $data["action"] = "cancelar";
+
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $this->delete($id);
+                    return;
+                }
                 break;
         }
         

@@ -6,6 +6,7 @@ use App\Model\TipoDocumentoModel;
 use App\Model\RecebimentoModel;
 use App\Model\VendaModel;
 use App\Model\PessoaModel;
+use App\Model\RecebimentoItemModel;
 use Core\Library\Redirect;
 use Core\Library\Session;
 
@@ -14,12 +15,14 @@ class RecebimentoService
     private $vendaModel;
     private $tipoDocumentoModel;
     private $recebimentoModel;
+    private $recebimentoItemModel;
     private $pessoaModel;
 
     public function __construct()
     {
         $this->tipoDocumentoModel = new TipoDocumentoModel();
         $this->recebimentoModel = new RecebimentoModel();
+        $this->recebimentoItemModel = new RecebimentoItemModel();
         $this->vendaModel = new VendaModel();
         $this->pessoaModel = new PessoaModel();
     }
@@ -44,6 +47,21 @@ class RecebimentoService
         return $this->recebimentoModel->buscar_recebimento_completo();
     }
 
+    public function getMetricas()
+    {
+        return $this->recebimentoModel->buscar_metricas_recebimento();
+    }
+
+    public function lista_recebimentos_baixa()
+    {
+        return $this->recebimentoModel->buscar_recebimento_completo_baixa();
+    }
+
+    public function lista_recebimentos_itens()
+    {
+        return $this->recebimentoItemModel->buscar_itens_por_data();
+    }
+
     public function update(array $dados)
     {
         return $this->recebimentoModel->update_recebimento($dados);
@@ -53,6 +71,34 @@ class RecebimentoService
     {
         return $this->recebimentoModel->apagar_recebimento([$id]);
     }
-    
 
+    public function baixarRecebimentos(array $post)
+    {
+        if (empty($post['recebimentos_ids'])) {
+            Session::set('msgError', 'Selecione ao menos um recebimento.');
+            return false;
+        }
+
+        $valorPago = str_replace(',', '.', $post['valor_pago']);
+
+        return $this->recebimentoModel->baixar_recebimento(
+            $post['recebimentos_ids'],
+            $valorPago,
+            $post['forma_pagamento']
+        );
+    }
+
+    public function apagar_recebimento_item($post)
+    {
+        $ids = $post['recebimentos_ids'];
+        $this->recebimentoItemModel->apagar_recebimento_item($ids);
+    }
+
+    public function receber_recebimento($post)
+    {
+        $ids = $post['recebimentos_ids'];
+        $forma_pagamento = $post['forma_pagamento'];
+        $valor_pago = $post['valor_pago'];
+        $this->recebimentoModel->baixar_recebimento($ids, $forma_pagamento, $valor_pago);
+    }
 }

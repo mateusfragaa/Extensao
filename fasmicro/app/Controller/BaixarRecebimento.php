@@ -19,28 +19,28 @@ class BaixarRecebimento extends ControllerMain
 
     public function formBaixar($acao, $id_pedido)
     {
-        $data = [];
-        $data["recebimentos"] = $this->serviceRecebimento->lista_recebimentos();
 
         switch ($acao) {
             case 'insert':
                 $data['recebimentos'] = $this->serviceRecebimento->gravarRecebimento($_POST, $id_pedido);
                 break;
             case 'delete':
-                $data['recebimentos'] = $this->serviceRecebimento->excluir_recebimento($_POST, $id_pedido);
+                $this->serviceRecebimento->apagar_recebimento_item($_POST);
                 break;
-            case 'finalizar':
-                $data['recebimentos'] = $this->serviceRecebimento->finalizar_venda($id_pedido);
+            case 'receber':
+                $this->serviceRecebimento->receber_recebimento($_POST);
                 break;
         }
 
-
-
+        $data = [];
+        $data["recebimentos"] = $this->serviceRecebimento->lista_recebimentos();
+        $data["recebimentos_baixa"] = $this->serviceRecebimento->lista_recebimentos_baixa();
+        $data["recebimentos_item"] = $this->serviceRecebimento->lista_recebimentos_itens();
+        $data["documentos"] = $this->serviceRecebimento->lista_tipo_documento();
         $data["status_rec"] = $this->serviceRecebimento->lista_status();
-
         $this->view(
             'admin/form/formFinalizacaoRecebimento',
-            [],
+            ["data" => $data],
             'sistema'
         );
     }
