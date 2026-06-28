@@ -61,7 +61,7 @@
                                 <td><?= $user['USU_LOGIN'] ?></td>
                                 <td><span class="badge-access bg-admin"><?= $user['USU_NIVEL'] ?></span></td>
                                 <td class="text-end">
-                                    <a href="/usuario/formUsuarioView/<?= $user['USU_ID'] ?>" class=" btn btn-sm btn-light border" title="Editar"><i
+                                    <a href="/usuario/formUsuario/<?= $user['USU_ID'] ?>" class=" btn btn-sm btn-light border" title="Editar"><i
                                             class="bi bi-eye text-primary"></i></a>
                                     <a href="/usuario/formUsuario/<?= $user['USU_ID'] ?>">
                                         <button class="btn btn-sm btn-light border" title="Editar"><i
