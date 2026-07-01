@@ -207,7 +207,7 @@ class ControllerMain
                 // 4. Usamos dbInsert para inserir
                 $db->dbInsert($sqlInsert, $dados);
 
-                \Core\Library\Session::set('msgSucesso', 'Sistema inicializado! Use login "admin" e senha "123456".');
+                \Core\Library\Session::set('msgSucesso', 'Sistema inicializado!');
             }
         } catch (\Exception $e) {
         }

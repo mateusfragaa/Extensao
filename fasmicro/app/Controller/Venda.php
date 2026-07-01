@@ -99,6 +99,8 @@ class Venda extends ControllerMain
     // =====================================================================
     public function calculaTotalVenda($id_pedido)
     {
+        // unset($_POST['csrf_token']);
+       
         $this->serviceVenda->calcularTotal($_POST['acrescimo'] ?? 0, $_POST['desconto'] ?? 0, $id_pedido);
         Redirect::page("venda/formVenda/update/$id_pedido");
     }

@@ -25,8 +25,8 @@ defined('API_VERSION') || define('API_VERSION', 1);
 
 // Definição de permissões por nível
 defined("PERMISSOES") || define("PERMISSOES", [
-    "admin"      => ["Usuario", "Pessoa", "Produto", "Venda", "Despesa", "Pagamento", "Recebimento", "HomeSistema", "FaturarVenda", "BaixarRecebimento", "TipoDocumento"],
-    "vendedor"   => ["Pessoa", "Produto", "Recebimento", "Venda", "HomeSistema"],
+    "admin"      => ["Usuario", "Pessoa", "Produto", "Venda", "Despesa", "Pagamento", "Recebimento", "HomeSistema", "FaturarVenda", "BaixarRecebimento", "TipoDocumento","Dashboard"],
+    "vendedor"   => ["Pessoa", "Produto", "Recebimento", "Venda", "HomeSistema", "BaixarRecebimento", "FaturarVenda"]
     //"financeiro" => ["Pagamento", "Recebimento", "HomeSistema"]
 ]);
 

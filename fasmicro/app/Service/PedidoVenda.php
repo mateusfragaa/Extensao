@@ -58,23 +58,27 @@ class PedidoVenda
     public function calcularTotal($acrescimo, $desconto, $venda)
     {
         $venda = $this->getVenda($venda);
+        // var_dump($acrescimo, $desconto, $venda);
+        // die();
         if (isset($venda['PEV_STATUS']) && in_array($venda['PEV_STATUS'], ['F', 'C'])) {
             Session::set('msgError', 'Não e possível aplicar desconto ou acréscimo em pedido faturado');
             Redirect::page("faturarVenda/formFaturar/receber/".$venda['PEV_ID']);
             exit;
         }
         // Lógica de validação
-        $pedido_venda = $this->vendaModel->getVenda($venda);
+        // $pedido_venda = $this->vendaModel->getVenda($venda);
+        // var_dump($venda['PEV_TOTAL']);
+        // die();
         // Desconto não pode maior que o valor total da venda
-        if ($desconto > $pedido_venda['PEV_TOTAL']) {
+        if ($desconto > $venda['PEV_TOTAL']) {
             Session::set('msgError', 'O Desconto não pode ser maior que o valor da venda.');
-            return $pedido_venda['PEV_TOTAL'];
+            return $venda['PEV_TOTAL'];
         }
         // Não pode dar acrescimo se o valor da venda estiver zerado
         if (empty($acrescimo)) $acrescimo = 0;
         if (empty($desconto)) $desconto = 0;
         if (empty($venda)) $venda = 0;
-        return $this->vendaModel->updateValorTotal($acrescimo, $desconto, $venda);
+        return $this->vendaModel->updateValorTotal($acrescimo, $desconto, $venda['PEV_ID']);
     }
 
     public function getStatusVenda()

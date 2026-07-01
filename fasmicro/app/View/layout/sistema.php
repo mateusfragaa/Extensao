@@ -114,11 +114,13 @@
                         </li>
                     <?php endif; ?>
 
-                    <li class="nav-item">
-                        <a class="nav-link" href="/tipoDocumento">
-                            <i class="bi bi-file-earmark"></i> Tipo Documento
-                        </a>
-                    </li>
+                    <?php if (temPermissao('TipoDocumento')): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/tipoDocumento">
+                                <i class="bi bi-file-earmark"></i> Tipo Documento
+                            </a>
+                        </li>
+                    <?php endif; ?>
 
                     <?php if (temPermissao('Pessoa')): ?>
                         <li class="nav-item">
@@ -132,6 +134,14 @@
                         <li class="nav-item">
                             <a class="nav-link" href="/usuario">
                                 <i class="bi bi-person"></i> Usuários
+                            </a>
+                        </li>
+                    <?php endif; ?>
+
+                    <?php if (temPermissao('Dashboard')): ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/dashboard/page">
+                                <i class="bi bi-person"></i> Dashboard
                             </a>
                         </li>
                     <?php endif; ?>

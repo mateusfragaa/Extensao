@@ -90,12 +90,18 @@ class RecebimentoService
 
     public function apagar_recebimento_item($post)
     {
+        if (!isset($post['recebimentos_ids'])) {
+            Redirect::page("baixarRecebimento/formBaixar/", ['msgError' => 'Nenhum recebimento selecionado.']);
+        }
         $ids = $post['recebimentos_ids'];
         $this->recebimentoItemModel->apagar_recebimento_item($ids);
     }
 
     public function receber_recebimento($post)
-    {
+    {   
+        if (!isset($post['recebimentos_ids'])) {
+            Redirect::page("baixarRecebimento/formBaixar/", ['msgError' => 'Nenhum recebimento selecionado.']);
+        }
         $ids = $post['recebimentos_ids'];
         $forma_pagamento = $post['forma_pagamento'];
         $valor_pago = $post['valor_pago'];
